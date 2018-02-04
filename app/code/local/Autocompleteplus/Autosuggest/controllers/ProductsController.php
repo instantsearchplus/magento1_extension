@@ -117,7 +117,6 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         $uuid = $this->_getConfig()->getUUID();
         $site_url = $helper->getConfigDataByFullPath('web/unsecure/base_url');
         $store_id = Mage::app()->getStore()->getStoreId();
-        $modules = Mage::getConfig()->getNode('modules')->children();
         $installedModules = array();
 
         try {
@@ -130,6 +129,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
 
         if ($get_modules) {
             try {
+                $modules = Mage::getConfig()->getNode('modules')->children();
                 foreach ($modules as $name => $module) {
                     if ($module->codePool != 'core' && $module->active == 'true') {
                         $installedModules[$name] = $module;

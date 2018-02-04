@@ -57,3 +57,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Drop old isp_config if exists
 - validateInput method
 - Checksum api
+
+## [3.0.0.8] - 2016-08-02 10:02:00
+### Modified
+- Refactor getting product attributes

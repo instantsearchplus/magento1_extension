@@ -87,7 +87,7 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         ))->setRootElementName('catalog');
 
         $productCollection = $this->getProductCollection();
-
+        
         // @codingStandardsIgnoreLine
         $productCollection->getSelect()->limit($count, $startInd);
         if (is_numeric($storeId)) {
@@ -95,7 +95,29 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             $productCollection->setStoreId($storeId);
         }
 
-        $attributesToSelect = $this->_getAttributesToSelect();
+        $attributesToSelect = array(
+            'store_id',
+            'name',
+            'description',
+            'short_description',
+            'visibility',
+            'thumbnail',
+            'image',
+            'small_image',
+            'url',
+            'status',
+            'updated_at',
+            'price',
+            'meta_title',
+            'meta_description');
+
+        if($this->canUseAttributes()){
+            foreach ($this->getAttributes() as $attr) {
+                $action = $attr->getAttributeCode();
+
+                $attributesToSelect[] = $action;
+            }
+        }
 
         $productCollection->addAttributeToSelect($attributesToSelect);
 
@@ -142,14 +164,14 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
                 'to'    =>  $to
             ))
             ->addFieldToFilter('store_id', $storeId);
-
+        
         $this->setStoreId($storeId);
         $updates->setOrder('update_date', 'ASC');
 
         $updates->setPageSize($count);
         $updates->setCurPage(1);
         $xmlGenerator= $this->getXmlGenerator();
-
+        
         $xmlGenerator->setRootAttributes(array(
             'version'   =>  $this->getHelper()->getVersion(),
             'magento'   =>  $this->getHelper()->getMageVersion(),
@@ -230,7 +252,29 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             $productCollection->setStoreId($storeId);
         }
 
-        $attributesToSelect = $this->_getAttributesToSelect();
+        $attributesToSelect = array(
+            'store_id',
+            'name',
+            'description',
+            'short_description',
+            'visibility',
+            'thumbnail',
+            'image',
+            'small_image',
+            'url',
+            'status',
+            'updated_at',
+            'price',
+            'meta_title',
+            'meta_description');
+
+        if($this->canUseAttributes()){
+            foreach ($this->getAttributes() as $attr) {
+                $action = $attr->getAttributeCode();
+
+                $attributesToSelect[] = $action;
+            }
+        }
 
         $productCollection->addAttributeToSelect($attributesToSelect);
 
@@ -276,7 +320,29 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             $productCollection->setStoreId($storeId);
         }
 
-        $attributesToSelect = $this->_getAttributesToSelect();
+        $attributesToSelect = array(
+            'store_id',
+            'name',
+            'description',
+            'short_description',
+            'visibility',
+            'thumbnail',
+            'image',
+            'small_image',
+            'url',
+            'status',
+            'updated_at',
+            'price',
+            'meta_title',
+            'meta_description');
+
+        if($this->canUseAttributes()){
+            foreach ($this->getAttributes() as $attr) {
+                $action = $attr->getAttributeCode();
+
+                $attributesToSelect[] = $action;
+            }
+        }
 
         $productCollection->addAttributeToSelect($attributesToSelect);
 
@@ -296,39 +362,5 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         }
 
         return $xmlGenerator->generateXml();
-    }
-
-    /**
-     * @return array
-     */
-    protected function _getAttributesToSelect()
-    {
-        $attributesToSelect = array(
-            'store_id',
-            'name',
-            'description',
-            'short_description',
-            'visibility',
-            'thumbnail',
-            'image',
-            'small_image',
-            'url',
-            'status',
-            'updated_at',
-            'price',
-            'meta_title',
-            'meta_description',
-            'special_price'
-        );
-
-        if ($this->canUseAttributes()) {
-            foreach ($this->getAttributes() as $attr) {
-                $action = $attr->getAttributeCode();
-
-                $attributesToSelect[] = $action;
-            }
-            return $attributesToSelect;
-        }
-        return $attributesToSelect;
     }
 }
