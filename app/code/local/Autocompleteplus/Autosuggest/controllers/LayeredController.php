@@ -1,129 +1,97 @@
 <?php
-
+/**
+ * Layered Controller
+ */
 class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controller_Front_Action
 {
-    public function preDispatch()
-    {
-        parent::preDispatch();
-
-        $this->getResponse()->clearHeaders();
-        $this->getResponse()->setHeader('Content-type', 'application/json');
-    }
-
-    protected function _getConfig()
-    {
-        return Mage::getModel('autocompleteplus_autosuggest/config');
-    }
-
-    public function setLayeredSearchOnAction()
-    {
-        $response = $this->getResponse();
-        $request = $this->getRequest();
-        $authkey = $request->getParam('authentication_key');
-        $uuid = $request->getParam('uuid');
-        $scope = $request->getParam('scope', 'default');
-        $scopeId = $request->getParam('store_id', 1);
-
+    public function setLayeredSearchOnAction() {
+        $authkey = $this->getRequest()->getParam('authentication_key') ? $this->getRequest()->getParam('authentication_key') : "";
+        $uuid = $this->getRequest()->getParam('uuid') ? $this->getRequest()->getParam('uuid') : "";
         if (!$this->valid($uuid, $authkey)) {
-            $resp = json_encode(array('status' => 'error: '.'Authentication failed'));
-            $response->setBody($resp);
-
+            echo json_encode(array('status' => 'error: ' . "Authentication failed"));
             return;
         }
 
+        $scope = $this->getRequest()->getParam('scope') ? $this->getRequest()->getParam('scope') : 'stores';
+        $store_id = $this->getRequest()->getParam('store_id') ? $this->getRequest()->getParam('store_id') : '1';
+
+        $core_config = new Mage_Core_Model_Config();
         try {
-            $this->_getConfig()->enableLayeredNavigation($scope, $scopeId);
+            $core_config->saveConfig('autocompleteplus/config/layered', "1", $scope, $store_id);
             Mage::app()->getCacheInstance()->cleanType('config');
         } catch (Exception $e) {
-            $resp = json_encode(array('status' => 'error: '.print_r($e->getMessage(), true)));
-            $response->setBody($resp);
-
-            Mage::logException($e);
-
+            echo json_encode(array('status' => 'error: ' . print_r($e->getMessage(), true)));
             return;
         }
-
-        $resp = array('new_state' => 1,
-                      'status' => 'ok',
+        
+        $resp = array('new_state' 	         => 1,
+                      'status'               => 'ok'
         );
-
-        $response->setBody(json_encode($resp));
+        echo json_encode($resp);
+        return;
     }
 
-    public function setLayeredSearchOffAction()
-    {
-        $request = $this->getRequest();
-        $response = $this->getResponse();
-        $authkey = $request->getParam('authentication_key');
-        $uuid = $request->getParam('uuid');
-        $scope = $request->getParam('scope', 'default');
-        $scopeId = $request->getParam('store_id', 1);
-
+    public function setLayeredSearchOffAction() {
+        $authkey = $this->getRequest()->getParam('authentication_key') ? $this->getRequest()->getParam('authentication_key') : "";
+        $uuid = $this->getRequest()->getParam('uuid') ? $this->getRequest()->getParam('uuid') : "";
         if (!$this->valid($uuid, $authkey)) {
-            $resp = json_encode(array('status' => 'error: '.'Authentication failed'));
-
-            $response->setBody($resp);
-
+            echo json_encode(array('status' => 'error: ' . "Authentication failed"));
             return;
         }
 
+        $scope = $this->getRequest()->getParam('scope') ? $this->getRequest()->getParam('scope') : 'stores';
+        $store_id = $this->getRequest()->getParam('store_id') ? $this->getRequest()->getParam('store_id') : '1';
+
+        $core_config = new Mage_Core_Model_Config();
         try {
-            $this->_getConfig()->disableLayeredNavigation($scope, $scopeId);
+            $core_config->saveConfig('autocompleteplus/config/layered', "0", $scope, $store_id);
             Mage::app()->getCacheInstance()->cleanType('config');
         } catch (Exception $e) {
-            $resp = json_encode(array('status' => 'error: '.print_r($e->getMessage(), true)));
-            $response->setBody($resp);
-
-            Mage::logException($e);
-
+            echo json_encode(array('status' => 'error: ' . print_r($e->getMessage(), true)));
             return;
         }
-
-        $resp = array('new_state' => 0,
-                      'status' => 'ok',
+        
+        $resp = array('new_state' 	         => 0,
+                      'status'               => 'ok'
         );
-
-        $response->setBody(json_encode($resp));
+        echo json_encode($resp);
+        return;
     }
 
-    public function getLayeredSearchConfigAction()
-    {
-        $request = $this->getRequest();
-        $response = $this->getResponse();
-
-        $authkey = $request->getParam('authentication_key');
-        $uuid = $request->getParam('uuid');
-        $scopeId = $request->getParam('store_id', 1);
-
+    public function getLayeredSearchConfigAction() {
+        $authkey = $this->getRequest()->getParam('authentication_key') ? $this->getRequest()->getParam('authentication_key') : "";
+        $uuid = $this->getRequest()->getParam('uuid') ? $this->getRequest()->getParam('uuid') : "";
         if (!$this->valid($uuid, $authkey)) {
-            $resp = json_encode(array('status' => $this->__('error: Authentication failed')));
-            $response->setBody($resp);
-
+            echo json_encode(array('status' => 'error: ' . "Authentication failed"));
             return;
         }
+        $store_id = $this->getRequest()->getParam('store_id') ? $this->getRequest()->getParam('store_id') : '1';
         try {
             Mage::app()->getCacheInstance()->cleanType('config');
-            $current_state = $this->_getConfig()->getLayeredNavigationStatus($scopeId);
+            $current_state = Mage::getStoreConfig('autocompleteplus/config/layered', $store_id);
         } catch (Exception $e) {
-            $resp = json_encode(array('status' => 'error: '.print_r($e->getMessage(), true)));
-            $response->setBody($resp);
-
-            Mage::logException($e);
-
+            echo json_encode(array('status' => 'error: ' . print_r($e->getMessage(), true)));
             return;
         }
-
-        $resp = json_encode(array('current_state' => $current_state));
-        $response->setBody($resp);
+        echo json_encode(array('current_state' => $current_state));
+        return;
     }
 
-    protected function valid($uuid, $authkey)
-    {
-        if ($this->_getConfig()->getAuthorizationKey() == $authkey
-            && $this->_getConfig()->getUUID() == $uuid) {
-            return true;
+    private function valid($uuid, $authkey) {
+        $valid = false;
+        try {
+            $config_arr = Mage::getModel('autocompleteplus_autosuggest/config')->getCollection()->getData();
+        } catch (Exception $e) {
+            return $valid;
         }
-
-        return false;
+        $config = $config_arr[0];
+        if (isset($config['authkey']) && isset($config['licensekey'])) {
+            if ($config['authkey'] == $authkey && $config['licensekey'] == $uuid) {
+                $valid = true;
+            }
+        } else {
+            return $valid;
+        }
+        return $valid;
     }
 }

@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Autocompleteplus_Autosuggest>
-            <version>3.0.0.1</version>
+            <version>2.0.7.8</version>
             <url>http://autocompleteplus.com/</url>
             <modulename>Autocompleteplus_Autosuggest</modulename>
         </Autocompleteplus_Autosuggest>
@@ -19,47 +19,25 @@
                     <notifications>
                         <table>autocompleteplus_notifications</table>
                     </notifications>
-                    <pusher>
-                        <table>autocompleteplus_pusher</table>
-                    </pusher>
-                    <config>
-                        <table>autocompleteplus_config</table>
-                    </config>
                 </entities>
             </autocompleteplus_autosuggest_mysql4>
-            <catalogsearch_mysql4>
+            <!-- <catalogsearch_mysql4>
+              <rewrite>
+                  <fulltext_collection>Autocompleteplus_Autosuggest_Model_Mysql4_Fulltext_Collection</fulltext_collection>
+              </rewrite>
             </catalogsearch_mysql4>
             <catalogsearch_resource>
                 <rewrite>
                     <fulltext_collection>Autocompleteplus_Autosuggest_Model_Resource_Fulltext_Collection</fulltext_collection>
                 </rewrite>
-            </catalogsearch_resource>
+            </catalogsearch_resource> -->
+            <!--<catalogsearch>
+                <rewrite>
+                    <layer>Autocompleteplus_Autosuggest_Model_Layer</layer>
+                </rewrite>
+            </catalogsearch>-->
         </models>
         <events>
-            <controller_action_postdispatch_checkout_cart_index>
-                <observers>
-                    <autocompleteplus_autosuggest>
-                        <class>autocompleteplus_autosuggest/observer</class>
-                        <method>webhook_service_call</method>
-                    </autocompleteplus_autosuggest>
-                </observers>
-            </controller_action_postdispatch_checkout_cart_index>
-            <controller_action_postdispatch_checkout_onepage_index>
-                <observers>
-                    <autocompleteplus_autosuggest>
-                        <class>autocompleteplus_autosuggest/observer</class>
-                        <method>webhook_service_call</method>
-                    </autocompleteplus_autosuggest>
-                </observers>
-            </controller_action_postdispatch_checkout_onepage_index>
-            <controller_action_postdispatch_checkout_onepage_success>
-                <observers>
-                    <autocompleteplus_autosuggest>
-                        <class>autocompleteplus_autosuggest/observer</class>
-                        <method>webhook_service_call</method>
-                    </autocompleteplus_autosuggest>
-                </observers>
-            </controller_action_postdispatch_checkout_onepage_success>
             <catalog_controller_product_init>
                 <observers>
                     <autocompleteplus_autosuggest>
@@ -104,6 +82,14 @@
                     </autocompleteplus_autosuggest>
                 </observers>
             </catalogrule_after_apply>
+            <admin_session_user_login_success>
+                <observers>
+                    <autocompleteplus_autosuggest>
+                        <class>Autocompleteplus_Autosuggest_Model_Observer</class>
+                        <method>adminSessionUserLoginSuccess</method>
+                    </autocompleteplus_autosuggest>
+                </observers>
+            </admin_session_user_login_success>
         </events>
         <resources>
             <autosuggest_setup>
@@ -144,15 +130,6 @@
                 <class>Autocompleteplus_Autosuggest_Helper</class>
             </autocompleteplus_autosuggest>
         </helpers>
-        <sales>
-            <quote>
-                <item>
-                    <product_attributes>
-                        <added_from_search />
-                    </product_attributes>
-                </item>
-            </quote>
-        </sales>
     </global>
     <frontend>
         <layout>
@@ -163,13 +140,6 @@
             </updates>
         </layout>
         <routers>
-            <instantsearchplus>
-                <use>standard</use>
-                <args>
-                    <module>Autocompleteplus_Autosuggest</module>
-                    <frontName>instantsearchplus</frontName>
-                </args>
-            </instantsearchplus>
             <autocompleteplus>
                 <use>standard</use>
                 <args>
@@ -187,17 +157,43 @@
         </routers>
     </frontend>
     <admin>
-        <routers>
-            <adminhtml>
-                <args>
-                    <modules>
-                        <autocompleteplus before="Mage_Adminhtml">Autocompleteplus_Autosuggest_Adminhtml</autocompleteplus>
-                    </modules>
-                </args>
-            </adminhtml>
-        </routers>
+      <routers>
+      <autocompleteplus>
+        <use>admin</use>
+        <args>
+          <module>Autocompleteplus_Autosuggest</module>
+          <frontName>autocompleteplus</frontName>
+        </args>
+      </autocompleteplus>
+    </routers>
     </admin>
     <adminhtml>
+        <acl>
+            <resources>
+                <admin>
+                    <children>
+                        <system>
+                            <children>
+                                <config>
+                                    <children>
+                                        <autocompleteplus translate="label" module="autocompleteplus_autosuggest">
+                                            <title>AutocompletePlus</title>
+                                        </autocompleteplus>
+                                    </children>
+                                </config>
+                            </children>
+                        </system>
+                    </children>
+                </admin>
+            </resources>
+        </acl>
+        <menu>
+          <autocompleteplus>
+            <title>InstantSearch+</title>
+            <sort_order>999</sort_order>
+            <action>adminhtml/autocompleteplus_redirect/goto</action>
+          </autocompleteplus>
+        </menu>
         <layout>
             <updates>
                 <autosuggest>

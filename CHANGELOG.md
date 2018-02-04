@@ -7,3 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [3.0.0.0] - 2016-07-10 10:02:00
 ### Modified
 - Refactored version
+
+## [3.0.0.1] - 2016-07-10 10:02:00
+### Modified
+- Code style formatting according to psr standards
+### Added
+- Collection files

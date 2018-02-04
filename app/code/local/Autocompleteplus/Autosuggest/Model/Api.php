@@ -1,50 +1,35 @@
 <?php
-
 class Autocompleteplus_Autosuggest_Model_Api extends Mage_Api_Model_Resource_Abstract
 {
-    protected function _getConfig()
-    {
-        return Mage::getModel('autocompleteplus_autosuggest/config');
-    }
-
-    public function setLayeredSearchOn($scope, $scopeId)
-    {
+    public function setLayeredSearchOn($scope, $scope_id) {
+        $core_config = new Mage_Core_Model_Config();
         try {
-            $this->_getConfig()->enableLayeredNavigation($scope, $scopeId);
+            $core_config->saveConfig('autocompleteplus/config/layered', "1", $scope, $scope_id);
             Mage::app()->getCacheInstance()->cleanType('config');
         } catch (Exception $e) {
-            Mage::logException($e);
-
             return $e->getMessage();
         }
-
-        return 'Done';
+        return "Done";
     }
 
-    public function setLayeredSearchOff($scope, $scopeId)
-    {
+    public function setLayeredSearchOff($scope, $scope_id) {
+        $core_config = new Mage_Core_Model_Config();
         try {
-            $this->_getConfig()->disableLayeredNavigation($scope, $scopeId);
+            $core_config->saveConfig('autocompleteplus/config/layered', "0", $scope, $scope_id);
             Mage::app()->getCacheInstance()->cleanType('config');
         } catch (Exception $e) {
-            Mage::logException($e);
-
             return $e->getMessage();
         }
-
-        return 'Done';
+        return "Done";
     }
 
-    public function getLayeredSearchConfig($scopeId)
-    {
+    public function getLayeredSearchConfig($scope_id) {
         try {
-            $layered = $this->_getConfig()->getLayeredNavigationStatus($scopeId);
+            Mage::app()->getCacheInstance()->cleanType('config');
+            $layered = Mage::getStoreConfig('autocompleteplus/config/layered', $scope_id);
         } catch (Exception $e) {
-            Mage::logException($e);
-
             return $e->getMessage();
         }
-
         return $layered;
     }
 }

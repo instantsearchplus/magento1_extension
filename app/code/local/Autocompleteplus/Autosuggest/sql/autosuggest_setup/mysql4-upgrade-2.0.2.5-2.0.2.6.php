@@ -1,6 +1,7 @@
 <?php
 /**
- * InstantSearchPlus (Autosuggest).
+ * InstantSearchPlus (Autosuggest)
+
  *
  * NOTICE OF LICENSE
  *
@@ -9,7 +10,7 @@
  * http://opensource.org/licenses/osl-3.0.php
  *
  * @category   Mage
- *
+ * @package    InstantSearchPlus
  * @copyright  Copyright (c) 2014 Fast Simon (http://www.instantsearchplus.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
@@ -33,5 +34,5 @@ CREATE TABLE IF NOT EXISTS `{$installer->getTable('autocompleteplus_autosuggest/
 	KEY `IDX_IS_ACTIVE` (`is_active`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ");
-Mage::log(__FILE__ . ' triggered', null, 'autocomplete.log', true);
+Mage::log('mysql4-upgrade-2.0.2.5-2.0.2.6.php',null,'autocomplete.log',true);
 $installer->endSetup();
