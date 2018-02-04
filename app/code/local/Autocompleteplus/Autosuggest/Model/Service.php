@@ -9,18 +9,16 @@ class Autocompleteplus_Autosuggest_Model_Service
 
         $multistoreJson = $helper->getMultiStoreDataJson();
         $storesInfo = json_decode($multistoreJson);
-        $stores = is_array($storesInfo->stores) ? $stores : array($stores);
-
-        $productCollection = Mage::getModel('catalog/product')->getCollection()->setStoreId($id);
-        $productsCount = $productCollection->getSize();
-        $write = $this->_getWriteAdapter();
-        $tableName = $this->_getTable('autocompleteplus_autosuggest/pusher');
 
         //truncate the log table
         Mage::getResourceModel('autocompleteplus_autosuggest/pusher')->truncate();
 
         foreach ($storesInfo->stores as $i => $store) {
             $id = $store->store_id;
+            
+            $productCollection = Mage::getModel('catalog/product')->getCollection()->setStoreId($id);
+            $productsCount = $productCollection->getSize();
+            
             $batches = ceil($productsCount / 100);
             $offset = 0;
 
@@ -39,6 +37,8 @@ class Autocompleteplus_Autosuggest_Model_Service
         }
 
         if ($inserts) {
+            $write = $this->_getWriteAdapter();
+            $tableName = $this->_getTable('autocompleteplus_autosuggest/pusher');
             $write->insertMultiple($tableName, $inserts);
         }
     }

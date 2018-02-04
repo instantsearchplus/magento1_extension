@@ -21,7 +21,7 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
         $request = $this->getRequest();
         $authkey = $request->getParam('authentication_key');
         $uuid = $request->getParam('uuid');
-        $scope = $request->getParam('scope', 'default');
+        $scope = $request->getParam('scope', 'stores');
         $scopeId = $request->getParam('store_id', 1);
 
         if (!$this->valid($uuid, $authkey)) {
@@ -56,7 +56,7 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
         $response = $this->getResponse();
         $authkey = $request->getParam('authentication_key');
         $uuid = $request->getParam('uuid');
-        $scope = $request->getParam('scope', 'default');
+        $scope = $request->getParam('scope', 'stores');
         $scopeId = $request->getParam('store_id', 1);
 
         if (!$this->valid($uuid, $authkey)) {

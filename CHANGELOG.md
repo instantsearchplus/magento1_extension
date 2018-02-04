@@ -27,3 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [3.0.0.3] - 2016-07-20 10:02:00
 ### Modified
 - Code style formatting according to psr standards
+
+## [3.0.0.4] - 2016-07-20 10:02:00
+### Modified
+- Move config values to core_config_data table

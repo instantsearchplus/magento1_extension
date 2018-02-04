@@ -591,48 +591,12 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 
     public function getUUID()
     {
-        $read = Mage::getSingleton('core/resource')->getConnection('core_read');
-
-        $write = Mage::getSingleton('core/resource')->getConnection('core_write');
-
-        $_tableprefix = (string) Mage::getConfig()->getTablePrefix();
-
-        $tblExist = $write->showTableStatus($_tableprefix.'autocompleteplus_config');
-
-        if (!$tblExist) {
-            return '';
-        }
-
-        $sql = 'SELECT * FROM `'.$_tableprefix.'autocompleteplus_config` WHERE `id` =1';
-
-        $licenseData = $read->fetchAll($sql);
-
-        $key = $licenseData[0]['licensekey'];
-
-        return $key;
+        return $this->getConfig()->getUUID();
     }
 
     public function getIsReachable()
     {
-        $read = Mage::getSingleton('core/resource')->getConnection('core_read');
-
-        $write = Mage::getSingleton('core/resource')->getConnection('core_write');
-
-        $_tableprefix = (string) Mage::getConfig()->getTablePrefix();
-
-        $tblExist = $write->showTableStatus($_tableprefix.'autocompleteplus_config');
-
-        if (!$tblExist) {
-            return '';
-        }
-
-        $sql = 'SELECT * FROM `'.$_tableprefix.'autocompleteplus_config` WHERE `id` =1';
-
-        $licenseData = $read->fetchAll($sql);
-
-        $is_reachable = $licenseData[0]['is_reachable'];
-
-        return $is_reachable;
+        return $this->getConfig()->isReachable();
     }
 
     public function getServerEndPoint()

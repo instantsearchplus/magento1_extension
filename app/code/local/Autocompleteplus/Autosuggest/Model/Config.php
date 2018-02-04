@@ -63,8 +63,9 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
      * @param string $scope
      * @param int    $scopeId
      */
-    public function enableLayeredNavigation($scope = 'default', $scopeId = 0)
+    public function enableLayeredNavigation($scope = 'stores', $scopeId = 0)
     {
+        $this->_getMageConfig()->deleteConfig(self::XML_SEARCH_LAYERED_CONFIG, 'default', $scopeId);
         $this->_getMageConfig()->saveConfig(self::XML_SEARCH_LAYERED_CONFIG, self::XML_SEARCH_LAYERED_ENABLED, $scope, $scopeId);
     }
 
@@ -74,8 +75,9 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
      * @param string $scope
      * @param int    $scopeId
      */
-    public function disableLayeredNavigation($scope = 'default', $scopeId = 0)
+    public function disableLayeredNavigation($scope = 'stores', $scopeId = 0)
     {
+        $this->_getMageConfig()->deleteConfig(self::XML_SEARCH_LAYERED_CONFIG, 'default', $scopeId);
         $this->_getMageConfig()->saveConfig(self::XML_SEARCH_LAYERED_CONFIG, self::XML_SEARCH_LAYERED_DISABLED, $scope, $scopeId);
     }
 
@@ -306,9 +308,14 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
 
         $this->setAuthorizationKey($responseData['authentication_key']);
         $this->setUUID($responseData['uuid']);
-        $this->setSiteUrl(Mage::getBaseUrl());
+        $this->setSiteUrl($this->_getHelper()->getConfigDataByFullPath('web/unsecure/base_url'));
         $this->setIsReachable($responseData['is_reachable']);
         $this->setErrorMessage(isset($errorMessage) ? $errorMessage : '');
+        
+        if (!$this->isConfigDataValid($responseData['uuid'], $responseData['authentication_key'])){
+            $this->_sendError('UUID or Authentication key are not valid | got UUID: ' . $responseData['uuid'] . 
+                              ' | authentication_key: ' . $responseData['authentication_key']);
+        }
 
         Mage::dispatchEvent('autocompleteplus_autosuggest_config_creation_after',
             array('config' => $this, 'response' => $response, 'responseData' => $responseData));
@@ -332,7 +339,7 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
             ->setMethod('POST');
 
         $errClient->setParameterPost(array(
-            'site' => Mage::getBaseUrl(),
+            'site' => $this->_getHelper()->getConfigDataByFullPath('web/unsecure/base_url'),
             'msg' => $message,
             'email' => Mage::getStoreConfig(self::XML_STORE_EMAIL_CONFIG),
             'multistore' => $this->_getHelper()->getMultiStoreDataJson(),
@@ -351,5 +358,19 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
             'authkey' => $this->getAuthorizationKey(),
             'licensekey' => $this->getUUID(),
         ));
+    }
+    
+    public function isConfigDataValid($input_uuid = null, $input_key = null){
+        $uuid = ($input_uuid) ? $input_uuid : $this->getUUID();
+        $authentication_key = ($input_key) ? $input_key : $this->getAuthorizationKey();
+                
+        if (!$uuid || strlen($uuid) != 36 || substr_count($uuid, '-') != 4){
+            return false;
+        }
+        if (!$authentication_key || strlen($authentication_key) == 0){
+            return false;
+        }
+        
+        return true;
     }
 }
