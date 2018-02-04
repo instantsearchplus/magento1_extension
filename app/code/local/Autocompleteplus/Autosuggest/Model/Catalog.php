@@ -17,9 +17,9 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             $startInd = 0;
         }
 
-        //maxim products on one page is 10000
-        if (!$count || $count > 10000) {
-            $count = 10000;
+        //maxim products on one page is 1000
+        if (!$count || $count > 1000) {
+            $count = 1000;
         }
         //retrieving page number
         $this->pageNum = floor(($startInd / $count));

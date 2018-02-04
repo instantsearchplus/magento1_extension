@@ -35,3 +35,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [3.0.0.5] - 2016-07-22 10:02:00
 ### Modified
 - Server endpoint
+
+## [3.0.0.6] - 2016-07-26 10:02:00
+### Modified
+- Reduce max products on xml page at fetch to 1000
+### Added
+- GET input validation
+### Removed
+- Magento api usage of changing SERP mode

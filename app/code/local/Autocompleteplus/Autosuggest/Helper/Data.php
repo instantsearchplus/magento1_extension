@@ -759,4 +759,25 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
     {
         return (string) Mage::getConfig()->getNode('global/crypt/key');
     }
+    
+    public function validateInput($input, $type = "integer", $default = null, $on_failure = null){
+        $validated_input = $default;
+        $sanity_type = FILTER_SANITIZE_NUMBER_INT;
+        $type = strtolower($type);
+        if ($type == "integer" || $type == 'int'){
+            $sanity_type = FILTER_SANITIZE_NUMBER_INT;
+        } else if ($type == 'boolean' || $type == 'bool'){
+            $sanity_type = FILTER_VALIDATE_BOOLEAN;
+        }
+        
+        $filter_input = filter_var($input, $sanity_type, FILTER_NULL_ON_FAILURE);
+        if ($filter_input || ($sanity_type == FILTER_SANITIZE_NUMBER_INT && $filter_input === "0")){
+            $validated_input = $filter_input;
+            $status = settype($validated_input, $type);
+            if (!$status){
+                $validated_input = $on_failure;
+            }
+        }
+        return $validated_input;
+    }
 }

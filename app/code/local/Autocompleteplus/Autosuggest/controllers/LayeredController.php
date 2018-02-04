@@ -19,10 +19,16 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
     {
         $response = $this->getResponse();
         $request = $this->getRequest();
+        
+        $helper = Mage::helper('autocompleteplus_autosuggest');
         $authkey = $request->getParam('authentication_key');
         $uuid = $request->getParam('uuid');
+        
         $scope = $request->getParam('scope', 'stores');
-        $scopeId = $request->getParam('store_id', 1);
+        if ($scope != 'stores' && $scope != 'default' && $scope != ''){
+            $scope = 'stores';
+        }
+        $scopeId = $helper->validateInput($request->getParam('store_id', Mage::app()->getStore()->getStoreId()), 'integer', 1, null);
 
         if (!$this->valid($uuid, $authkey)) {
             $resp = json_encode(array('status' => 'error: '.'Authentication failed'));
@@ -54,11 +60,16 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
     {
         $request = $this->getRequest();
         $response = $this->getResponse();
+        $helper = Mage::helper('autocompleteplus_autosuggest');
         $authkey = $request->getParam('authentication_key');
         $uuid = $request->getParam('uuid');
+        
         $scope = $request->getParam('scope', 'stores');
-        $scopeId = $request->getParam('store_id', 1);
-
+        if ($scope != 'stores' && $scope != 'default' && $scope != ''){
+            $scope = 'stores';
+        }
+        $scopeId = $helper->validateInput($request->getParam('store_id', Mage::app()->getStore()->getStoreId()), 'integer', 1, null);
+        
         if (!$this->valid($uuid, $authkey)) {
             $resp = json_encode(array('status' => 'error: '.'Authentication failed'));
 
@@ -90,10 +101,11 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
     {
         $request = $this->getRequest();
         $response = $this->getResponse();
+        $helper = Mage::helper('autocompleteplus_autosuggest');
 
         $authkey = $request->getParam('authentication_key');
         $uuid = $request->getParam('uuid');
-        $scopeId = $request->getParam('store_id', 1);
+        $scopeId = $helper->validateInput($request->getParam('store_id', Mage::app()->getStore()->getStoreId()), 'integer', 1, null);
 
         if (!$this->valid($uuid, $authkey)) {
             $resp = json_encode(array('status' => $this->__('error: Authentication failed')));

@@ -34,13 +34,27 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
     {
         $response = $this->getResponse();
         $request = $this->getRequest();
-        $startInd = $request->getParam('offset');
-        $count = $request->getParam('count');
-        $store = $request->getParam('store_id', '');
-        $storeId = $request->getParam('store', $store);
-        $orders = $request->getParam('orders', '');
-        $monthInterval = $request->getParam('month_interval', '');
-        $checksum = $request->getParam('checksum', '');
+        $helper = Mage::helper('autocompleteplus_autosuggest');
+        
+        $startInd = $helper->validateInput($request->getParam('offset'), 'integer', null, null);
+        $count = $helper->validateInput($request->getParam('count'), 'integer', null, null);
+        if ($count === null || $startInd === null){
+            $returnArr = array(
+                    'status' => self::STATUS_FAILURE,
+                    'error_code' => self::MISSING_PARAMETER,
+                    'error_details' => $this->__('The "offset" and "count" parameters are mandatory'),
+            );
+            $response->setHeader('Content-type', 'application/json');
+            $response->setHttpResponseCode(400);
+            $response->setBody(json_encode($returnArr));
+            return;
+        }
+        $store = $helper->validateInput($request->getParam('store_id'), 'integer', null, null);
+        $storeId = $helper->validateInput($request->getParam('store'), 'integer', $store, null);
+        $orders = (string)$helper->validateInput($request->getParam('orders', ''), 'integer', '', '');    // check that input is integer if exists, if not exists we want it to be "" (string)
+        $monthInterval = (string)$helper->validateInput($request->getParam('month_interval', ''), 'integer', '', '');    // check that input is integer if exists, if not exists we want it to be "" (string)
+        $checksum = (string)$helper->validateInput($request->getParam('checksum', ''), 'integer', '', '');    // check that input is integer if exists, if not exists we want it to be "" (string)
+        
         $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
 
         $xml = $catalogModel->renderCatalogXml($startInd, $count, $storeId, $orders, $monthInterval, $checksum);
@@ -55,10 +69,23 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
 
         $request = $this->getRequest();
         $response = $this->getResponse();
-        $count = $request->getParam('count');
-        $from = $request->getParam('from');
-        $to = $request->getParam('to', strtotime('now'));
-        $storeId = $request->getParam('store_id', '');
+        $helper = Mage::helper('autocompleteplus_autosuggest');
+        
+        $count = $helper->validateInput($request->getParam('count'), 'integer', null, null);
+        $from = $helper->validateInput($request->getParam('from'), 'integer', null, null);
+        if ($count === null || $from === null){
+            $returnArr = array(
+                    'status' => self::STATUS_FAILURE,
+                    'error_code' => self::MISSING_PARAMETER,
+                    'error_details' => $this->__('The "from" and "count" parameters are mandatory'),
+            );
+            $response->setHeader('Content-type', 'application/json');
+            $response->setHttpResponseCode(400);
+            $response->setBody(json_encode($returnArr));
+            return;
+        }
+        $to = $helper->validateInput($request->getParam('to', strtotime('now')), 'integer', strtotime('now'), null);
+        $storeId = $helper->validateInput($request->getParam('store_id'), 'integer', null, null);
 
         if (!$storeId) {
             $returnArr = array(
@@ -97,16 +124,16 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         }
 
         return $this->__('no key inside');
-    }
-
+    }    
+    
     public function versAction()
     {
         $response = $this->getResponse();
-        $get_modules = $this->getRequest()->getParam('modules', false);
         $mage = Mage::getVersion();
         $ext = Mage::helper('autocompleteplus_autosuggest')->getVersion();
         $edition = method_exists('Mage', 'getEdition') ? Mage::getEdition() : 'Community';
         $helper = Mage::helper('autocompleteplus_autosuggest');
+        $get_modules = $helper->validateInput($this->getRequest()->getParam('modules'), 'integer', false, false);
         $uuid = $this->_getConfig()->getUUID();
         $site_url = $helper->getConfigDataByFullPath('web/unsecure/base_url');
         $store_id = Mage::app()->getStore()->getStoreId();
@@ -301,13 +328,9 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
 
         $read = Mage::getSingleton('core/resource')->getConnection('core_read');
         $table_prefix = (string) Mage::getConfig()->getTablePrefix();
-
-        $post = $this->getRequest()->getParams();
-        if (array_key_exists('store_id', $post)) {
-            $store_id = $post['store_id'];
-        } else {
-            $store_id = Mage::app()->getStore()->getStoreId();          // default
-        }
+        
+        $request = $this->getRequest();        
+        $store_id = $helper->validateInput($request->getParam('store_id', Mage::app()->getStore()->getStoreId()), 'integer', null, null);
 
         $sql_fetch = 'SELECT identifier FROM '.$table_prefix.'autocompleteplus_checksum WHERE store_id=?';
         $updates = $read->fetchPairs($sql_fetch, array($store_id));     // empty array if fails
@@ -351,11 +374,13 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         $request = $this->getRequest();
         $response = $this->getResponse();
         $helper = Mage::helper('autocompleteplus_autosuggest');
-        $store_id = $request->getParam('store_id', Mage::app()->getStore()->getStoreId());
-        $count = $request->getParam('count', self::MAX_NUM_OF_PRODUCTS_CHECKSUM_ITERATION);
-        $start_index = $request->getParam('offset', 0);
-        $php_timeout = $request->getParam('timeout', -1);
-        $is_single = $request->getParam('is_single', 0);
+        
+        $store_id = $helper->validateInput($request->getParam('store_id', Mage::app()->getStore()->getStoreId()), 'integer', Mage::app()->getStore()->getStoreId(), null);
+        $count = $helper->validateInput($request->getParam('count', self::MAX_NUM_OF_PRODUCTS_CHECKSUM_ITERATION), 'integer', self::MAX_NUM_OF_PRODUCTS_CHECKSUM_ITERATION, null);
+        $start_index = $helper->validateInput($request->getParam('offset', 0), 'integer', 0, null);
+        $php_timeout = $helper->validateInput($request->getParam('timeout', -1), 'integer', -1, null);
+        $is_single = $helper->validateInput($request->getParam('is_single', 0), 'integer', 0, null);
+
         $uuid = $this->_getConfig()->getUUID();
         $checksum_server = $helper->getServerUrl();
         $collection = Mage::getModel('catalog/product')->getCollection();
@@ -444,71 +469,15 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         $this->getResponse()->setBody(1);
     }
 
-    public function changeSerpAction()
-    {
-        $scope_name = 'stores';
-        $request = $this->getRequest();
-        $response = $this->getResponse();
-
-        $helper = Mage::helper('autocompleteplus_autosuggest');
-        $site_url = $helper->getConfigDataByFullPath('web/unsecure/base_url');
-        $is_new_serp = $request->getParam('new_serp', 0);
-
-        $store_id = $request->getParam('store_id', 0);
-        if (!$store_id) {
-            $scope_name = 'default';
-        }
-
-        define('SOAP_WSDL', $site_url.'/api/?wsdl');
-        define('SOAP_USER', 'instant_search');
-        define('SOAP_PASS', 'Rilb@kped3');
-
-        try {
-            $client = new SoapClient(SOAP_WSDL, array('trace' => 1, 'cache_wsdl' => 0));
-            $session = $client->login(SOAP_USER, SOAP_PASS);
-
-            switch ($is_new_serp) {
-
-                case 'status':
-                    $current_state = $client->call($session, 'autocompleteplus_autosuggest.getLayeredSearchConfig', array($store_id));
-                    $resp = array('current_status' => $current_state);
-                    $response->setBody(json_encode($resp));
-
-                    return;
-
-                case '1':
-                    $status = $client->call($session, 'autocompleteplus_autosuggest.setLayeredSearchOn', array($scope_name, $store_id));
-                    break;
-                default:
-                    $status = $client->call($session, 'autocompleteplus_autosuggest.setLayeredSearchOff', array($scope_name, $store_id));
-                    break;
-            }
-
-            $new_state = $client->call($session, 'autocompleteplus_autosuggest.getLayeredSearchConfig', array($store_id));
-
-            $resp = array(
-                'request_state' => $is_new_serp,
-                'new_state' => $new_state,
-                'site_url' => $site_url,
-                'status' => $status,
-            );
-
-            $response->setBody(json_encode($resp));
-        } catch (Exception $e) {
-            $resp = array('status' => 'exception: '.print_r($e, true));
-            $response->setBody(json_encode($resp));
-            Mage::logException($e);
-            throw $e;
-        }
-    }
 
     public function pushbulkAction()
     {
         $request = $this->getRequest();
         $response = $this->getResponse();
         $helper = Mage::helper('autocompleteplus_autosuggest');
+        
+        $pushId = $helper->validateInput($request->getParam('pushid'), 'integer', null, null);
 
-        $pushId = $request->getParam('pushid', null);
         $response->clearHeaders();
         $response->setHeader('Content-type', 'application/json');
         $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
