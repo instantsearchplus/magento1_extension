@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<config>
+    <api>
+        <resources>
+            <autocompleteplus_autosuggest translate="title" module="autocompleteplus_autosuggest">
+                <title>autocompleteplus_autosuggest</title>
+                <model>autocompleteplus_autosuggest/api</model>
+                <methods>
+                    <setLayeredSearchOn translate="title" module="autocompleteplus_autosuggest">
+                        <title>setLayeredSearchOn</title>
+                        <acl>autocompleteplus_autosuggest/setLayeredSearchOn</acl>
+                    </setLayeredSearchOn>
+                    <setLayeredSearchOff translate="title" module="autocompleteplus_autosuggest">
+                        <title>setLayeredSearchOff</title>
+                        <acl>autocompleteplus_autosuggest/setLayeredSearchOff</acl>
+                    </setLayeredSearchOff>
+                    <getLayeredSearchConfig translate="title" module="autocompleteplus_autosuggest">
+                        <title>getLayeredSearchConfig</title>
+                        <acl>autocompleteplus_autosuggest/getLayeredSearchConfig</acl>
+                    </getLayeredSearchConfig>
+                </methods>
+            </autocompleteplus_autosuggest>
+        </resources>
+        <v2>
+            <resources_function_prefix>
+                <autocompleteplus_autosuggest>autocompleteplus_autosuggest</autocompleteplus_autosuggest>
+            </resources_function_prefix>
+        </v2>
+        <acl>
+            <resources>
+                <autocompleteplus_autosuggest translate="title" module="autocompleteplus_autosuggest">
+                    <title>Autosuggest</title>
+                    <sort_order>2000</sort_order>
+                    <myapimethod translate="title" module="autocompleteplus_autosuggest">
+                        <title>setLayeredSearchOn</title>
+                    </myapimethod>
+                    <myapimethod translate="title" module="autocompleteplus_autosuggest">
+                        <title>setLayeredSearchOff</title>
+                    </myapimethod>
+                    <myapimethod translate="title" module="autocompleteplus_autosuggest">
+                        <title>getLayeredSearchConfig</title>
+                    </myapimethod>
+                </autocompleteplus_autosuggest>
+            </resources>
+        </acl>
+    </api>
+</config>

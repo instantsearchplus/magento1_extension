@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<config>
+    <tabs>
+        <autocompleteplus_autosuggest translate="label" module="autocompleteplus_autosuggest">
+            <label>InstantSearch+</label>
+            <sort_order>195</sort_order>
+        </autocompleteplus_autosuggest>
+    </tabs>
+    <sections>
+       <autocompleteplus translate="label" module="autocompleteplus_autosuggest">
+        <label>InstantSearch+</label>
+        <tab>autocompleteplus_autosuggest</tab>
+        <frontend_type>text</frontend_type>
+        <sort_order>100</sort_order>
+        <show_in_default>1</show_in_default>
+        <show_in_website>1</show_in_website>
+        <show_in_store>1</show_in_store>
+      <groups>
+        <config translate="label">
+            <label>General Settings</label>
+            <frontend_type>text</frontend_type>
+            <sort_order>1</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>1</show_in_store>
+            <fields>
+                <enabled translate="label">
+                    <label>Enable InstantSearch+</label>
+                    <frontend_type>select</frontend_type>
+                    <source_model>adminhtml/system_config_source_yesno</source_model>
+                    <sort_order>1</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                </enabled>
+                <imagefield translate="label">
+                    <label>Magento field for product thumbnail image</label>
+                    <frontend_type>select</frontend_type>
+                    <source_model>autocompleteplus_autosuggest/adminhtml_attributes</source_model>
+                    <sort_order>3</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                </imagefield>
+                <attributes translate="label">
+                    <label>Sync custom attributes</label>
+                    <comment>Allow users to search by your shop custom attributes</comment>
+                    <frontend_type>select</frontend_type>
+                    <source_model>adminhtml/system_config_source_yesno</source_model>
+                    <sort_order>4</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                </attributes>
+                <sync translate="label">
+                    <label>Sync products with InstantSearch+</label>
+                    <comment>Sync store products with InstantSearch+ initially, as well as subsequent product updates</comment>
+                    <frontend_type>button</frontend_type>
+                    <frontend_model>autocompleteplus_autosuggest/adminhtml_sync</frontend_model>
+                    <sort_order>21</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                </sync>
+            </fields>
+            <comment>
+            	&lt;b style="font-size:1.2em;" &gt;Visit InstantSearch+ Dashboard to customize additional settings.&lt;/b&gt;&lt;br&gt;
+            	InstantSearch+ brings your users relevant personal product and searches suggestions using a dedicated world-class cloud service.
+            </comment>
+        </config>
+      </groups>
+      </autocompleteplus>
+    </sections>
+</config>
