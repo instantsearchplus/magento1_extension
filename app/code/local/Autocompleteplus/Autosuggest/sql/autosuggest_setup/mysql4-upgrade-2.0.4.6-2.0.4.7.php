@@ -1,7 +1,6 @@
 <?php
 /**
- * InstantSearchPlus (Autosuggest)
-
+ * InstantSearchPlus (Autosuggest).
  *
  * NOTICE OF LICENSE
  *
@@ -10,7 +9,7 @@
  * http://opensource.org/licenses/osl-3.0.php
  *
  * @category   Mage
- * @package    InstantSearchPlus
+ *
  * @copyright  Copyright (c) 2014 Fast Simon (http://www.instantsearchplus.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
@@ -18,7 +17,7 @@ $installer = $this;
 
 $installer->startSetup();
 
-$res=$installer->run("
+$res = $installer->run("
 
 DROP TABLE IF EXISTS {$this->getTable('autocompleteplus_checksum')};
 
@@ -38,5 +37,5 @@ CREATE TABLE IF NOT EXISTS {$this->getTable('autocompleteplus_checksum')} (
 
 ");
 
-Mage::log('mysql4-upgrade-2.0.4.6-2.0.4.7.php triggered',null,'autocomplete.log',true);
+Mage::log(__FILE__ . ' triggered', null, 'autocomplete.log', true);
 $installer->endSetup();

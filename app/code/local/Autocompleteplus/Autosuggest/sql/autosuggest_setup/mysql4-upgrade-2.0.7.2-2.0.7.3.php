@@ -1,58 +1,93 @@
 <?php
 
 $installer = $this;
+$tableName = $this->getTable('autocompleteplus_batches');
+$columnName = 'update_date';
+$checkColumnType = false;
+$fileIo = new Varien_Io_File();
+$fileIo->open(array('path' => Mage::getBaseDir()));
 
-// getEdition exist from version 1.12, LICENSE_EE.txt file only exists in EE edition, we need the condition to work on EE version less then 1.11.x.x
-if (!method_exists('Mage' , 'getEdition') && file_exists('LICENSE_EE.txt') && method_exists('Mage' , 'getVersion') && version_compare(Mage::getVersion(), '1.10.0.0.', '<') === true){
-    $is_table_exist = $installer->getConnection()->showTableStatus($this->getTable('autocompleteplus_batches'));
+/*
+ * Check if getEdition method does not exist in Mage
+ * Check if Enterprise Edition license exists in Magento root
+ * Check if getVersion method exists in Mage
+ * Compare versions to check if less than 1.10.0.0
+ */
+if (!method_exists('Mage', 'getEdition') && $fileIo->isValid('LICENSE_EE.txt') && method_exists('Mage', 'getVersion') && version_compare(Mage::getVersion(), '1.10.0.0.', '<') === true) {
+    $tableExists = $installer->getConnection()->showTableStatus($tableName);
 } else {
-    $is_table_exist = $installer->getConnection()->isTableExists($this->getTable('autocompleteplus_batches'));
+    $tableExists = $installer->getConnection()->isTableExists($tableName);
 }
-if ($is_table_exist) {
-    try{
-        $read = Mage::getSingleton('core/resource')->getConnection('core_read');
-        $_tableprefix = (string)Mage::getConfig()->getTablePrefix();
-        $query = 'SHOW FIELDS FROM  `'.$_tableprefix.'autocompleteplus_batches` WHERE Field = \'update_date\'';
-    //     $query = 'DESCRIBE `'.$_tableprefix.'autocompleteplus_batches`'.' \'update_date\'';
-        
-        $result = $read->fetchAll($query);
-        if (!empty($result) && array_key_exists('Type', $result[0])){
-            if (!(substr($result[0]['Type'], 0, 3) == 'int')){     // check if variable 'update_date' type is not Integer
-                
+
+if ($tableExists) {
+    try {
+        $checkIfExists = $installer->getConnection()->tableColumnExists($tableName, 'update_date');
+
+        /*
+         * Check if table already exists
+         */
+        if (!$checkIfExists) {
+
+            /*
+             * Check if column 'update_date' is type INT
+             */
+            $describe = $this->getConnection()->describeTable($tableName);
+            foreach ($describe as $column) {
+                if ($column['COLUMN_NAME'] == $columnName && $column['DATA_TYPE'] == Varien_Db_Ddl_Table::TYPE_INTEGER) {
+                    $checkColumnType = true;
+                }
+            }
+
+            if (!$checkColumnType) {
                 $installer->startSetup();
-                // rebuild the autocompleteplus_batches table
-                $res=$installer->run("
-                    DROP TABLE IF EXISTS {$this->getTable('autocompleteplus_batches')};
-                    
-                    CREATE TABLE IF NOT EXISTS {$this->getTable('autocompleteplus_batches')} (
-                       `id` int(11) NOT NULL auto_increment,
-                       `product_id` INT NULL,
-                       `store_id` INT NOT NULL,
-                       `update_date` INT DEFAULT NULL,
-                       `action` VARCHAR( 255 ) NOT NULL,
-                       `sku` VARCHAR( 255 ) NOT NULL,
-                       PRIMARY KEY  (`id`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
-                    
-                ");
+
+                $installer->getConnection()->dropTable($tableName);
+                $installer->getConnection()->newTable($tableName)
+                    ->addColumn('id', Varien_Db_Ddl_Table::TYPE_INTEGER, 11, array(
+                        'identity' => true,
+                        'unsigned' => true,
+                        'nullable' => false,
+                        'primary' => true,
+                        'comment' => 'Batch ID',
+                    ))
+                    ->addColumn('product_id', Varien_Db_Ddl_Table::TYPE_INTEGER, null, array(
+                        'nullable' => false,
+                        'comment' => 'Product ID',
+                    ))
+                    ->addColumn('store_id', Varien_Db_Ddl_Table::TYPE_INTEGER, null, array(
+                        'nullable' => false,
+                        'comment' => 'Store ID',
+                    ))
+                    ->addColumn('update_date', Varien_Db_Ddl_Table::TYPE_INTEGER, null, array(
+                        'nullable' => true,
+                        'comment' => 'Update Time Integer',
+                    ))
+                    ->addColumn('action', Varien_Db_Ddl_Table::TYPE_VARCHAR, 255, array(
+                        'nullable' => false,
+                        'comment' => 'Batch Action',
+                    ))
+                    ->addColumn('sku', Varien_Db_Ddl_Table::TYPE_VARCHAR, 255, array(
+                        'nullable' => false,
+                        'comment' => 'Product SKU',
+                    ));
                 $installer->endSetup();
             }
         }
     } catch (Exception $e) {
         $errMsg = $e->getMessage();
-        Mage::log('Install failed with a message: ' . $errMsg, null, 'autocomplete.log',true);
-        
-        $command = "http://magento.instantsearchplus.com/install_error";
+        Mage::log('Install failed with a message: '.$errMsg, null, 'autocomplete.log', true);
+
+        $command = 'http://magento.instantsearchplus.com/install_error';
         $helper = Mage::helper('autocompleteplus_autosuggest');
         //getting site url
         $url = $helper->getConfigDataByFullPath('web/unsecure/base_url');
-        
+
         $data = array();
         $data['site'] = $url;
         $data['msg'] = $errMsg;
         $data['f'] = '2.0.7.3';
         $res = $helper->sendPostCurl($command, $data);
     }
-}
 
-?>
+    Mage::log(__FILE__ . ' triggered', null, 'autocomplete.log', true);
+}

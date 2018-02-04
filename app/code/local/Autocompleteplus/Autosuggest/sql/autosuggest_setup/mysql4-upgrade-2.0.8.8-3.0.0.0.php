@@ -8,12 +8,12 @@ $installer->startSetup();
 if ($installer->getConnection()->isTableExists($installer->getTable('autocompleteplus_autosuggest/config'))) {
     $select = $installer->getConnection()->select()
         ->from(array('config' => $installer->getTable('autocompleteplus_autosuggest/config')));
-    $row = $installer->getConnection()->fetchOne($select);
+    $row = $installer->getConnection()->fetchAll($select);
     $installer->getConnection()->dropTable($installer->getTable('autocompleteplus_autosuggest/config'));
 }
 
-if ($row) {
-    $config->generateConfig($row['licensekey']);
+if ($row && isset($row[0]['licensekey']) && isset($row[0]['authkey'])) {
+    $config->generateConfig($row[0]['licensekey'], $row[0]['authkey']);
 } else {
     $config->generateConfig();
 }

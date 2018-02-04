@@ -1,7 +1,6 @@
 <?php
 /**
- * InstantSearchPlus (Autosuggest)
-
+ * InstantSearchPlus (Autosuggest).
  *
  * NOTICE OF LICENSE
  *
@@ -10,11 +9,10 @@
  * http://opensource.org/licenses/osl-3.0.php
  *
  * @category   Mage
- * @package    InstantSearchPlus
+ *
  * @copyright  Copyright (c) 2014 Fast Simon (http://www.instantsearchplus.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
-
 class Autocompleteplus_Autosuggest_Model_Notifications extends Mage_Core_Model_Abstract
 {
     protected function _construct()

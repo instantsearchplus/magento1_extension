@@ -9,8 +9,9 @@ class Autocompleteplus_Autosuggest_Model_Catalogreport extends Mage_Core_Model_A
         try {
             $collection = $this->getProductCollectionStoreFilterFactory();
             $this->addDisabledFilterToCollection($collection);
+
             return $collection->getSize();
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             return -1;
         }
     }
@@ -20,8 +21,9 @@ class Autocompleteplus_Autosuggest_Model_Catalogreport extends Mage_Core_Model_A
         try {
             $collection = $this->getProductCollectionStoreFilterFactory();
             $this->addEnabledFilterToCollection($collection);
+
             return $collection->getSize();
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             return -1;
         }
     }
@@ -32,26 +34,28 @@ class Autocompleteplus_Autosuggest_Model_Catalogreport extends Mage_Core_Model_A
             $collection = $this->getProductCollectionStoreFilterFactory();
             $this->addEnabledFilterToCollection($collection);
             $this->addVisibleInSearchFilterToCollection($collection);
+
             return $collection->getSize();
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             return -1;
         }
     }
 
     public function getSearchableProducts2Count()
     {
-        try{
+        try {
             $num_of_searchable_products = Mage::getModel('catalog/product')->getCollection()
                 ->addStoreFilter($this->getCurrentStoreId())
                 ->addAttributeToFilter('status', array('eq' => 1))          // Mage_Catalog_Model_Product_Status::STATUS_ENABLED
                 ->addAttributeToFilter(array(
-                        array('attribute'=>'visibility', 'finset'=>3),  // visibility Search
-                        array('attribute'=>'visibility', 'finset'=>4),  // visibility Catalog, Search
+                        array('attribute' => 'visibility', 'finset' => 3),  // visibility Search
+                        array('attribute' => 'visibility', 'finset' => 4),  // visibility Catalog, Search
                 ))
                 ->getSize();
+
             return $num_of_searchable_products;
-        } catch (Exception $e){
-        	return -1;
+        } catch (Exception $e) {
+            return -1;
         }
     }
 
@@ -82,19 +86,20 @@ class Autocompleteplus_Autosuggest_Model_Catalogreport extends Mage_Core_Model_A
     }
 
     /**
-     * Return the current store - can be overridden with post
+     * Return the current store - can be overridden with post.
+     *
      * @return int
      */
     public function getCurrentStoreId()
     {
-        if(!$this->_storeId){
+        if (!$this->_storeId) {
             $post = $this->getRequest()->getParams();
             if (array_key_exists('store_id', $post)) {
                 $this->_storeId = $post['store_id'];
-            } else if (array_key_exists('store', $post)) {
+            } elseif (array_key_exists('store', $post)) {
                 $this->_storeId = $post['store'];
             } else {
-               $this->_storeId = Mage::app()->getStore()->getStoreId();
+                $this->_storeId = Mage::app()->getStore()->getStoreId();
             }
         }
 
@@ -103,6 +108,6 @@ class Autocompleteplus_Autosuggest_Model_Catalogreport extends Mage_Core_Model_A
 
     public function getRequest()
     {
-    	return Mage::app()->getRequest();
+        return Mage::app()->getRequest();
     }
 }

@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Autocompleteplus_Autosuggest>
-            <version>3.0.0.2</version>
+            <version>3.0.0.3</version>
             <url>http://autocompleteplus.com/</url>
             <modulename>Autocompleteplus_Autosuggest</modulename>
         </Autocompleteplus_Autosuggest>
@@ -11,10 +11,10 @@
         <models>
             <autocompleteplus_autosuggest>
                 <class>Autocompleteplus_Autosuggest_Model</class>
-                <resourceModel>autocompleteplus_autosuggest_mysql4</resourceModel>
+                <resourceModel>autocompleteplus_autosuggest_resource</resourceModel>
             </autocompleteplus_autosuggest>
-            <autocompleteplus_autosuggest_mysql4>
-                <class>Autocompleteplus_Autosuggest_Model_Mysql4</class>
+            <autocompleteplus_autosuggest_resource>
+                <class>Autocompleteplus_Autosuggest_Model_Resource</class>
                 <entities>
                     <notifications>
                         <table>autocompleteplus_notifications</table>
@@ -25,8 +25,11 @@
                     <config>
                         <table>autocompleteplus_config</table>
                     </config>
+                    <batches>
+                        <table>autocompleteplus_batches</table>
+                    </batches>
                 </entities>
-            </autocompleteplus_autosuggest_mysql4>
+            </autocompleteplus_autosuggest_resource>
             <catalogsearch_mysql4>
             </catalogsearch_mysql4>
             <catalogsearch_resource>
@@ -60,14 +63,6 @@
                     </autocompleteplus_autosuggest>
                 </observers>
             </controller_action_postdispatch_checkout_onepage_success>
-            <catalog_controller_product_init>
-                <observers>
-                    <autocompleteplus_autosuggest>
-                        <class>autocompleteplus_autosuggest/observer</class>
-                        <method>catalog_controller_product_init</method>
-                    </autocompleteplus_autosuggest>
-                </observers>
-            </catalog_controller_product_init>
             <catalog_product_save_before>
                 <observers>
                     <autocompleteplus_autosuggest>
@@ -95,15 +90,6 @@
                     </autocompleteplus_autosuggest>
                 </observers>
             </adminhtml_controller_catalogrule_prepare_save>
-            <catalogrule_after_apply>
-                <observers>
-                    <autocompleteplus_autosuggest>
-                        <type>singleton</type>
-                        <class>autocompleteplus_autosuggest/observer</class>
-                        <method>catalogrule_after_apply</method>
-                    </autocompleteplus_autosuggest>
-                </observers>
-            </catalogrule_after_apply>
         </events>
         <resources>
             <autosuggest_setup>
@@ -212,6 +198,7 @@
                 <imagefield>thumbnail</imagefield>
                 <attributes>1</attributes>
                 <layered>0</layered>
+                <api_endpoint><![CDATA[https://magento.instantsearchplus.com]]></api_endpoint>
             </config>
         </autocompleteplus>
     </default>

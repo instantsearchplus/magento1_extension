@@ -1,11 +1,10 @@
 <?php
 
 /**
- * Yes/no options for sync
+ * Yes/no options for sync.
  */
 class Autocompleteplus_Autosuggest_Block_Adminhtml_Sync extends Mage_Adminhtml_Block_System_Config_Form_Field
 {
-
     protected function _construct()
     {
         parent::_construct();
@@ -13,38 +12,46 @@ class Autocompleteplus_Autosuggest_Block_Adminhtml_Sync extends Mage_Adminhtml_B
     }
 
     /**
+     * Return element html.
      *
-     * Return element html
-     * @param  Varien_Data_Form_Element_Abstract $element
+     * @param Varien_Data_Form_Element_Abstract $element
+     *
      * @return string
      */
     protected function _getElementHtml(Varien_Data_Form_Element_Abstract $element)
     {
+        $this->setElement($element);
+
         return $this->_toHtml();
     }
 
     /**
-     * Return UUID
+     * Return UUID.
+     *
      * @return string
      */
     public function getUUID()
     {
-        $helper=Mage::helper('autocompleteplus_autosuggest');
-        return $helper->getUUID();
+        $config = Mage::getModel('autocompleteplus_autosuggest/config');
+
+        return $config->getUUID();
     }
 
     /**
-     * Reachable or not
+     * Reachable or not.
+     *
      * @return bool
      */
     public function getIsReachable()
     {
-        $helper=Mage::helper('autocompleteplus_autosuggest');
+        $helper = Mage::helper('autocompleteplus_autosuggest');
+
         return $helper->getIsReachable();
     }
 
     /**
-     * Return ajax url for button
+     * Return ajax url for button.
+     *
      * @return string
      */
     public function getSyncUrl()
@@ -53,16 +60,17 @@ class Autocompleteplus_Autosuggest_Block_Adminhtml_Sync extends Mage_Adminhtml_B
     }
 
     /**
-     * Generate button html
+     * Generate button html.
+     *
      * @return string
      */
     public function getButtonHtml()
     {
         $button = $this->getLayout()->createBlock('adminhtml/widget_button')
             ->setData(array(
-                'id'        => 'autocompleteplus_sync',
-                'label'     => $this->helper('adminhtml')->__('Sync'),
-                'onclick'   => 'javascript:syncautocomplete(); return false;'
+                'id' => 'autocompleteplus_sync',
+                'label' => $this->helper('adminhtml')->__('Sync'),
+                'onclick' => 'javascript:syncautocomplete(); return false;',
             ));
 
         return $button->toHtml();

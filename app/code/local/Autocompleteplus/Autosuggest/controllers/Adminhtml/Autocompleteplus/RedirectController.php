@@ -5,14 +5,14 @@ class Autocompleteplus_Autosuggest_Adminhtml_Autocompleteplus_RedirectController
     const ISP_SITE_URL = 'https://magento.instantsearchplus.com/';
     const REDIRECT_STATUS_CODE = 302;
 
-    protected function _construct()
+    protected function _getConfig()
     {
-        $this->helper = Mage::helper('autocompleteplus_autosuggest');
+        return Mage::getModel('autocompleteplus_autosuggest/config');
     }
 
     public function gotoAction()
     {
-        $kwys     = $this->helper->getBothKeys();
+        $kwys = $this->_getConfig()->getBothKeys();
         $response = $this->getResponse();
 
         $response->clearHeaders();
@@ -25,11 +25,11 @@ class Autocompleteplus_Autosuggest_Adminhtml_Autocompleteplus_RedirectController
         $uuid = $kwys['uuid'];
         $authkey = $kwys['authkey'];
 
-        if(!isset($uuid) || !isset($authkey)){
-           return self::ISP_SITE_URL . 'login';
+        if (!isset($uuid) || !isset($authkey)) {
+            return self::ISP_SITE_URL.'login';
         }
 
-        return self::ISP_SITE_URL . "ma_dashboard?site_id=$uuid&authentication_key=$authkey";
+        return self::ISP_SITE_URL."ma_dashboard?site_id=$uuid&authentication_key=$authkey";
     }
 
     protected function _isAllowed()

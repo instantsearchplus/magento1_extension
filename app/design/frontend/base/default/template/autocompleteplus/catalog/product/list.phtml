@@ -1,21 +1,11 @@
 <?php
 $store_id = Mage::app()->getStore()->getStoreId();
-$auto_config = Mage::getModel('autocompleteplus_autosuggest/config')->getCollection()->getData();
-$uuid = $auto_config[0]['licensekey'];
+$config = Mage::getModel('autocompleteplus_autosuggest/config');
+$uuid = $config->getUUID();
 $query = htmlentities(Mage::app()->getRequest()->getParam('q'), ENT_QUOTES);
+$match_value = '';
 
 try{
-    // prevent js injection - Remove query with <script>
-    $pattern = '/<\s*script[^>]*>/i';
-    $pattern1 = '/%3C\s*script/i';
-    $pattern2 = '/&lt;\s*script/i';
-    if (preg_match($pattern, $query) || preg_match($pattern1, $query) || preg_match($pattern2, $query)){
-        $query = '';
-    }
-} catch (Exception $e){}
-
-try{
-    $match_value = '';
     $formkey_html = $this->getBlockHtml('formkey');	// '<input name="form_key" type="hidden" value="E3rpphc1BL6zyTB3" />' 
     $pattern = '/.*form_key.*value=\"([^\"]+)\"/s';
     if (preg_match($pattern, $formkey_html, $match)){
@@ -23,21 +13,23 @@ try{
     	   $match_value = $match[1];
         }
     }
-} catch (Exception $e){}
+} catch (Exception $e){
+    Mage::logException($e);
+}
 
 ?>
 <!-- <div id="isp_search_result_page"></div> -->
 
 <script>
     var __isp_fulltext_search_obj = {
-        uuid: <?php echo '"' . $uuid . '"'; ?>,
-        store_id: <?php echo $store_id; ?>,
-        query: <?php echo '"' . $query . '"'; ?>,
-		formkey: <?php echo "'" . $match_value . "'"; ?>,
+        uuid: "<?php echo $this->escapeHtml($config->getUUID()); ?>",
+        store_id: <?php echo $this->escapeHtml($store_id); ?>,
+        query: "<?php echo $this->escapeHtml($query); ?>",
+		formkey: "<?php echo $this->escapeHtml($match_value); ?>"
     };
 </script>
     <?php
-        $helper=Mage::helper('autocompleteplus_autosuggest');
+        $helper = Mage::helper('autocompleteplus_autosuggest');
         $server_url = $helper->getServerUrl();
         $url = $server_url . '/ma_load_search_page?isp_platform=magento&r=002'; 
         $resp = $helper->sendCurl($url);

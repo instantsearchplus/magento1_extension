@@ -1,6 +1,6 @@
 <?php
 /**
- * Magento
+ * Magento.
  *
  * NOTICE OF LICENSE
  *
@@ -19,18 +19,18 @@
  * needs please refer to http://www.magentocommerce.com for more information.
  *
  * @category    Mage
- * @package     Mage_CatalogSearch
+ *
  * @copyright   Copyright (c) 2009 Irubin Consulting Inc. DBA Varien (http://www.varien.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
- * Catalog Search Controller
+ * Catalog Search Controller.
  */
 class Autocompleteplus_Autosuggest_CatalogSearchController extends Mage_Core_Controller_Front_Action
 {
     /**
-     * Retrieve catalog session
+     * Retrieve catalog session.
      *
      * @return Mage_Catalog_Model_Session
      */
@@ -39,7 +39,7 @@ class Autocompleteplus_Autosuggest_CatalogSearchController extends Mage_Core_Con
         return Mage::getSingleton('catalog/session');
     }
     /**
-     * Display search result
+     * Display search result.
      */
     public function indexAction()
     {
@@ -55,21 +55,19 @@ class Autocompleteplus_Autosuggest_CatalogSearchController extends Mage_Core_Con
                 $query->setId(0)
                     ->setIsActive(1)
                     ->setIsProcessed(1);
-            }
-            else {
+            } else {
                 if ($query->getId()) {
-                    $query->setPopularity($query->getPopularity()+1);
-                }
-                else {
+                    $query->setPopularity($query->getPopularity() + 1);
+                } else {
                     $query->setPopularity(1);
                 }
 
-                if ($query->getRedirect()){
+                if ($query->getRedirect()) {
                     $query->save();
                     $this->getResponse()->setRedirect($query->getRedirect());
+
                     return;
-                }
-                else {
+                } else {
                     $query->prepare();
                 }
             }
@@ -84,8 +82,7 @@ class Autocompleteplus_Autosuggest_CatalogSearchController extends Mage_Core_Con
             if (!Mage::helper('catalogsearch')->isMinQueryLength()) {
                 $query->save();
             }
-        }
-        else {
+        } else {
             $this->_redirectReferer();
         }
     }

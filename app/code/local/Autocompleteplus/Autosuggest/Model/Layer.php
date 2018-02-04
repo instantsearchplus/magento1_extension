@@ -1,6 +1,6 @@
 <?php
 /**
- * Magento
+ * Magento.
  *
  * NOTICE OF LICENSE
  *
@@ -19,17 +19,16 @@
  * needs please refer to http://www.magentocommerce.com for more information.
  *
  * @category    Mage
- * @package     Mage_CatalogSearch
+ *
  * @copyright   Copyright (c) 2009 Irubin Consulting Inc. DBA Varien (http://www.varien.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
-
 class Autocompleteplus_Autosuggest_Model_Layer extends Mage_Catalog_Model_Layer
 {
-    const XML_PATH_DISPLAY_LAYER_COUNT    = 'catalog/search/use_layered_navigation_count';
+    const XML_PATH_DISPLAY_LAYER_COUNT = 'catalog/search/use_layered_navigation_count';
 
     /**
-     * Get current layer product collection
+     * Get current layer product collection.
      *
      * @return Mage_Catalog_Model_Resource_Eav_Mysql4_Product_Collection
      */
@@ -37,8 +36,7 @@ class Autocompleteplus_Autosuggest_Model_Layer extends Mage_Catalog_Model_Layer
     {
         if (isset($this->_productCollections[$this->getCurrentCategory()->getId()])) {
             $collection = $this->_productCollections[$this->getCurrentCategory()->getId()];
-        }
-        else {
+        } else {
             $collection = Mage::getResourceModel('catalogsearch/fulltext_collection');
             $this->prepareProductCollection($collection);
             $this->_productCollections[$this->getCurrentCategory()->getId()] = $collection;
@@ -48,9 +46,10 @@ class Autocompleteplus_Autosuggest_Model_Layer extends Mage_Catalog_Model_Layer
     }
 
     /**
-     * Prepare product collection
+     * Prepare product collection.
      *
      * @param Mage_Catalog_Model_Resource_Eav_Mysql4_Product_Collection $collection
+     *
      * @return Mage_Catalog_Model_Layer
      */
     public function prepareProductCollection($collection)
@@ -66,11 +65,12 @@ class Autocompleteplus_Autosuggest_Model_Layer extends Mage_Catalog_Model_Layer
 
         Mage::getSingleton('catalog/product_status')->addVisibleFilterToCollection($collection);
         Mage::getSingleton('catalog/product_visibility')->addVisibleInSearchFilterToCollection($collection);
+
         return $this;
     }
 
     /**
-     * Get layer state key
+     * Get layer state key.
      *
      * @return string
      */
@@ -80,44 +80,51 @@ class Autocompleteplus_Autosuggest_Model_Layer extends Mage_Catalog_Model_Layer
             $this->_stateKey = 'Q_'.Mage::helper('catalogsearch')->getQuery()->getId()
                 .'_'.parent::getStateKey();
         }
+
         return $this->_stateKey;
     }
 
     /**
-     * Get default tags for current layer state
+     * Get default tags for current layer state.
      *
-     * @param   array $additionalTags
-     * @return  array
+     * @param array $additionalTags
+     *
+     * @return array
      */
     public function getStateTags(array $additionalTags = array())
     {
         $additionalTags = parent::getStateTags($additionalTags);
         $additionalTags[] = Mage_CatalogSearch_Model_Query::CACHE_TAG;
+
         return $additionalTags;
     }
 
     /**
-     * Add filters to attribute collection
+     * Add filters to attribute collection.
      *
-     * @param   Mage_Catalog_Model_Resource_Eav_Mysql4_Product_Attribute_Collection $collection
-     * @return  Mage_Catalog_Model_Resource_Eav_Mysql4_Product_Attribute_Collection
+     * @param Mage_Catalog_Model_Resource_Eav_Mysql4_Product_Attribute_Collection $collection
+     *
+     * @return Mage_Catalog_Model_Resource_Eav_Mysql4_Product_Attribute_Collection
      */
     protected function _prepareAttributeCollection($collection)
     {
         $collection->addIsFilterableInSearchFilter();
+
         return $collection;
     }
 
     /**
-     * Prepare attribute for use in layered navigation
+     * Prepare attribute for use in layered navigation.
      *
-     * @param   Mage_Eav_Model_Entity_Attribute $attribute
-     * @return  Mage_Eav_Model_Entity_Attribute
+     * @param Mage_Eav_Model_Entity_Attribute $attribute
+     *
+     * @return Mage_Eav_Model_Entity_Attribute
      */
     protected function _prepareAttribute($attribute)
     {
         $attribute = parent::_prepareAttribute($attribute);
         $attribute->setIsFilterable(Mage_Catalog_Model_Layer_Filter_Attribute::OPTIONS_ONLY_WITH_RESULTS);
+
         return $attribute;
     }
 }

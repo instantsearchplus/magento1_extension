@@ -9,7 +9,10 @@ class Autocompleteplus_Autosuggest_Adminhtml_Autocompleteplus_PushController ext
         $service = Mage::getModel('autocompleteplus_autosuggest/service');
         $service->populatePusher();
 
-        $response->setBody($this->getLayout()->createBlock('autocompleteplus_autosuggest/adminhtml_process')->toHtml());
+        $block = $this->getLayout()->createBlock('autocompleteplus_autosuggest/adminhtml_process');
+        $block->setTemplate('autocompleteplus/process.phtml');
+
+        $response->setBody($block->toHtml());
         $response->sendResponse();
     }
 
@@ -17,5 +20,4 @@ class Autocompleteplus_Autosuggest_Adminhtml_Autocompleteplus_PushController ext
     {
         return Mage::getSingleton('admin/session')->isAllowed('system/config/autocompleteplus');
     }
-
 }

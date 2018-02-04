@@ -1,7 +1,6 @@
 <?php
 /**
- * InstantSearchPlus (Autosuggest)
-
+ * InstantSearchPlus (Autosuggest).
  *
  * NOTICE OF LICENSE
  *
@@ -10,103 +9,83 @@
  * http://opensource.org/licenses/osl-3.0.php
  *
  * @category   Mage
- * @package    InstantSearchPlus
+ *
  * @copyright  Copyright (c) 2014 Fast Simon (http://www.instantsearchplus.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
-
 class Autocompleteplus_Autosuggest_CategoriesController extends Mage_Core_Controller_Front_Action
 {
-    public function sendAction(){
+    public function sendAction()
+    {
+        $categories = $this->loadTree();
 
-        $categories=$this->load_tree();
+        $response = $this->getResponse();
+        $response->clearHeaders();
+        $response->setHeader('Content-type', 'application/json');
 
-        echo json_encode($categories);
+        $response->setBody(json_encode($categories));
     }
 
-    private function nodeToArray(Varien_Data_Tree_Node $node , $mediaUrl, $baseUrl, $store)
+    protected function nodeToArray(Varien_Data_Tree_Node $node, $mediaUrl, $baseUrl, $store)
     {
-        $result = array();
+        $thumbnail = '';
 
-        $thumbnail='';
-
-        try{
-
-            $thumbImg=$node->getThumbnail();
-
-           if($thumbImg!=null){
-
-              $thumbnail=$mediaUrl.'catalog/category/'.$node->getThumbnail();
-           }
-        }catch(Exception $e){
-
+        try {
+            if ($thumbImg = $node->getThumbnail()) {
+                $thumbnail = sprintf('%scatalog/category/%s', $mediaUrl, $node->getThumbnail());
+            }
+        } catch (Exception $e) {
+            Mage::logException($e);
         }
 
-        $result['category_id'] = $node->getId();
-        $result['image'] = $mediaUrl.'catalog/category/'.$node->getImage();
-        $result['thumbnail'] = $thumbnail;
-        $result['description'] = strip_tags($node->getDescription());
-        $result['parent_id'] = $node->getParentId();
-        $result['name'] = $node->getName();
-        $result['is_active'] = $node->getIsActive();
-        $result['children'] = array();
-        
-        if (method_exists('Mage' , 'getEdition') && Mage::getEdition() == Mage::EDITION_COMMUNITY){
-//             $result['url_path'] = $baseUrl.$node->getData('url_path');
-            
-            $category = Mage::getModel('catalog/category')->setStoreId($store)->load($node->getId());
-            $result['url_path'] = $category->getUrl();
-        } else {
-            $category = Mage::getModel('catalog/category')->setStoreId($store)->load($node->getId());
-            $result['url_path'] = $category->getUrl();
-        }
-          
+        $category = Mage::getModel('catalog/category')->setStoreId($store)->load($node->getId());
+
+        $result = array(
+            'category_id' => $node->getId(),
+            'image' => sprintf('%scatalog/category/%s', $mediaUrl, $node->getImage()),
+            'thumbnail' => $thumbnail,
+            'description' => strip_tags($node->getDescription()),
+            'parent_id'   => $node->getParentId(),
+            'name'        => $node->getName(),
+            'url_path'    => $category->getUrl(),
+            'is_active'   => $node->getIsActive(),
+            'children'    => array(),
+        );
+
         foreach ($node->getChildren() as $child) {
-            $result['children'][] = $this->nodeToArray($child,$mediaUrl,$baseUrl, $store);
+            $result['children'][] = $this->nodeToArray($child, $mediaUrl, $baseUrl, $store);
         }
 
         return $result;
     }
 
-    private function load_tree(){
-
-        $tree = Mage::getResourceSingleton('catalog/category_tree')
-        ->load();
-
-        $post = $this->getRequest()->getParams();
-
-        if (array_key_exists('store', $post))
-            $store = $post['store'];
-        else
-            $store = Mage::app()->getStore()->getStoreId();
-                
-        $parentId =  Mage::app()->getStore($store)->getRootCategoryId();
-
-        $tree = Mage::getResourceSingleton('catalog/category_tree')
-        ->load();
+    protected function loadTree()
+    {
+        $storeContext = Mage::app()->getStore()->getStoreId();
+        $tree = Mage::getResourceSingleton('catalog/category_tree')->load();
+        $store = $this->getRequest()->getParam('store', $storeContext);
+        $parentId = Mage::app()->getStore($store)->getRootCategoryId();
 
         $root = $tree->getNodeById($parentId);
 
-        if($root && $root->getId() == 1) {
+        if ($root && $root->getId() == 1) {
             $root->setName(Mage::helper('catalog')->__('Root'));
         }
 
         $collection = Mage::getModel('catalog/category')->getCollection()
-                    ->setStoreId($store)
-                    ->addAttributeToSelect('name')
-                    ->addAttributeToSelect('url_path')
-                    ->addAttributeToSelect('image')
-                    ->addAttributeToSelect('thumbnail')
-                    ->addAttributeToSelect('description')
-            ->addAttributeToFilter('is_active',array('eq'=>true));
+            ->setStoreId($store)
+            ->addAttributeToSelect('name')
+            ->addAttributeToSelect('url_path')
+            ->addAttributeToSelect('image')
+            ->addAttributeToSelect('thumbnail')
+            ->addAttributeToSelect('description')
+            ->addAttributeToFilter('is_active', array('eq' => true));
 
         $tree->addCollectionData($collection, true);
 
-        $mediaUrl= Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA);
-        $baseUrl= Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
+        $mediaUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA);
+        $baseUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
 
-        return $this->nodeToArray($root,$mediaUrl,$baseUrl, $store);
-
+        return $this->nodeToArray($root, $mediaUrl, $baseUrl, $store);
     }
-
 }

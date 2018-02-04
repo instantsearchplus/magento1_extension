@@ -2,7 +2,7 @@
 <layout version="0.1.0">
     <default>
         <reference name="head">
-            <block name="inject_new" template="autocompleteplus/inject_new.phtml" type="autocompleteplus_autosuggest/inject"/>
+            <block name="inject" template="autocompleteplus/inject.phtml" type="autocompleteplus_autosuggest/inject"/>
             <block type="autocompleteplus_autosuggest/autocomplete" />
         </reference>
     </default>
@@ -26,7 +26,6 @@
         <remove name="search.result"/>
         <remove name="left"/>
         <reference name="content">
-            <!--  <block type="catalog/product_list" name="search_result_list" template="autocompleteplus/catalog/product/list.phtml"/> -->
             <block type="core/template" name="search_result_list" template="autocompleteplus/catalog/product/list.phtml"/>
         </reference>
     </autocompleteplus_result_index>
@@ -35,7 +34,6 @@
         <remove name="search.result"/>
         <remove name="left"/>
         <reference name="content">
-            <!--  <block type="catalog/product_list" name="search_result_list" template="autocompleteplus/catalog/product/list.phtml"/> -->
             <block type="core/template" name="search_result_list" template="autocompleteplus/catalog/product/list.phtml"/>
         </reference>
     </instantsearchplus_result_index>

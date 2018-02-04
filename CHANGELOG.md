@@ -18,3 +18,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Install scripts
 - Getting sitemap.xml at the install 
+
+## [3.0.0.2] - 2016-07-16 10:02:00
+### Added
+- Install scripts
+- Getting sitemap.xml at the install 
+
+## [3.0.0.3] - 2016-07-20 10:02:00
+### Modified
+- Code style formatting according to psr standards

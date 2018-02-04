@@ -1,7 +1,6 @@
 <?php
 /**
- * InstantSearchPlus (Autosuggest)
-
+ * InstantSearchPlus (Autosuggest).
  *
  * NOTICE OF LICENSE
  *
@@ -10,11 +9,10 @@
  * http://opensource.org/licenses/osl-3.0.php
  *
  * @category   Mage
- * @package    InstantSearchPlus
+ *
  * @copyright  Copyright (c) 2014 Fast Simon (http://www.instantsearchplus.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
-
 class Autocompleteplus_Autosuggest_Block_Notifications extends Mage_Core_Block_Template
 {
     /**
@@ -25,20 +23,21 @@ class Autocompleteplus_Autosuggest_Block_Notifications extends Mage_Core_Block_T
         /** @var Autocompleteplus_Autosuggest_Model_Mysql4_Notifications_Collection $collection */
         $collection = Mage::getModel('autocompleteplus_autosuggest/notifications')
             ->getCollection();
+
         return $collection->addTypeFilter('alert')->addActiveFilter();
     }
 
-    public function localhostSynced(){
-
+    public function localhostSynced()
+    {
         $helper = Mage::helper('autocompleteplus_autosuggest');
 
-        $isReachable=$helper->getIsReachable();
+        $isReachable = $helper->getIsReachable();
 
-        $syncWasStarted=$helper->getIfSyncWasInitiated();
+        $syncWasStarted = $helper->getIfSyncWasInitiated();
 
-        if(!$isReachable && !$syncWasStarted){
+        if (!$isReachable && !$syncWasStarted) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
