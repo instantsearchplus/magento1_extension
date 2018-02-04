@@ -8,8 +8,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Modified
 - Refactored version
 
-## [3.0.0.1] - 2016-07-10 10:02:00
+## [3.0.0.1] - 2016-07-12 10:02:00
 ### Modified
 - Code style formatting according to psr standards
 ### Added
 - Collection files
+
+## [3.0.0.2] - 2016-07-16 10:02:00
+### Added
+- Install scripts
+- Getting sitemap.xml at the install 
