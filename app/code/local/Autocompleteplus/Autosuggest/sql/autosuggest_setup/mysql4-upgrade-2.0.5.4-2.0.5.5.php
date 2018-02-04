@@ -4,12 +4,12 @@ $installer = $this;
 
 $installer->startSetup();
 $fileIo = new Varien_Io_File();
-$fileIo->open(array('path' => Mage::getBaseDir()));
+$baseDir = Mage::getBaseDir();
+$fileIo->open(array('path' => $baseDir));
 
 // getEdition exist from version 1.12, LICENSE_EE.txt file only exists in EE edition, we need the condition to work on EE version less then 1.11.x.x
-if (!method_exists('Mage', 'getEdition') && $fileIo->isValid('LICENSE_EE.txt') && method_exists('Mage',
-        'getVersion') && version_compare(Mage::getVersion(), '1.10.0.0.', '<') === true
-) {
+if (!method_exists('Mage', 'getEdition') && file_exists($baseDir . DS . 'LICENSE_EE.txt') && method_exists('Mage', 'getVersion') && version_compare(Mage::getVersion(), '1.10.0.0.', '<') === true) {
+
     $res = $installer->run("
     
     DROP TABLE IF EXISTS {$this->getTable('autocompleteplus_pusher')};
@@ -91,8 +91,14 @@ if (!method_exists('Mage', 'getEdition') && $fileIo->isValid('LICENSE_EE.txt') &
 
         ));
 
-    if ($installer->getConnection()->isTableExists($table->getName())) {
-        $installer->getConnection()->dropTable($table->getName());
+    if (method_exists($installer->getConnection(), 'isTableExists')) {
+        if ($installer->getConnection()->isTableExists($table->getName())) {
+            $installer->getConnection()->dropTable($table->getName());
+        }
+    } else if (method_exists($installer, 'tableExists')) {
+        if ($installer->tableExists($table->getName())) {
+            $installer->run("DROP TABLE IF EXISTS {$table->getName()};");
+        }
     }
 
     $installer->getConnection()->createTable($table);

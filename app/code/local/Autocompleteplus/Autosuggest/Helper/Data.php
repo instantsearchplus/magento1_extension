@@ -41,6 +41,11 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         return Mage::getModel('autocompleteplus_autosuggest/config');
     }
 
+    public function getMageVersion()
+    {
+        return Mage::getVersion();
+    }
+
     public function getVersion()
     {
         return (string) Mage::getConfig()->getModuleConfig('Autocompleteplus_Autosuggest')->version;
@@ -439,6 +444,7 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 
     public function updateSavedProductChecksum($product_id, $sku, $store_id, $checksum)
     {
+        return;
         if ($product_id == null || $sku == null) {
             return;
         }
@@ -464,6 +470,7 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 
     public function updateDeletedProductChecksum($table_prefix, $read, $write, $product_id, $sku, $store_id)
     {
+        return;
         if ($product_id == null) {
             return;
         }
@@ -594,6 +601,19 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         return $this->getConfig()->getUUID();
     }
 
+    /**
+     * Deprecated, use getAuthorizationKey()
+     */
+    public function getKey()
+    {
+        return $this->getAuthorizationKey();
+    }
+
+    public function getAuthorizationKey()
+    {
+        return $this->getConfig()->getAuthorizationKey();
+    }
+
     public function getIsReachable()
     {
         return $this->getConfig()->isReachable();
@@ -678,31 +698,19 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
     {
         $collection = Mage::getModel('autocompleteplus_autosuggest/pusher')->getCollection();
 
-        $count = $collection->count();
-
-        if ($count == 0) {
-            return false;
-        } else {
-            return true;
-        }
+        return $collection->getSize() > 0;
     }
 
     public function getPushId()
     {
-        $collection = Mage::getModel('autocompleteplus_autosuggest/pusher')->getCollection()
+        $collection = Mage::getModel('autocompleteplus_autosuggest/pusher')
+            ->getCollection()
             ->addFilter('sent', 0);
 
         $collection->getSelect()->limit(1);
-
         $collection->load();
 
-        $id = '';
-
-        foreach ($collection as $p) {
-            $id = $p->getId();
-        }
-
-        return $id;
+        return $collection->getLastItem()->getId();
     }
 
     public function getPushUrl($id = null)
@@ -711,7 +719,7 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
             $id = $this->getPushId();
         }
 
-        $url = Mage::getUrl();//'',array('pushid'=>$id));
+        $url = Mage::getUrl();
 
         if (strpos($url, 'index.php') !== false) {
             $url = $url.'/autocompleteplus/products/pushbulk/pushid/'.$id;
@@ -758,26 +766,5 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
     protected function _getEncryptionKey()
     {
         return (string) Mage::getConfig()->getNode('global/crypt/key');
-    }
-    
-    public function validateInput($input, $type = "integer", $default = null, $on_failure = null){
-        $validated_input = $default;
-        $sanity_type = FILTER_SANITIZE_NUMBER_INT;
-        $type = strtolower($type);
-        if ($type == "integer" || $type == 'int'){
-            $sanity_type = FILTER_SANITIZE_NUMBER_INT;
-        } else if ($type == 'boolean' || $type == 'bool'){
-            $sanity_type = FILTER_VALIDATE_BOOLEAN;
-        }
-        
-        $filter_input = filter_var($input, $sanity_type, FILTER_NULL_ON_FAILURE);
-        if ($filter_input || ($sanity_type == FILTER_SANITIZE_NUMBER_INT && $filter_input === "0")){
-            $validated_input = $filter_input;
-            $status = settype($validated_input, $type);
-            if (!$status){
-                $validated_input = $on_failure;
-            }
-        }
-        return $validated_input;
     }
 }

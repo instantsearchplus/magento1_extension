@@ -137,6 +137,11 @@ class Autocompleteplus_Autosuggest_Block_Inject extends Mage_Checkout_Block_Cart
     {
         return Mage::getSingleton('checkout/session')->getQuoteId();
     }
+    
+    public function isLoggedInUser(){
+        $session_customer = Mage::getSingleton('customer/session');
+        return $session_customer->isLoggedIn();
+    }
 
     /**
      * Return a formatted string for the <script src> attr.
@@ -156,6 +161,7 @@ class Autocompleteplus_Autosuggest_Block_Inject extends Mage_Checkout_Block_Cart
             'is_admin_user' => $this->_isAdminLoggedIn(),
             'sessionID' => $this->_helper->getSessionId(),
             'QuoteID' => $this->getQuoteId(),
+            'is_user_logged_in'=> $this->isLoggedInUser()
         );
 
         return self::AUTOCOMPLETE_JS_URL.'?'.http_build_query($parameters, '', '&');

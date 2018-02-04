@@ -43,3 +43,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - GET input validation
 ### Removed
 - Magento api usage of changing SERP mode
+
+## [3.0.0.7] - 2016-07-31 10:02:00
+### Modified
+- Use Renderer as Helper Class
+- Use Magento Collections Api to retrieve data
+- Use Curl lib instead of Varie_Http_Client
+### Added
+- Is_loggedin in user info for frontend injection
+- Usage of Varien_Profiler 
+- Use magento api to switch on/off serp
+### Removed
+- Drop old isp_config if exists
+- validateInput method
+- Checksum api

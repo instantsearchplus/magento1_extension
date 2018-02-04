@@ -93,11 +93,13 @@ class Autocompleteplus_Autosuggest_Model_Catalogreport extends Mage_Core_Model_A
     public function getCurrentStoreId()
     {
         if (!$this->_storeId) {
-            $request = $this->getRequest();
-            $helper = Mage::helper('autocompleteplus_autosuggest');
-            $this->_storeId = $helper->validateInput($request->getParam('store_id'), 'integer', null, null);
-            if (!$this->_storeId){
-                $this->_storeId = $helper->validateInput($request->getParam('store', Mage::app()->getStore()->getStoreId()), 'integer', Mage::app()->getStore()->getStoreId(), null);
+            $post = $this->getRequest()->getParams();
+            if (array_key_exists('store_id', $post)) {
+                $this->_storeId = $post['store_id'];
+            } elseif (array_key_exists('store', $post)) {
+                $this->_storeId = $post['store'];
+            } else {
+                $this->_storeId = Mage::app()->getStore()->getStoreId();
             }
         }
 

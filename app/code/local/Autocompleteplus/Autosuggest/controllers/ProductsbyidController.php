@@ -19,9 +19,10 @@ class Autocompleteplus_Autosuggest_ProductsbyidController extends Autocompletepl
     {
         $request = $this->getRequest();
         $response = $this->getResponse();
-        $helper = Mage::helper('autocompleteplus_autosuggest');
-        $storeId = $helper->validateInput($request->getParam('store', Mage::app()->getStore()->getStoreId()), 'integer', 1, null);
-        $id = $helper->validateInput($request->getParam('id'), 'integer', null, null);
+        $storeId = $request->getParam('store', 1);
+        $id = $request->getParam('id');
+
+        Mage::app()->setCurrentStore($storeId);
 
         if (!$id) {
             $returnArr = array(
@@ -49,11 +50,11 @@ class Autocompleteplus_Autosuggest_ProductsbyidController extends Autocompletepl
     {
         $request = $this->getRequest();
         $response = $this->getResponse();
-        $helper = Mage::helper('autocompleteplus_autosuggest');
-        
-        $fromId = $helper->validateInput($request->getParam('id', 0), 'integer', null, null);
-        $storeId = $helper->validateInput($request->getParam('store', Mage::app()->getStore()->getStoreId()), 'integer', null, null);
-        $count = $helper->validateInput($request->getParam('count', 100), 'integer', null, null);
+        $fromId = $request->getParam('id', 0);
+        $storeId = $request->getParam('store', 1);
+        $count = $request->getParam('count', 100);
+
+        Mage::app()->setCurrentStore($storeId);
 
         $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
         $xml = $catalogModel->renderCatalogFromIds($count, $fromId, $storeId);

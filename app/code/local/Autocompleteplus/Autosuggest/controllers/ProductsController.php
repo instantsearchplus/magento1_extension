@@ -32,60 +32,38 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
 
     public function sendAction()
     {
+        Varien_Profiler::start('Autocompleteplus_Autosuggest_Products_Send');
         $response = $this->getResponse();
         $request = $this->getRequest();
-        $helper = Mage::helper('autocompleteplus_autosuggest');
-        
-        $startInd = $helper->validateInput($request->getParam('offset'), 'integer', null, null);
-        $count = $helper->validateInput($request->getParam('count'), 'integer', null, null);
-        if ($count === null || $startInd === null){
-            $returnArr = array(
-                    'status' => self::STATUS_FAILURE,
-                    'error_code' => self::MISSING_PARAMETER,
-                    'error_details' => $this->__('The "offset" and "count" parameters are mandatory'),
-            );
-            $response->setHeader('Content-type', 'application/json');
-            $response->setHttpResponseCode(400);
-            $response->setBody(json_encode($returnArr));
-            return;
-        }
-        $store = $helper->validateInput($request->getParam('store_id'), 'integer', null, null);
-        $storeId = $helper->validateInput($request->getParam('store'), 'integer', $store, null);
-        $orders = (string)$helper->validateInput($request->getParam('orders', ''), 'integer', '', '');    // check that input is integer if exists, if not exists we want it to be "" (string)
-        $monthInterval = (string)$helper->validateInput($request->getParam('month_interval', ''), 'integer', '', '');    // check that input is integer if exists, if not exists we want it to be "" (string)
-        $checksum = (string)$helper->validateInput($request->getParam('checksum', ''), 'integer', '', '');    // check that input is integer if exists, if not exists we want it to be "" (string)
-        
+        $startInd = $request->getParam('offset');
+        $count = $request->getParam('count');
+        $store = $request->getParam('store_id', '');
+        $storeId = $request->getParam('store', $store);
+        $orders = $request->getParam('orders', '');
+        $monthInterval = $request->getParam('month_interval', '');
+        $checksum = $request->getParam('checksum', '');
         $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
+
+        Mage::app()->setCurrentStore($storeId);
 
         $xml = $catalogModel->renderCatalogXml($startInd, $count, $storeId, $orders, $monthInterval, $checksum);
 
         $response->setHeader('Content-type', 'text/xml');
         $response->setBody($xml);
+        Varien_Profiler::stop('Autocompleteplus_Autosuggest_Products_Send');
     }
 
     public function sendupdatedAction()
     {
-        date_default_timezone_set('Asia/Jerusalem');
-
         $request = $this->getRequest();
         $response = $this->getResponse();
-        $helper = Mage::helper('autocompleteplus_autosuggest');
-        
-        $count = $helper->validateInput($request->getParam('count'), 'integer', null, null);
-        $from = $helper->validateInput($request->getParam('from'), 'integer', null, null);
-        if ($count === null || $from === null){
-            $returnArr = array(
-                    'status' => self::STATUS_FAILURE,
-                    'error_code' => self::MISSING_PARAMETER,
-                    'error_details' => $this->__('The "from" and "count" parameters are mandatory'),
-            );
-            $response->setHeader('Content-type', 'application/json');
-            $response->setHttpResponseCode(400);
-            $response->setBody(json_encode($returnArr));
-            return;
-        }
-        $to = $helper->validateInput($request->getParam('to', strtotime('now')), 'integer', strtotime('now'), null);
-        $storeId = $helper->validateInput($request->getParam('store_id'), 'integer', null, null);
+
+        $currentTime = Mage::getSingleton('core/date')->gmtTimestamp();
+
+        $count = $request->getParam('count');
+        $from = $request->getParam('from');
+        $to = $request->getParam('to', $currentTime);
+        $storeId = $request->getParam('store_id', false);
 
         if (!$storeId) {
             $returnArr = array(
@@ -99,6 +77,8 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
 
             return;
         }
+
+        Mage::app()->setCurrentStore($storeId);
 
         $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
 
@@ -124,16 +104,16 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         }
 
         return $this->__('no key inside');
-    }    
-    
+    }
+
     public function versAction()
     {
         $response = $this->getResponse();
+        $get_modules = $this->getRequest()->getParam('modules', false);
         $mage = Mage::getVersion();
         $ext = Mage::helper('autocompleteplus_autosuggest')->getVersion();
         $edition = method_exists('Mage', 'getEdition') ? Mage::getEdition() : 'Community';
         $helper = Mage::helper('autocompleteplus_autosuggest');
-        $get_modules = $helper->validateInput($this->getRequest()->getParam('modules'), 'integer', false, false);
         $uuid = $this->_getConfig()->getUUID();
         $site_url = $helper->getConfigDataByFullPath('web/unsecure/base_url');
         $store_id = Mage::app()->getStore()->getStoreId();
@@ -328,9 +308,13 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
 
         $read = Mage::getSingleton('core/resource')->getConnection('core_read');
         $table_prefix = (string) Mage::getConfig()->getTablePrefix();
-        
-        $request = $this->getRequest();        
-        $store_id = $helper->validateInput($request->getParam('store_id', Mage::app()->getStore()->getStoreId()), 'integer', null, null);
+
+        $post = $this->getRequest()->getParams();
+        if (array_key_exists('store_id', $post)) {
+            $store_id = $post['store_id'];
+        } else {
+            $store_id = Mage::app()->getStore()->getStoreId();          // default
+        }
 
         $sql_fetch = 'SELECT identifier FROM '.$table_prefix.'autocompleteplus_checksum WHERE store_id=?';
         $updates = $read->fetchPairs($sql_fetch, array($store_id));     // empty array if fails
@@ -374,13 +358,11 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         $request = $this->getRequest();
         $response = $this->getResponse();
         $helper = Mage::helper('autocompleteplus_autosuggest');
-        
-        $store_id = $helper->validateInput($request->getParam('store_id', Mage::app()->getStore()->getStoreId()), 'integer', Mage::app()->getStore()->getStoreId(), null);
-        $count = $helper->validateInput($request->getParam('count', self::MAX_NUM_OF_PRODUCTS_CHECKSUM_ITERATION), 'integer', self::MAX_NUM_OF_PRODUCTS_CHECKSUM_ITERATION, null);
-        $start_index = $helper->validateInput($request->getParam('offset', 0), 'integer', 0, null);
-        $php_timeout = $helper->validateInput($request->getParam('timeout', -1), 'integer', -1, null);
-        $is_single = $helper->validateInput($request->getParam('is_single', 0), 'integer', 0, null);
-
+        $store_id = $request->getParam('store_id', Mage::app()->getStore()->getStoreId());
+        $count = $request->getParam('count', self::MAX_NUM_OF_PRODUCTS_CHECKSUM_ITERATION);
+        $start_index = $request->getParam('offset', 0);
+        $php_timeout = $request->getParam('timeout', -1);
+        $is_single = $request->getParam('is_single', 0);
         $uuid = $this->_getConfig()->getUUID();
         $checksum_server = $helper->getServerUrl();
         $collection = Mage::getModel('catalog/product')->getCollection();
@@ -469,106 +451,164 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         $this->getResponse()->setBody(1);
     }
 
-
-    public function pushbulkAction()
+    public function changeSerpAction()
     {
+        $scope_name = 'stores';
         $request = $this->getRequest();
         $response = $this->getResponse();
+
         $helper = Mage::helper('autocompleteplus_autosuggest');
-        
-        $pushId = $helper->validateInput($request->getParam('pushid'), 'integer', null, null);
+        $site_url = $helper->getConfigDataByFullPath('web/unsecure/base_url');
+        $is_new_serp = $request->getParam('new_serp', 0);
 
-        $response->clearHeaders();
-        $response->setHeader('Content-type', 'application/json');
-        $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
-        $count = 100;
-        $server_url = $helper->getServerUrl();
-        $cmd_url = $server_url.'/magento_fetch_products';
+        $store_id = $request->getParam('store_id', 0);
+        if (!$store_id) {
+            $scope_name = 'default';
+        }
 
-        if (!$pushId) {
-            $returnArr = array(
-                'success' => self::MISSING_PARAMETER,
-                'message' => $this->__('Missing push id!'),
+        define('SOAP_WSDL', $site_url.'/api/?wsdl');
+        define('SOAP_USER', 'instant_search');
+        define('SOAP_PASS', 'Rilb@kped3');
+
+        try {
+            $client = new SoapClient(SOAP_WSDL, array('trace' => 1, 'cache_wsdl' => 0));
+            $session = $client->login(SOAP_USER, SOAP_PASS);
+
+            switch ($is_new_serp) {
+
+                case 'status':
+                    $current_state = $client->call($session, 'autocompleteplus_autosuggest.getLayeredSearchConfig', array($store_id));
+                    $resp = array('current_status' => $current_state);
+                    $response->setBody(json_encode($resp));
+
+                    return;
+
+                case '1':
+                    $status = $client->call($session, 'autocompleteplus_autosuggest.setLayeredSearchOn', array($scope_name, $store_id));
+                    break;
+                default:
+                    $status = $client->call($session, 'autocompleteplus_autosuggest.setLayeredSearchOff', array($scope_name, $store_id));
+                    break;
+            }
+
+            $new_state = $client->call($session, 'autocompleteplus_autosuggest.getLayeredSearchConfig', array($store_id));
+
+            $resp = array(
+                'request_state' => $is_new_serp,
+                'new_state' => $new_state,
+                'site_url' => $site_url,
+                'status' => $status,
             );
 
-            $response->setHttpResponseCode(400);
-            $response->setBody(json_encode($returnArr));
+            $response->setBody(json_encode($resp));
+        } catch (Exception $e) {
+            $resp = array('status' => 'exception: '.print_r($e, true));
+            $response->setBody(json_encode($resp));
+            Mage::logException($e);
+            throw $e;
+        }
+    }
 
+    /**
+     * Bulk Push to ISP with JSON
+     * @return void
+     */
+    public function pushbulkAction()
+    {
+        set_time_limit(1800);
+        $request  = $this->getRequest();
+        $response = $this->getResponse();
+    
+        $response->clearHeaders();
+        $response->setHeader('Content-type', 'application/json');
+        $pushId   = $request->getParam('pushid', null);
+        $helper   = Mage::helper('autocompleteplus_autosuggest');
+        $data     = array();
+
+        if(!isset($pushId)){
+            $responseArr = array('success'=>false,'message'=>'Missing pushid!');
+            $response->clearHeaders();
+            $response->setHeader('Content-type', 'application/json');
+            $response->setBody(json_encode($responseArr));
             return;
         }
 
-        $pusher = Mage::getModel('autocompleteplus_autosuggest/pusher')->load($pushid);
+        $pusher = Mage::getModel('autocompleteplus_autosuggest/pusher')->load($pushId);
         $sent = $pusher->getSent();
 
-        switch ($sent) {
-            case self::PUSH_IN_PROGRESS:
-                $responseArr = array('success' => false, 'message' => $this->__('push is in process'));
-                $response->setBody(json_encode($responseArr));
-
-                return;
-            case self::PUSH_COMPLETE:
-                $responseArr = array('success' => false, 'message' => $this->__('push was already sent'));
-                $response->setBody(json_encode($responseArr));
-
-                return;
-            default:
-                $pusher->setSent(1)->save();
-                break;
+        if($sent==1){
+            $responseArr = array('success'=>false,'message'=>'push is in process');
+            $response->setBody(json_encode($responseArr));
+            return;
+        } elseif ($sent==2){
+            $responseArr = array('success'=>false,'message'=>'push was already sent');
+            $response->setBody(json_encode($responseArr));
+            return;
+        } else {
+            $pusher->setSent(1);
+            $pusher->save();
         }
 
-        $offset = $pusher->getoffset();
-        $storeId = $pusher->getstore_id();
-        $to_send = $pusher->getto_send();
+        $offset        = $pusher->getoffset();
+        $count         = 100;
+        $storeId       = $pusher->getstore_id();
+        $to_send       = $pusher->getto_send();
         $total_batches = $pusher->gettotal_batches();
-
-        $xml = $catalogModel->renderCatalogXml($offset, $count, $storeId, '', '', '');
-
-        $url = $helper->getConfigDataByFullPath('web/unsecure/base_url');
+        $catalogModel  = Mage::getModel('autocompleteplus_autosuggest/catalog');
+        $url           = $helper->getConfigDataByFullPath('web/unsecure/base_url');
+        $server_url    = $helper->getServerUrl();
+        $cmd_url       = $server_url . '/magento_fetch_products';
 
         // setting post data and command url
-        $data = array(
-            'uuid' => $this->_getConfig()->getUUID(),
-            'site_url' => $url,
-            'store_id' => $storeId,
-            'authentication_key' => $this->_getConfig()->getAuthenticationKey(),
-            'total_batches' => $total_batches,
-            'batch_number' => $pusher->getbatch_number(),
-            'products' => $xml,
-        );
+        $data['uuid']               = $helper->getUUID();
+        $data['site_url']           = $url;
+        $data['store_id']           = $storeId;
+        $data['authentication_key'] = $helper->getKey();
+        $data['total_batches']      = $total_batches;
+        $data['batch_number']       = $pusher->getbatch_number();
+        $data['products']           =  $catalogModel->renderCatalogXml($offset,$count,$storeId,'','','');
 
-        if ($offset + $count > $to_send) {
+        if ($offset+$count > $to_send) {
             $data['is_last'] = 1;
-            $count = $to_send - $offset;
+            $count=$to_send-$offset;
         }
 
         // sending products
-        $postResponseMessage = $helper->sendPostCurl($cmd_url, $data);
+        $res2 = $helper->sendPostCurl($cmd_url, $data);
+        unset($data['products']);
 
-        if ($postResponseMessage != self::POST_MESSAGE_OK) {
-            $responseArr = array(
-                'success' => false,
-                'message' => $postResponseMessage,
-            );
-
-            $response->setBody(json_encode($responseArr));
-
+        if($res2 !== 'ok') {
+            $responseArr = array('success'=>false,'message'=>$res2);
+            $response->setBody($responseArr);
             return;
         }
 
-        $pusher->setSent(2)->save();
-        $nextPushId = $helper->getPushId();
+
+        $pusher->setSent(2);
+        $pusher->save();
+
+        $nextPushId  = $helper->getPushId();
+        $nextPushUrl = '';
+
+        if($nextPushId!=''){
+            $nextPushUrl=$helper->getPushUrl($nextPushId);
+        }
 
         $totalPushes = Mage::getModel('autocompleteplus_autosuggest/pusher')->getCollection()->getSize();
 
+        $updatedStatus = 'Syncing: push ' . $nextPushId . '/' . $totalPushes;
+        $updatedSuccessStatus = 'Successfully synced '. $count .' products';
+
         $responseArr = array(
-            'success' => true,
-            'updatedStatus' => $this->__('Syncing: push %s/%s', $nextPushId, $totalPushes),
-            'updatedSuccessStatus' => $this->__('Successfully synced %s products', $count),
-            'message' => '',
-            'nextPushUrl' => $nextPushId ? $helper->getPushUrl($nextPushId) : '',
-            'count' => $count,
+            'success'              => true,
+            'updatedStatus'        => $updatedStatus,
+            'updatedSuccessStatus' => $updatedSuccessStatus,
+            'message'              => '',
+            'nextPushUrl'          => $nextPushUrl,
+            'count'                => $count
         );
 
         $response->setBody(json_encode($responseArr));
+
     }
 }

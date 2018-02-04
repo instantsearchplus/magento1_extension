@@ -31,7 +31,7 @@
  *
  * @author      Magento Core Team <core@magentocommerce.com>
  */
-class Autocompleteplus_Autosuggest_Model_Resource_Fulltext_Collection extends Mage_Catalog_Model_Resource_Product_Collection
+class Autocompleteplus_Autosuggest_Model_Resource_Fulltext_Collection extends Mage_Catalog_Model_Resource_Eav_Mysql4_Product_Collection
 {
     protected $list_ids = array();
     protected $is_fulltext_enabled = false;

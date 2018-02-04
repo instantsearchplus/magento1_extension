@@ -5,11 +5,24 @@ $config = Mage::getModel('autocompleteplus_autosuggest/config');
 $row = false;
 $installer->startSetup();
 
-if ($installer->getConnection()->isTableExists($installer->getTable('autocompleteplus_autosuggest/config'))) {
+$tableExists = false;
+$tableName = $installer->getTable('autocompleteplus_autosuggest/config');
+
+if (method_exists($installer->getConnection(), 'isTableExists')) {
+    $tableExists = $installer->getConnection()->isTableExists($tableName);
+} else {
+    $tableExists = $installer->tableExists($tableName);
+}
+if ($tableExists) {
     $select = $installer->getConnection()->select()
-        ->from(array('config' => $installer->getTable('autocompleteplus_autosuggest/config')));
+        ->from(array('config' => $tableName));
     $row = $installer->getConnection()->fetchAll($select);
-    $installer->getConnection()->dropTable($installer->getTable('autocompleteplus_autosuggest/config'));
+
+    if (method_exists($installer->getConnection(), 'dropTable')) {
+        $installer->getConnection()->dropTable($tableName);
+    } else {
+        $installer->run("DROP TABLE IF EXISTS {$tableName};");
+    }
 }
 
 if ($row && isset($row[0]['licensekey']) && isset($row[0]['authkey'])) {

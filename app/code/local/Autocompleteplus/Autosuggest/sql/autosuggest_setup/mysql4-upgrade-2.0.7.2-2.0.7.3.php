@@ -5,18 +5,25 @@ $tableName = $this->getTable('autocompleteplus_batches');
 $columnName = 'update_date';
 $checkColumnType = false;
 $fileIo = new Varien_Io_File();
-$fileIo->open(array('path' => Mage::getBaseDir()));
+$baseDir = Mage::getBaseDir();
+$fileIo->open(array('path' => $baseDir));
 
 /*
  * Check if getEdition method does not exist in Mage
  * Check if Enterprise Edition license exists in Magento root
  * Check if getVersion method exists in Mage
  * Compare versions to check if less than 1.10.0.0
+ * Required to use file_exists because Varien_Io_File isValid missing < 1.8CE
  */
-if (!method_exists('Mage', 'getEdition') && $fileIo->isValid('LICENSE_EE.txt') && method_exists('Mage', 'getVersion') && version_compare(Mage::getVersion(), '1.10.0.0.', '<') === true) {
+// @codingStandardsIgnoreLine
+if (!method_exists('Mage', 'getEdition') && file_exists($baseDir . DS . 'LICENSE_EE.txt') && method_exists('Mage', 'getVersion') && version_compare(Mage::getVersion(), '1.10.0.0.', '<') === true) {
     $tableExists = $installer->getConnection()->showTableStatus($tableName);
 } else {
-    $tableExists = $installer->getConnection()->isTableExists($tableName);
+    if (method_exists($installer->getConnection(), 'isTableExists')) {
+        $tableExists = $installer->getConnection()->isTableExists($tableName);
+    } else {
+        $tableExists = $installer->tableExists($tableName);
+    }
 }
 
 if ($tableExists) {
@@ -41,7 +48,12 @@ if ($tableExists) {
             if (!$checkColumnType) {
                 $installer->startSetup();
 
-                $installer->getConnection()->dropTable($tableName);
+                if (method_exists($installer->getConnection(), 'dropTable')) {
+                    $installer->getConnection()->dropTable($tableName);
+                } else {
+                    $installer->run("DROP TABLE IF EXISTS {$tableName};");
+                }
+
                 $installer->getConnection()->newTable($tableName)
                     ->addColumn('id', Varien_Db_Ddl_Table::TYPE_INTEGER, 11, array(
                         'identity' => true,

@@ -1,10 +1,9 @@
 <?php
 
-class Autocompleteplus_Autosuggest_Model_Mysql4_Pusher_Collection extends Mage_Core_Model_Resource_Db_Collection_Abstract
+/**
+ * For Magento < 1.6 backward compatibility
+ */
+class Autocompleteplus_Autosuggest_Model_Mysql4_Pusher_Collection extends Autocompleteplus_Autosuggest_Model_Resource_Pusher_Collection
 {
-    public function _construct() {
-        $this->_init('autocompleteplus_autosuggest/pusher');
-    }
-
 
 }

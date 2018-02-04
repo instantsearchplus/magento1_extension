@@ -4,16 +4,11 @@ class Autocompleteplus_Autosuggest_Adminhtml_Autocompleteplus_PushController ext
 {
     public function startpushAction()
     {
-        $response = $this->getResponse();
-
         $service = Mage::getModel('autocompleteplus_autosuggest/service');
         $service->populatePusher();
 
-        $block = $this->getLayout()->createBlock('autocompleteplus_autosuggest/adminhtml_process');
-        $block->setTemplate('autocompleteplus/process.phtml');
-
-        $response->setBody($block->toHtml());
-        $response->sendResponse();
+        $this->loadLayout();
+        $this->renderLayout();
     }
 
     protected function _isAllowed()

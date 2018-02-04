@@ -214,6 +214,31 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
     }
 
     /**
+     * Update robots.txt file with ISP sitemap URL
+     * @param $responseData
+     */
+    protected function _updateRobotsTxt($responseData)
+    {
+        $fileIo = new Varien_Io_File();
+        $baseDir = Mage::getBaseDir();
+        $fileIo->open(array('path' => $baseDir));
+        $robotsTxtContent = $fileIo->read('robots.txt');
+        $siteMapUrl = 'Sitemap:http://magento.instantsearchplus.com/ext_sitemap?u='.$responseData['uuid'].PHP_EOL;
+        $robotsTxtExists = $fileIo->fileExists('robots.txt');
+        $baseDirWritable = $fileIo->isWriteable($baseDir);
+        $siteMapExists = strpos($robotsTxtContent, $siteMapUrl) === false;
+        $robotsTxtWritable = $fileIo->isWriteable('robots.txt');
+
+        if ($robotsTxtExists && $robotsTxtWritable && !$siteMapExists) {
+            $fileIo->write('robots.txt', $robotsTxtContent . $siteMapUrl);
+        } else if (!$robotsTxtExists && $baseDirWritable) {
+            $fileIo->write('robots.txt', $siteMapUrl);
+        } else {
+            $this->_sendError('Unable to properly update robots.txt with ISP Sitemap');
+        }
+    }
+
+    /**
      * Generate Config for AutocompletePlus.
      *
      * @param string $UUID
@@ -225,19 +250,6 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
      */
     public function generateConfig($UUID = null, $key = null)
     {
-
-        $client = new Varien_Http_Client();
-        $fileIo = new Varien_Io_File();
-        $fileIo->open(array('path' => Mage::getBaseDir()));
-        $robotsTxtContent = $fileIo->read('robots.txt');
-
-        $config = array(
-            'adapter' => 'Zend_Http_Client_Adapter_Curl',
-            'curloptions' => array(
-                CURLOPT_RETURNTRANSFER => 1,
-            ),
-        );
-
         $params = array(
             'site'       => $this->_getHelper()->getConfigDataByFullPath('web/unsecure/base_url'),
             'email'      => Mage::getStoreConfig(self::XML_STORE_EMAIL_CONFIG),
@@ -250,60 +262,36 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
             $params['key']  = $key;
         }
 
-        $client->setUri($this->getEndpoint().'/install')
-            ->setMethod('POST')
-            ->setConfig($config);
+        // @codingStandardsIgnoreStart
+        /**
+         * Due to backward compatibility issues with Magento < 1.8.1 and cURL/Zend
+         * We need to use PHP's implementation of cURL directly rather than Zend or Varien
+         */
+        $client = curl_init($this->getEndpoint() . '/install');
+        curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($client, CURLOPT_POSTFIELDS, $params);
 
-        $client->setParameterPost($params);
+        $response = curl_exec($client);
+        curl_close($client);
+        // @codingStandardsIgnoreEnd
 
-        try {
-            $response = $client->request();
+        if ($response) {
+            $responseData = json_decode($response, true);
 
-            if ($response->isSuccessful()) {
-                $responseData = json_decode($response->getBody(), true);
-
-                /*
-                 * Validate uuid exists
-                 */
-                if (isset($responseData['uuid']) && strlen($responseData['uuid']) > 50) {
-                    Mage::log('Registration failed - please check response below', null, 'autocomplete.log', true);
-                    $this->_sendError('Could not get license string.');
-
-                    return false;
-                } elseif (!isset($responseData['uuid'])) {
-                    Mage::log('Registration failed - please check response below', null, 'autocomplete.log', true);
-                    $this->_sendError('Could not get license string.');
-
-                    return false;
-                }
-
-                $siteMapUrl = 'Sitemap:http://magento.instantsearchplus.com/ext_sitemap?u='.$responseData['uuid'].PHP_EOL;
-                if ($fileIo->fileExists('robots.txt')) {
-                    if (strpos($robotsTxtContent, $siteMapUrl) === false) {
-                        if ($fileIo->isWriteable('robots.txt')) {
-                            $fileIo->write('robots.txt', $robotsTxtContent.$siteMapUrl);
-                        } else {
-                            //write message that file is not writteble
-                            $this->_sendError('File '.$fileIo->pwd().DS.'robots.txt is not writable.');
-                        }
-                    }
-                } else {
-                    //create file
-                    if ($fileIo->isWriteable(Mage::getBaseDir())) {
-                        //create robots sitemap
-                        $fileIo->write('robots.txt', $siteMapUrl);
-                    } else {
-                        //write message that directory is not writeable
-                        $this->_sendError('Directory '.Mage::getBaseDir().' is not writable..');
-                    }
-                }
+            /*
+             * Validate uuid exists
+             */
+            if (isset($responseData['uuid']) && strlen($responseData['uuid']) > 50) {
+                Mage::log('Registration failed - please check response below', null, 'autocomplete.log', true);
+                $this->_sendError('Could not get license string.');
+                return false;
+            } elseif (!isset($responseData['uuid'])) {
+                Mage::log('Registration failed - please check response below', null, 'autocomplete.log', true);
+                $this->_sendError('Could not get license string.');
+                return false;
             }
-        } catch (Exception $e) {
-            $responseData['uuid'] = 'failed';
-            $errorMessage = $e->getMessage();
-            Mage::logException($e);
-            Mage::log('Install failed with a message: '.$e->getMessage(), null, 'autocomplete.log', true);
-            $this->_sendError($e->getMessage());
+
+            $this->_updateRobotsTxt($responseData);
         }
 
         $this->setAuthorizationKey($responseData['authentication_key']);
@@ -334,19 +322,26 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
      */
     protected function _sendError($message = 'No Message Provided')
     {
-        $errClient = new Varien_Http_Client();
-        $errClient->setUri($this->getEndpoint().'/install_error')
-            ->setMethod('POST');
-
-        $errClient->setParameterPost(array(
+        $params = array(
             'site' => $this->_getHelper()->getConfigDataByFullPath('web/unsecure/base_url'),
             'msg' => $message,
             'email' => Mage::getStoreConfig(self::XML_STORE_EMAIL_CONFIG),
             'multistore' => $this->_getHelper()->getMultiStoreDataJson(),
             'f' => $this->getModuleVersion(),
-        ));
+        );
 
-        return $errClient->request();
+        // @codingStandardsIgnoreStart
+        /**
+         * Due to backward compatibility issues with Magento < 1.8.1 and cURL/Zend
+         * We need to use PHP's implementation of cURL directly rather than Zend or Varien
+         */
+        $client = curl_init($this->getEndpoint() . '/install_error');
+        curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($client, CURLOPT_POSTFIELDS, $params);
+        $response = curl_exec($client);
+        curl_close($client);
+        // @codingStandardsIgnoreEnd
+        return $response;
     }
 
     /**

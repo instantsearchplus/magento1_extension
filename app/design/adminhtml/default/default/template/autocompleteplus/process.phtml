@@ -1,0 +1,137 @@
+<?php
+$helper = Mage::helper('autocompleteplus_autosuggest');
+$pushId = $helper->getPushId();
+$totalPushes = Mage::getModel('autocompleteplus_autosuggest/pusher')->getCollection()->getSize();
+$pushUrl = '';
+$updateUrl = '';
+
+if ($pushId != '') {
+    $pushUrl = $helper->getPushUrl($pushId);
+}
+?>
+<style type="text/css">
+	ul { list-style-type:none; padding:0; margin:0; }
+	li { margin-left:0; border:1px solid #ccc; margin:2px; padding:2px 2px 2px 2px; font:normal 12px sans-serif; }
+	img { margin-right:5px; }
+</style>
+<ul>
+	<li>
+        <img src="<?php echo $this->getSkinUrl('images/note_msg_icon.gif');?>" class="v-middle" style="margin-right:5px"/>
+        <?php echo $this->__('Starting initial store product sync with InstantSearch+'); ?>
+    </li>
+
+    <li style="background-color:#FFD;">
+        <img src="<?php echo $this->getSkinUrl('images/fam_bullet_error.gif'); ?>" class="v-middle" style="margin-right:5px"/>
+        <?php echo $this->__('Warning: Please do not close this tab until sync is complete'); ?>
+	</li>
+
+    <li id="liFinished" style="display:none;">
+        <img src="<?php echo $this->getSkinUrl('images/note_msg_icon.gif'); ?>" class="v-middle" style="margin-right:5px"/>
+        <?php echo $this->__(' Initial Product Sync is finished. '); ?>
+        <span id="liFinished_count">0</span>&nbsp;<?php echo $this->__('products were synced'); ?>
+	</li>
+</ul>
+
+<script type="text/javascript">
+var config = <?php echo Mage::helper('core')->jsonEncode($this->_pushConfig); ?>;
+config.tpl = new Template(config.template);
+config.tplTxt = new Template(config.text);
+config.tplSccTxt = new Template(config.successText);
+
+var url= "<?php echo $pushUrl; ?>";
+var updateUrl = "<?php echo $updateUrl; ?>";
+
+var count=0;
+
+if(url!=""){
+    sendImportData(url);
+}else{
+    $("liFinished").show();
+    $("liFinished_count").update(count);
+    $("synced-rows").hide()
+}
+
+function sendImportData(url) {
+
+    if (!$("updatedRows")) {
+        Element.insert($("liFinished"), {
+            before: config.tpl.evaluate({
+                style: "background-color: #FFD;",
+                image: config.styles.loader,
+                text: "<?php echo $this->__('Syncing: push %s/%s', $pushId, $totalPushes); ?>",
+                id: "updatedRows"
+            })
+        });
+    }
+
+    new Ajax.Request(url, {
+      method: "get",
+      onSuccess: function(transport) {
+
+        if (transport.responseText.isJSON()) {
+                var res=transport.responseText.evalJSON();
+
+                if(!res){
+                    Element.insert($("updatedRows"), {
+                        before: config.tpl.evaluate({
+                            style: "background-color:"+config.styles.error.bg,
+                            image: config.styles.error.icon,
+                            text: res.message,
+                            id: "error-"+makeid()
+                        })
+                    });
+
+                } else {
+
+                    if (!$("synced-rows")){
+                        Element.insert($("updatedRows"), {
+                            before: config.tpl.evaluate({
+                                style: "background-color:"+config.styles.message.bg,
+                                image: config.styles.message.icon,
+                                text: res.updatedSuccessStatus,
+                                id: "synced-rows"
+                            })});
+                    }else{
+                        $("synced-rows_status").update(res.updatedSuccessStatus);
+                    }
+
+                        url=res.nextPushUrl;
+
+                        count+=res.count;
+
+                        if(url!=""){
+                            $("updatedRows_status").update(res.updatedStatus);
+                            sendImportData(url);
+                        }else{
+                            $("liFinished").show();
+                            $("liFinished_count").update(count);
+                            $("updatedRows").hide()
+                            $("synced-rows").hide()
+                        }
+
+                    }
+        } else {
+            Element.insert($("updatedRows"), {
+                before: config.tpl.evaluate({
+                    style: "background-color:"+config.styles.error.bg,
+                    image: config.styles.error.icon,
+                    text: transport.responseText.escapeHTML(),
+                    id: "error-"+makeid()
+                })
+            });
+        }
+      }
+    });
+}
+
+function makeid()
+{
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 5; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
+</script>

@@ -63,11 +63,7 @@ class Autocompleteplus_Autosuggest_CategoriesController extends Mage_Core_Contro
     {
         $storeContext = Mage::app()->getStore()->getStoreId();
         $tree = Mage::getResourceSingleton('catalog/category_tree')->load();
-        
-        $request = $this->getRequest();
-        $helper = Mage::helper('autocompleteplus_autosuggest');
-        $store = $helper->validateInput($request->getParam('store', $storeContext), 'integer', $storeContext, $storeContext);
-        
+        $store = $this->getRequest()->getParam('store', $storeContext);
         $parentId = Mage::app()->getStore($store)->getRootCategoryId();
 
         $root = $tree->getNodeById($parentId);

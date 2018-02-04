@@ -18,17 +18,20 @@ class Autocompleteplus_Autosuggest_SearchesController extends Mage_Core_Controll
     public function sendAction()
     {
         set_time_limit(1800);
-        
-        $helper = Mage::helper('autocompleteplus_autosuggest');
+
         $post = $this->getRequest()->getParams();
-        
-        $startInd = $helper->validateInput($post['offset'], 'integer', 0, null);
-        $count = $helper->validateInput($post['count'], 'integer', 0, null);
 
 //        $enabled= Mage::getStoreConfig('autocompleteplus/config/enabled');
 //        if($enabled=='0'){
 //            die('The user has disabled autocompleteplus.');
 //        }
+
+        $startInd = $post['offset'];
+        if (!$startInd) {
+            $startInd = 0;
+        }
+
+        $count = $post['count'];
 
         //maxim products on one page is 10000
         if (!$count || $count > 10000) {

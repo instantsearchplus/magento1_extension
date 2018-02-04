@@ -139,27 +139,18 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
 
     protected function _sendUpdate($data)
     {
-        $client = new Varien_Http_Client();
-        $config = array(
-            'adapter' => 'Zend_Http_Client_Adapter_Curl',
-            'curloptions' => array(
-                CURLOPT_RETURNTRANSFER => 1,
-            ),
-        );
-        $client->setUri(self::API_UPDATE_URI)
-            ->setMethod('POST')
-            ->setConfig($config);
-
-        if (!empty($data)) {
-            $client->setParameterPost($data);
-        }
-
-        return $client->request();
+        // @codingStandardsIgnoreStart
+        $client = curl_init(self::API_UPDATE_URI);
+        curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($client, CURLOPT_POSTFIELDS, $data);
+        $response = curl_exec($client);
+        curl_close($client);
+        // @codingStandardsIgnoreEnd
+        return $response;
     }
 
     public function catalog_product_save_after($observer)
     {
-        date_default_timezone_set('Asia/Jerusalem');
         $product = $observer->getProduct();
         $origData = $observer->getProduct()->getOrigData();
         $storeId = $product->getStoreId();
@@ -172,7 +163,8 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                 $this->_writeproductDeletion($oldSku, $productId, $storeId, $product);
             }
         }
-        $dt = strtotime('now');
+        $dt = Mage::getSingleton('core/date')->gmtTimestamp();
+        //$dt = Mage::getSingleton('core/date')->gmtDate();
         $simple_product_parents = ($product->getTypeID() == 'simple') ? Mage::getModel('catalog/product_type_configurable')->getParentIdsByChild($product->getId()) : array();
 
         $product_stores = ($storeId == 0 && method_exists($product, 'getStoreIds')) ? $product->getStoreIds() : array($storeId);
@@ -246,6 +238,32 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         }
     }
 
+    public function catalog_product_save_after_real($observer)
+    {
+        $product = $observer->getProduct();
+
+        $productId = $product->getId();
+
+        $sku = $product->getSku();
+
+        try {
+
+            $updates = Mage::getModel('autocompleteplus_autosuggest/batches')->getCollection()
+                ->addFieldToFilter('product_id', array('null' => true))
+                ->addFieldToFilter('sku', $sku)
+            ;
+
+            foreach ($updates as $update) {
+                $update->setProductId($productId);
+
+                $update->save();
+            }
+
+        } catch (Exception $e) {
+            Mage::logException($e);
+        }
+    }
+
     protected function _writeproductDeletion($sku, $productId, $storeId, $product = null)
     {
         $dt = strtotime('now');
@@ -266,7 +284,7 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                 }
                 foreach ($product_stores as $product_store) {
                     $batches = Mage::getModel('autocompleteplus_autosuggest/batches')->getCollection()
-                        ->addFieldToFilter('product_id', $configurable_product)
+                        ->addFieldToFilter('product_id', $productId)
                         ->addFieldToFilter('store_id', $product_store);
 
                     // @codingStandardsIgnoreLine
@@ -278,7 +296,7 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                             ->save();
                     } else {
                         $newBatch = Mage::getModel('autocompleteplus_autosuggest/batches');
-                        $newBatch->setProductId($configurable_product)
+                        $newBatch->setProductId($productId)
                             ->setStoreId($product_store)
                             ->setUpdateDate($dt)
                             ->setAction('update')
@@ -372,13 +390,17 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
      */
     public function webhook_service_call()
     {
-        $curl = new Varien_Http_Adapter_Curl();
-        $curl->setConfig(array(
-            'timeout' => static::WEBHOOK_CURL_TIMEOUT_LENGTH,
-        ));
-        $curl->write(Zend_Http_Client::GET, $this->_getWebhookObjectUri());
-        $curl->read();
-        $curl->close();
+        // @codingStandardsIgnoreStart
+        /**
+         * Due to backward compatibility issues with Magento < 1.8.1 and cURL/Zend
+         * We need to use PHP's implementation of cURL directly rather than Zend or Varien
+         */
+        $client = curl_init($this->_getWebhookObjectUri());
+        curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($client);
+        curl_close($client);
+        // @codingStandardsIgnoreEnd
+        return $response;
     }
 
     /**
