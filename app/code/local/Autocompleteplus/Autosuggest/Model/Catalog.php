@@ -380,7 +380,7 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
 
     /**
      * GetAttributesToSelect
-     * 
+     *
      * @return array
      */
     protected function _getAttributesToSelect()
@@ -404,6 +404,7 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             'special_from_date',
             'special_to_date',
             'sku',
+            'price_type'
         );
 
         if ($this->canUseAttributes()) {

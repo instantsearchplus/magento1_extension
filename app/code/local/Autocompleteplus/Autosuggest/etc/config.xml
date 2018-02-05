@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Autocompleteplus_Autosuggest>
-            <version>3.0.19</version>
+            <version>3.1.0</version>
             <url>http://autocompleteplus.com/</url>
             <modulename>Autocompleteplus_Autosuggest</modulename>
         </Autocompleteplus_Autosuggest>
@@ -36,6 +36,11 @@
                     <fulltext_collection>Autocompleteplus_Autosuggest_Model_Resource_Fulltext_Collection</fulltext_collection>
                 </rewrite>
             </catalogsearch_resource>
+            <core>
+                <rewrite>
+                    <email_template>Autocompleteplus_Autosuggest_Model_Email_Template</email_template>
+                </rewrite>
+            </core>
         </models>
         <events>
             <controller_action_postdispatch_checkout_cart_index>

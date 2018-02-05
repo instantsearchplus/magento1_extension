@@ -496,7 +496,6 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                 && count($this->getConfigurableAttributes()) > 0
             ) {
                 $variants = array();
-
                 foreach ($this->getConfigurableAttributes()
                          as $attrName => $confAttrN) {
                     if (is_array($confAttrN)
@@ -604,10 +603,10 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                                         $attribute->getAttributeCode()
                                     ),
                                 ), utf8_encode(
-                                htmlspecialchars(
-                                    $attribute->getFrontend()->getValue($child_product)
-                                )
-                            ), $productVariation
+                                    htmlspecialchars(
+                                        $attribute->getFrontend()->getValue($child_product)
+                                    )
+                                ), $productVariation
                             );
                         }
                     }
@@ -716,6 +715,8 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             $priceRange = $this->getPriceRange();
         } elseif ($this->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_SIMPLE) {
             $priceRange = array('price_min' => 0, 'price_max' => 0);
+        } elseif ($this->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE) {
+            $priceRange = $this->getBundlePriceRange($this->getProduct());
         } else {
             $priceRange = array('price_min' => 0, 'price_max' => 0);
         }
@@ -728,7 +729,11 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
         $specialPrice = $this->getProduct()->getSpecialPrice();
         if (!is_null($specialPrice) && $specialPrice != false) {
             if (Mage::app()->getLocale()->isStoreDateInInterval($this->getStoreId(), $specialFromDate, $specialToDate)) {
-                $calculatedFinalPrice = $this->getProduct()->getSpecialPrice();
+                if ($this->getProduct()->getTypeId() != Mage_Catalog_Model_Product_Type::TYPE_BUNDLE) {
+                    $calculatedFinalPrice = $this->getProduct()->getSpecialPrice();
+                } else {
+                    $calculatedFinalPrice = $priceRange['price_min'];
+                }
             }
         }
 
@@ -768,7 +773,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             $this->getProduct()->getSku(), $productElement);
 
         $this->getXmlElement()->createChild('url_additional', false,
-            $this->_getAdditionalProductUrl(), $productElement);
+                $this->_getAdditionalProductUrl(), $productElement);
 
         if ($productRating) {
             $this->getXmlElement()->createChild('review', false, $productRating->getRatingSummary(),
@@ -831,9 +836,21 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             implode(';', $categories), $productElement);
 
         $this->getXmlElement()->createChild('meta_title', false,
-            $this->getProduct()->getMetaTitle(), $productElement);
+                $this->getProduct()->getMetaTitle(), $productElement);
         $this->getXmlElement()->createChild('meta_description', false,
-            $this->getProduct()->getMetaDescription(), $productElement);
+                $this->getProduct()->getMetaDescription(), $productElement);
+    }
+
+    protected function getBundlePriceRange($product) {
+
+        $_priceModel  = $product->getPriceModel();
+
+        list($_minimalPriceTax, $_maximalPriceTax) = $_priceModel->getTotalPrices($product, null, null, false);
+
+        return array(
+            'price_min' => $_minimalPriceTax,
+            'price_max' => $_maximalPriceTax
+        );
     }
 
     protected function _getOutputHelper()
@@ -848,7 +865,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
     public function _getAdditionalProductUrl()
     {
         $is_get_url_path_supported = true;
-        if (method_exists('Mage', 'getVersionInfo')) {
+        if (method_exists('Mage', 'getVersionInfo')) {  
             /**
              * GetUrlPath is not supported on EE 1.13... & 1.14...
              */
