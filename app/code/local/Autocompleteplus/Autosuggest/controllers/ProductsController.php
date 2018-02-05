@@ -107,6 +107,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         $from = $request->getParam('from');
         $to = $request->getParam('to', false);
         $storeId = $request->getParam('store_id', false);
+        $page = $request->getParam('page', 1);
 
         if (!$storeId) {
             $returnArr = array(
@@ -129,7 +130,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
 
         $response->clearHeaders();
         $response->setHeader('Content-type', 'text/xml');
-        $xml = $catalogModel->renderUpdatesCatalogXml($count, $from, $to, $storeId);
+        $xml = $catalogModel->renderUpdatesCatalogXml($count, $from, $to, $storeId, $page);
         $response->setBody($xml);
     }
 

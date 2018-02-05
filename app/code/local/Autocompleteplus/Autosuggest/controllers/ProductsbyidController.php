@@ -51,6 +51,7 @@ class Autocompleteplus_Autosuggest_ProductsbyidController extends Autocompletepl
         $response = $this->getResponse();
         $storeId = $request->getParam('store', 1);
         $id = $request->getParam('id');
+        $force = $request->getParam('force');
 
         Mage::app()->setCurrentStore($storeId);
 
@@ -69,8 +70,8 @@ class Autocompleteplus_Autosuggest_ProductsbyidController extends Autocompletepl
 
         $ids = explode(',', $id);
         $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
-        $xml = $catalogModel->renderCatalogByIds($ids, $storeId);
-        
+        $xml = $catalogModel->renderCatalogByIds($ids, $storeId, $force);
+
         $response->clearHeaders();
         $response->setHeader('Content-type', 'text/xml');
         $response->setBody($xml);
@@ -93,7 +94,7 @@ class Autocompleteplus_Autosuggest_ProductsbyidController extends Autocompletepl
 
         $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
         $xml = $catalogModel->renderCatalogFromIds($count, $fromId, $storeId);
-        
+
         $response->clearHeaders();
         $response->setHeader('Content-type', 'text/xml');
         $response->setBody($xml);

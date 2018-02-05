@@ -895,8 +895,12 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             $this->getOrderCount(), $productElement);
         $this->getXmlElement()->createChild('product_status', false,
             (($this->getProduct()->getStatus() == Mage_Catalog_Model_Product_Status::STATUS_ENABLED) ? 1 : 0), $productElement);
+
+        $source_creation_date = $this->getProduct()->getNewsFromDate();
+        $source_creation_date = !$source_creation_date ? $this->getProduct()->getCreatedAt() : $source_creation_date;
         $this->getXmlElement()->createChild('creation_date', false,
-            Mage::getModel('core/date')->timestamp($this->getProduct()->getCreatedAt()), $productElement);
+            Mage::getModel('core/date')->timestamp($source_creation_date), $productElement);
+
         $this->getXmlElement()->createChild('updated_date', false,
             Mage::getModel('core/date')->timestamp($this->getProduct()->getUpdatedAt()), $productElement);
 

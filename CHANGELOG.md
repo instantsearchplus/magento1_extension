@@ -205,3 +205,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Restrict the list of attributes for custom field for image to text type
 - Get alternative way to find out if item is_in_stock and delete if not (if owner does not want to show out of stock items)
 - Make matching of variant attributes by attribute_code
+
+## [3.2.2] - 2017-10-20 14:07:00
+### Added
+- Pagination in send updates request
+- Sending not indexed updates
+- Force flag on get_by_id request
+- Custom new from/to support
