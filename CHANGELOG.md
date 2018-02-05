@@ -219,3 +219,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Timezone to vers request
 ### Fixed
 - Special price from/to support
+
+## [3.2.4] - 2017-12-27 14:14:00
+### Added
+- Meta_keyword, meta_description, meta_title support
+

@@ -472,6 +472,7 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             'price',
             'meta_title',
             'meta_description',
+            'meta_keyword',
             'special_price',
             'special_from_date',
             'special_to_date',

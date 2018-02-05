@@ -939,6 +939,8 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
         $this->getXmlElement()->createChild('categories', false,
             implode(';', $categories), $productElement);
 
+        $this->getXmlElement()->createChild('meta_keywords', false,
+            $this->getProduct()->getMetaKeyword(), $productElement);
         $this->getXmlElement()->createChild('meta_title', false,
             $this->getProduct()->getMetaTitle(), $productElement);
         $this->getXmlElement()->createChild('meta_description', false,
