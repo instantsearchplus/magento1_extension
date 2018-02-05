@@ -117,3 +117,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Miniform url change handle
 - Special price from/to support
 - Xml headers for products/updates fetch
+
+## [3.0.19] - 2017-01-24 13:00:00
+### Added
+- Option to fetch variant attributes by frontend_label if store_label does not exist

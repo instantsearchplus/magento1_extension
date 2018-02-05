@@ -496,6 +496,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                 && count($this->getConfigurableAttributes()) > 0
             ) {
                 $variants = array();
+
                 foreach ($this->getConfigurableAttributes()
                          as $attrName => $confAttrN) {
                     if (is_array($confAttrN)
@@ -581,31 +582,32 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                         $attributes = $child_product->getAttributes();
                         foreach ($attributes as $attribute) {
                             if (!$attribute['is_configurable']
-                                || !in_array($attribute['store_label'], $variants)
+                                || (!in_array($attribute['store_label'], $variants) && (!in_array($attribute['frontend_label'], $variants)))
                             ) {
                                 continue;
                             }
 
-                            if (!$attribute['store_label']) {
+                            if (!$attribute['store_label'] && !$attribute['frontend_label']) {
                                 // skip variant attribute without a name
                                 continue;
                             }
 
+                            $variant_name = isset($attribute['store_label'])? $attribute['store_label'] : $attribute['frontend_label'];
                             $this->getXmlElement()->createChild(
                                 'variant_attribute',
                                 array(
                                     'is_configurable' => 1,
                                     'is_filterable' => $attribute->getIsFilterable(),
-                                    'name' => $attribute['store_label'],
+                                    'name' => $variant_name,
                                     'name_code' => $attribute->getId(),
                                     'value_code' => $child_product->getData(
                                         $attribute->getAttributeCode()
                                     ),
                                 ), utf8_encode(
-                                    htmlspecialchars(
-                                        $attribute->getFrontend()->getValue($child_product)
-                                    )
-                                ), $productVariation
+                                htmlspecialchars(
+                                    $attribute->getFrontend()->getValue($child_product)
+                                )
+                            ), $productVariation
                             );
                         }
                     }
@@ -719,7 +721,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
         }
 
         $url = Mage::helper('catalog/product')->getProductUrl($this->getProduct());
-        
+
         $specialFromDate = $this->getProduct()->getSpecialFromDate();
         $specialToDate = $this->getProduct()->getSpecialToDate();
         $calculatedFinalPrice = $this->getProduct()->getFinalPrice();
@@ -766,7 +768,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             $this->getProduct()->getSku(), $productElement);
 
         $this->getXmlElement()->createChild('url_additional', false,
-                $this->_getAdditionalProductUrl(), $productElement);
+            $this->_getAdditionalProductUrl(), $productElement);
 
         if ($productRating) {
             $this->getXmlElement()->createChild('review', false, $productRating->getRatingSummary(),
@@ -795,6 +797,17 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
         $this->getXmlElement()->createChild('updated_date', false,
             Mage::getModel('core/date')->timestamp($this->getProduct()->getUpdatedAt()), $productElement);
 
+        if ($this->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_SIMPLE) {
+            $this->getXmlElement()->createChild('product_parents', false,
+                implode(',', $this->getSimpleProductParent()), $productElement);
+        }
+
+        if ($this->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE) {
+            $this->getXmlElement()->createChild('simpleproducts', false,
+                implode(',', $this->getConfigurableChildrenIds()), $productElement);
+            $this->renderProductVariantXml($productElement);
+        }
+
         if ($this->canUseAttributes()) {
             $attributeSetId = $this->getProduct()->getAttributeSetId();
 
@@ -814,24 +827,13 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             }
         }
 
-        if ($this->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_SIMPLE) {
-            $this->getXmlElement()->createChild('product_parents', false,
-                implode(',', $this->getSimpleProductParent()), $productElement);
-        }
-
-        if ($this->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE) {
-            $this->getXmlElement()->createChild('simpleproducts', false,
-                implode(',', $this->getConfigurableChildrenIds()), $productElement);
-            $this->renderProductVariantXml($productElement);
-        }
-
         $this->getXmlElement()->createChild('categories', false,
             implode(';', $categories), $productElement);
 
         $this->getXmlElement()->createChild('meta_title', false,
-                $this->getProduct()->getMetaTitle(), $productElement);
+            $this->getProduct()->getMetaTitle(), $productElement);
         $this->getXmlElement()->createChild('meta_description', false,
-                $this->getProduct()->getMetaDescription(), $productElement);
+            $this->getProduct()->getMetaDescription(), $productElement);
     }
 
     protected function _getOutputHelper()
@@ -846,7 +848,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
     public function _getAdditionalProductUrl()
     {
         $is_get_url_path_supported = true;
-        if (method_exists('Mage', 'getVersionInfo')) {  
+        if (method_exists('Mage', 'getVersionInfo')) {
             /**
              * GetUrlPath is not supported on EE 1.13... & 1.14...
              */
