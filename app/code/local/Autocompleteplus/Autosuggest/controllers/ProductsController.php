@@ -105,7 +105,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
 
         $count = $request->getParam('count');
         $from = $request->getParam('from');
-        $to = $request->getParam('to', $currentTime);
+        $to = $request->getParam('to', false);
         $storeId = $request->getParam('store_id', false);
 
         if (!$storeId) {

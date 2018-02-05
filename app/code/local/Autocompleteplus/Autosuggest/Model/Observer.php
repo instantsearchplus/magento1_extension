@@ -23,6 +23,7 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
     protected $imageField;
     protected $standardImageFields = array();
     protected $currency;
+    protected $batchesHelper;
 
     public function _construct()
     {
@@ -33,6 +34,7 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
 
         $this->standardImageFields = array('image', 'small_image', 'thumbnail');
         $this->currency = Mage::app()->getStore()->getCurrentCurrencyCode();
+        $this->batchesHelper = Mage::helper('autocompleteplus_autosuggest/batches');
     }
 
     public function getConfig()
@@ -149,6 +151,12 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         return $response;
     }
 
+    /**
+     * Method catalog_product_save_after executes BEFORE
+     * product save
+     *
+     * @param $observer
+     */
     public function catalog_product_save_after($observer)
     {
         $product = $observer->getProduct();
@@ -160,90 +168,62 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
             array_key_exists('sku', $origData)) {
             $oldSku = $origData['sku'];
             if ($sku != $oldSku) {
-                $this->_writeproductDeletion($oldSku, $productId, $storeId, $product);
-                return;
+                $this->batchesHelper
+                    ->writeProductDeletion($oldSku, $productId, 0, $product);
             }
         }
 
         //recording disabled item as deleted
         if ($product->getStatus() == '2') {
-            $this->_writeproductDeletion($sku, $productId, $storeId, $product);
+            $this->batchesHelper
+                ->writeProductDeletion($sku, $productId, 0, $product);
             return;
+        }
+
+        /**
+         * recording out of stock item as deleted
+         * if shoper does not show out of stock items in catalog
+         */
+        $isStock = Mage::getModel('cataloginventory/stock_item')
+            ->loadByProduct($product)
+            ->getIsInStock();
+        if (Mage::getStoreConfig('cataloginventory/options/show_out_of_stock', 0) == '0') {
+            if ($isStock == '0') {
+                $this->batchesHelper
+                    ->writeProductDeletion($sku, $productId, 0, $product);
+                return;
+            }
         }
 
         $dt = Mage::getSingleton('core/date')->gmtTimestamp();
 
-        $simple_product_parents = ($product->getTypeID() == 'simple') ? Mage::getModel('catalog/product_type_configurable')->getParentIdsByChild($product->getId()) : array();
-
-        $product_stores = ($storeId == 0 && method_exists($product, 'getStoreIds')) ? $product->getStoreIds() : array($storeId);
-
-        try {
-            foreach ($product_stores as $product_store) {
-                $updates = Mage::getModel('autocompleteplus_autosuggest/batches')->getCollection()
-                    ->addFieldToFilter('product_id', $productId)
-                    ->addFieldToFilter('store_id', $product_store);
-
-                $updates->getSelect()
-                    ->order('update_date', 'DESC')
-                    ->limit(1);
-
-                if ($updates && $updates->getSize() > 0) {
-                    // @codingStandardsIgnoreLine
-                    $row = $updates->getFirstItem();
-
-                    $row->setUpdateDate($dt)
-                        ->setAction('update');
-
-                    // @codingStandardsIgnoreLine
-                    $row->save();
-                } else {
-                    $batch = Mage::getModel('autocompleteplus_autosuggest/batches');
-                    $batch->setProductId($productId)
-                        ->setStoreId($product_store)
-                        ->setUpdateDate($dt)
-                        ->setAction('update')
-                        ->setSku($sku);
-
-                    // @codingStandardsIgnoreLine
-                    $batch->save();
-                }
-
-                // trigger update for simple product's configurable parent
-                if (!empty($simple_product_parents)) {   // simple product has configural parent
-                    foreach ($simple_product_parents as $configurable_product) {
-                        $batches = Mage::getModel('autocompleteplus_autosuggest/batches')->getCollection()
-                            ->addFieldToFilter('product_id', $configurable_product)
-                            ->addFieldToFilter('store_id', $product_store);
-
-                        $batches->getSelect()
-                            ->order('update_date', 'DESC')
-                            ->limit(1);
-
-                        // @codingStandardsIgnoreLine
-                        if ($batches->getSize() > 0) {
-                            $batch = $batches->getFirstItem();
-                            $batch->setUpdateDate($dt)
-                                ->setAction('update')
-                                // @codingStandardsIgnoreLine
-                                ->save();
-                        } else {
-                            $newBatch = Mage::getModel('autocompleteplus_autosuggest/batches');
-                            $newBatch->setProductId($configurable_product)
-                                ->setStoreId($product_store)
-                                ->setUpdateDate($dt)
-                                ->setAction('update')
-                                ->setSku('ISP_NO_SKU')
-                                // @codingStandardsIgnoreLine
-                                ->save();
-                        }
-                    }
-                }
+        $simple_product_parents = ($product->getTypeID() == 'simple') ?
+            Mage::getModel('catalog/product_type_configurable')
+                ->getParentIdsByChild($product->getId())
+            : array();
+        if ($storeId == 0 && method_exists($product, 'getStoreIds')) {
+            $product_stores = $product->getStoreIds();
+            if (count($product_stores) == 0) {
+                $product_stores = array($storeId);
             }
-        } catch (Exception $e) {
-            Mage::logException($e);
+        } else {
+            $product_stores = array($storeId);
         }
+
+        $this->batchesHelper->writeProductUpdate(
+            $product_stores,
+            $productId,
+            $dt,
+            $sku,
+            $simple_product_parents
+        );
     }
 
+    /**
+     * Method executes AFTER product save
+     *
+     * @param $observer
+     */
     public function catalog_product_save_after_real($observer)
     {
         $product = $observer->getProduct();
@@ -268,56 +248,51 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         }
     }
 
-    protected function _writeproductDeletion($sku, $productId, $storeId, $product = null)
-    {
-        $dt = strtotime('now');
+    public function catalog_product_import_finish_before($observer){
         try {
-            try {
-                $helper = Mage::helper('autocompleteplus_autosuggest');
-                try {
-                    if (!$product) {
-                        $product = Mage::getModel('catalog/product')->load($productId);
-                    }
-                    $product_stores = ($storeId == 0 && method_exists($product, 'getStoreIds')) ? $product->getStoreIds() : array($storeId);
-                } catch (Exception $e) {
-                    Mage::logException($e);
-                    $product_stores = array($storeId);
-                }
-                if ($sku == null) {
-                    $sku = 'dummy_sku';
-                }
-                foreach ($product_stores as $product_store) {
-                    $batches = Mage::getModel('autocompleteplus_autosuggest/batches')->getCollection()
-                        ->addFieldToFilter('product_id', $productId)
-                        ->addFieldToFilter('store_id', $product_store);
-
-                    $batches->getSelect()
-                        ->order('update_date', 'DESC')
-                        ->limit(1);
-
-                    // @codingStandardsIgnoreLine
-                    if ($batches->getSize() > 0) {
-                        $batch = $batches->getFirstItem();
-                        $batch->setUpdateDate($dt)
-                            ->setAction('remove')
-                            // @codingStandardsIgnoreLine
-                            ->save();
-                    } else {
-                        $newBatch = Mage::getModel('autocompleteplus_autosuggest/batches');
-                        $newBatch->setProductId($productId)
-                            ->setStoreId($product_store)
-                            ->setUpdateDate($dt)
-                            ->setAction('remove')
-                            ->setSku($sku)
-                            // @codingStandardsIgnoreLine
-                            ->save();
-                    }
-                }
-            } catch (Exception $e) {
-                Mage::logException($e);
+            if (Mage_ImportExport_Model_Import::BEHAVIOR_DELETE == $observer->getAdapter()->getBehavior()) {
+                return; //we do not support delete from csv
             }
+            if ($observer->getAdapter()->getEntityTypeID() != '4') {
+                return;
+            }
+            $dt = Mage::getSingleton('core/date')->gmtTimestamp();
+            $importedData = $observer->getAdapter()->getNewSku();
+
+            $productIds = array();
+            foreach ($importedData as $sku=>$item) {
+                $productIds[] = intval($item['entity_id']);
+            }
+            $productCollection = Mage::getModel('catalog/product')
+                ->getCollection();
+            $productCollection->addAttributeToFilter('entity_id', array('in' => $productIds));
+
+            foreach ($productCollection as $product) {
+                $simple_product_parents = ($product->getTypeID() == 'simple') ?
+                    Mage::getModel('catalog/product_type_configurable')
+                        ->getParentIdsByChild($product->getID())
+                    : array();
+
+                if (method_exists($product, 'getStoreIds')) {
+                    $product_stores = $product->getStoreIds();
+                    if (count($product_stores) == 0) {
+                        $product_stores = array(1);
+                    }
+                } else {
+                    $product_stores = array(1);
+                }
+
+                $this->batchesHelper->writeProductUpdate(
+                    $product_stores,
+                    $product->getID(),
+                    $dt,
+                    $product->getSku(),
+                    $simple_product_parents
+                );
+            }
+
         } catch (Exception $e) {
-            Mage::logException($e);
+            Mage::log($e->getMessage(), null, 'autocomplete.log');
         }
     }
 
@@ -327,7 +302,8 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         $storeId = $product->getStoreId();
         $productId = $product->getId();
         $sku = $product->getSku();
-        $this->_writeproductDeletion($sku, $productId, $storeId, $product);
+        $this->batchesHelper
+            ->writeProductDeletion($sku, $productId, $storeId, $product);
     }
 
     public function adminSessionUserLoginSuccess()
@@ -398,7 +374,8 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
     public function webhook_service_call($observer)
     {
         try {
-            $hook_url = $this->_getWebhookObjectUri($observer->getEvent()->getName());
+            $eventName = $observer->getEvent()->getName();
+            $hook_url = $this->_getWebhookObjectUri($eventName);
             if(function_exists('fsockopen')) {
                 $this->post_without_wait(
                     $hook_url,
@@ -481,15 +458,30 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
     protected function _getWebhookObjectUri($event_name)
     {
         $helper = Mage::helper('autocompleteplus_autosuggest');
+        $cart_items = $this->_getVisibleItems();
+        $cart_products_json = json_encode($cart_items);
+        $store_id = Mage::app()->getStore()->getStoreId();
+        if ($event_name == 'controller_action_postdispatch_checkout_onepage_success'
+            && Mage::getStoreConfig('cataloginventory/options/show_out_of_stock') == '0') {
+            foreach ($cart_items as $prod) {
+                $isStock = Mage::getModel('cataloginventory/stock_item')
+                    ->loadByProduct($prod['product_id'])
+                    ->getIsInStock();
+                if ($isStock == '0') {
+                    $this->batchesHelper
+                        ->writeProductDeletion(null, intval($prod['product_id']), 0, null);
+                }
+            }
+        }
         $parameters = array(
             'event' => $this->getWebhookEventLabel($event_name),
             'UUID' => $this->getConfig()->getUUID(),
             'key' => $this->getConfig()->getAuthorizationKey(),
-            'store_id' => Mage::app()->getStore()->getStoreId(),
+            'store_id' => $store_id,
             'st' => $helper->getSessionId(),
             'cart_token' => $this->getQuoteId(),
             'serp' => '',
-            'cart_product' => $this->getCartContentsAsJson(),
+            'cart_product' => $cart_products_json,
         );
 
         return static::AUTOCOMPLETEPLUS_WEBHOOK_URI.'?'.http_build_query($parameters, '', '&');

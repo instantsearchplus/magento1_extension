@@ -194,15 +194,13 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
 
     public function renderUpdatesCatalogXml($count, $from, $to, $storeId)
     {
+        $filter = array('from' => $from);
+        if ($to > 0) {
+            $filter['to'] = $to;
+        }
         $updates = Mage::getModel('autocompleteplus_autosuggest/batches')
             ->getCollection()
-            ->addFieldToFilter(
-                'update_date',
-                array(
-                    'from' => $from,
-                    'to' => $to,
-                )
-            )
+            ->addFieldToFilter('update_date', $filter)
             ->addFieldToFilter('store_id', $storeId);
 
         $this->setStoreId($storeId);

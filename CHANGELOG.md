@@ -156,3 +156,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Sku change as remove item
 - Disabling item support
 - Over lined price support
+
+## [3.1.6] - 2017-07-30 17:35:00
+### Added
+- CSV import support
+- Recording out of stock item as deleted, if shoper does not show out of stock items in catalog
+- Batches helper
+- At send updates add "to" default values as now time
+### Modified
+- Refactor updates insert
+### Fixed
+- Sku change support
+- Updatedate

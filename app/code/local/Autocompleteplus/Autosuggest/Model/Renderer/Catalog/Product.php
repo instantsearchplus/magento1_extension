@@ -59,7 +59,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
     protected $_attributesValuesCache;
     protected $_attributesSetsCache;
     protected $_customersGroups;
-
+    protected $_batchesHelper;
     const ISPKEY = 'ISPKEY_';
 
     /**
@@ -71,6 +71,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
         $this->_attributesSetsCache = array();
         $this->_customersGroups = array();
         $customerGroups = Mage::getModel('customer/group')->getCollection();
+        $this->_batchesHelper = Mage::helper('autocompleteplus_autosuggest/batches');
         foreach($customerGroups as $type) {
             $this->_customersGroups[$type->getCustomerGroupId()] = $type->getCustomerGroupCode();
         }
@@ -536,9 +537,12 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                             continue;
                         }
 
-                        $is_variant_in_stock = (
-                        $child_product->getStockItem()->getIsInStock()
-                        ) ? 1 : 0;
+                        if ($child_product->getStockItem()
+                            && $child_product->getStockItem()->getIsInStock()) {
+                            $is_variant_in_stock = 1;
+                        } else {
+                            $is_variant_in_stock = 0;
+                        }
 
                         if (method_exists($child_product, 'isSaleable')) {
                             $is_variant_sellable = (
@@ -774,6 +778,40 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                     $calculatedFinalPrice = $this->getProduct()->getSpecialPrice();
                     $regularPrice = $this->getProduct()->getPrice();
                 }
+                $nowDateGmt = intval(Mage::getSingleton('core/date')->gmtTimestamp());
+                $specialFromDateGmt = null;
+                if ($specialFromDate != null) {
+                    $specialFromDateGmt = strtotime(
+                        (string)Mage::app()
+                            ->getLocale()
+                            ->utcDate($this->getStoreId(), $specialFromDate)
+                    );
+                }
+                if ($specialFromDateGmt && $specialFromDateGmt > $nowDateGmt) {
+                    $this->_batchesHelper->writeProductUpdate(
+                        array($this->getStoreId()),
+                        $this->getProduct()->getId(),
+                        $specialFromDateGmt,
+                        $this->getProduct()->getSku(),
+                        $this->getSimpleProductParent()
+                    );
+                } else if($specialToDate != null) {
+                    $specialToDateGmt = strtotime(
+                        (string)Mage::app()
+                            ->getLocale()
+                            ->utcDate($this->getStoreId(), $specialToDate)
+                    );
+                    $specialToDateGmt += (86400 + 300);
+                    if ($specialToDateGmt > $nowDateGmt) {
+                        $this->_batchesHelper->writeProductUpdate(
+                            array($this->getStoreId()),
+                            $this->getProduct()->getId(),
+                            $specialToDateGmt,
+                            $this->getProduct()->getSku(),
+                            $this->getSimpleProductParent()
+                        );
+                    }
+                }
             }
         } else {
             $calculatedFinalPrice = $priceRange['price_min'];
@@ -782,6 +820,10 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
         if ($url == null || $url == '') {
             $url = Mage::helper('catalog/product')->getProductUrl($this->getProduct()->getId());
         }
+
+        $lastModifiedDate = strtotime(
+            (string) $this->getProduct()->getUpdatedAt()
+        );
 
         $xmlAttributes = array(
             'price_min' => ($priceRange['price_min']),
@@ -800,7 +842,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             'selleable' => ($saleable),
             'action' => ($this->getAction()),
             'last_updated' => ($this->getProduct()->getUpdatedAt()),
-            'updatedate' => ($this->getUpdateDate()),
+            'updatedate' => ($lastModifiedDate),
             'get_by_id_status' => intval($this->getGetByIdStatus()),
         );
 

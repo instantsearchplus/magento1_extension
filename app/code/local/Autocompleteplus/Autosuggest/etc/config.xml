@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Autocompleteplus_Autosuggest>
-            <version>3.1.5</version>
+            <version>3.1.6</version>
             <url>http://autocompleteplus.com/</url>
             <modulename>Autocompleteplus_Autosuggest</modulename>
         </Autocompleteplus_Autosuggest>
@@ -89,6 +89,15 @@
                     </autocompleteplus_autosuggest>
                 </observers>
             </catalog_product_delete_before>
+            <catalog_product_import_finish_before>
+                <observers>
+                    <autocompleteplus_autosuggest>
+                        <type>singleton</type>
+                        <class>autocompleteplus_autosuggest/observer</class>
+                        <method>catalog_product_import_finish_before</method>
+                    </autocompleteplus_autosuggest>
+                </observers>
+            </catalog_product_import_finish_before>
         </events>
         <resources>
             <autosuggest_setup>
