@@ -5,6 +5,7 @@ abstract class Autocompleteplus_Autosuggest_Controller_Abstract extends Mage_Cor
     const PHP_SCRIPT_TIMEOUT = 1800;
     const MISSING_PARAMETER = 767;
     const STATUS_FAILURE = 'failure';
+    const STATUS_SUCCESS = 'success';
 
     public function preDispatch()
     {

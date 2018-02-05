@@ -119,6 +119,8 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         $store_id = Mage::app()->getStore()->getStoreId();
         $installedModules = array();
 
+        $enabled=Mage::getStoreConfigFlag('autocompleteplus/config/enabled',0);
+
         try {
             $num_of_products = Mage::getModel('catalog/product')->getCollection()
                 ->addStoreFilter($store_id)
@@ -149,6 +151,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
             'site_url' => $site_url,
             'store_id' => $store_id,
             'modules' => $installedModules,
+            'enabled' => $enabled
         );
 
         $response->clearHeaders();
@@ -168,7 +171,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
                         'uuid' => $this->_getConfig()->getUUID(),
                         'site_url' => $helper->getConfigDataByFullPath('web/unsecure/base_url'),
                         'store_id' => $catalogReport->getCurrentStoreId(),
-        );
+                       );
 
         $this->getResponse()->setHeader('Content-type', 'application/json');
         $this->getResponse()->setBody(json_encode($result));
@@ -286,7 +289,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         $url = $url_domain.http_build_query(array(
             'store_id' => $storeId,
             'site_url' => $site_url,
-        ));
+            ));
 
         $helper = Mage::helper('autocompleteplus_autosuggest');
         $resp = $helper->sendCurl($url);
@@ -451,7 +454,6 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         $this->getResponse()->setBody(1);
     }
 
-
     /**
      * Bulk Push to ISP with JSON
      * @return void
@@ -461,7 +463,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         set_time_limit(1800);
         $request  = $this->getRequest();
         $response = $this->getResponse();
-    
+
         $response->clearHeaders();
         $response->setHeader('Content-type', 'application/json');
         $pushId   = $request->getParam('pushid', null);

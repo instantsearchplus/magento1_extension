@@ -30,9 +30,19 @@ try{
 </script>
     <?php
         $helper = Mage::helper('autocompleteplus_autosuggest');
-        $server_url = $helper->getServerUrl();
-        $url = $server_url . '/ma_load_search_page?isp_platform=magento&r=002'; 
-        $resp = $helper->sendCurl($url);
-        $response_json = json_decode($resp);
-        echo $response_json->html;
+
+        $html=Mage::app()->getCacheInstance()->load('autocomplete_template_serp');
+
+        if(!$html) {
+            $server_url = $helper->getServerUrl();
+            $url = $server_url . '/ma_load_search_page?isp_platform=magento&r=002';
+            $resp = $helper->sendCurl($url);
+            $response_json = json_decode($resp);
+            $html = $response_json->html;
+
+            Mage::app()->getCacheInstance()->save($html, 'autocomplete_template_serp', array("autocomplete_cache"), 60);
+
+        }
+
+        echo $html;
     ?>

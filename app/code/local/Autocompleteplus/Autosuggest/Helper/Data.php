@@ -15,6 +15,16 @@
  */
 class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 {
+
+    const WEBSITES_SCOPE = 'websites';
+
+    const STORES_SCOPE = 'stores';
+
+    const DEFAULT_SCOPE = 'default';
+
+
+    const WEBSITE_ID = 'website_id';
+
     //     private $server_url = 'http://0-2vk.acp-magento.appspot.com';
     private $server_url = 'http://magento.instantsearchplus.com';
 
@@ -53,15 +63,12 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 
     public function getConfigDataByFullPath($path)
     {
-        if (!$row = Mage::getSingleton('core/config_data')->getCollection()->getItemByColumnValue('path', $path)) {
-            $conf = Mage::getSingleton('core/config')->init()->getXpath('/config/default/'.$path);
-            if (is_array($conf)) {
-                $value = array_shift($conf);
-            } else {
-                return '';
-            }
-        } else {
-            $value = $row->getValue();
+        $valsArr = $this->getConfigMultiDataByFullPath($path);
+
+        $value = '';
+
+        if (is_array($valsArr) && count($valsArr) > 0) {
+            $value = array_shift($valsArr);
         }
 
         return $value;
@@ -75,10 +82,44 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
             $conf = Mage::getSingleton('core/config')->init()->getXpath('/config/default/'.$path);
             $values[] = array_shift($conf);
         } else {
+
             foreach ($rows as $row) {
-                $values[$row->getScopeId()] = $row->getValue();
+                $scopeId = $row->getScopeId();
+
+                $rowValue = $row->getValue();
+
+                if ($scopeId != null && $rowValue != null) {
+                    $values[$scopeId] = $rowValue;
+                }
             }
         }
+
+        return $values;
+    }
+
+    public function getConfigMultiScopesDataByFullPath($path)
+    {
+        $values = array();
+
+        $rows = Mage::getSingleton('core/config_data')->getCollection()->getItemsByColumnValue('path', $path);
+
+        foreach ($rows as $row) {
+            $scope = $row->getScope();
+
+            $scopeId = $row->getScopeId();
+
+            $rowValue = $row->getValue();
+
+            if ($scope != null && $scopeId != null && $rowValue != null) {
+
+                if (!array_key_exists($scope,$values)) {
+                    $values[$scope] = array();
+                }
+
+                $values[$scope][$scopeId] = $rowValue;
+            }
+        }
+
 
         return $values;
     }
@@ -207,10 +248,6 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
     public function getMultiStoreDataJson()
     {
         $websites = Mage::getModel('core/website')->getCollection();
-
-        $multistoreData = array();
-        $multistoreJson = '';
-        $useStoreCode = $this->getConfigDataByFullPath('web/url/use_store');
         $mage = Mage::getVersion();
         $ext = Mage::helper('autocompleteplus_autosuggest')->getVersion();
         $version = array('mage' => $mage, 'ext' => $ext);
@@ -225,9 +262,6 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
             $storeMail = $this->getConfigDataByFullPath('trans_email/ident_general/email');
         }
 
-        $collection = Mage::getModel('catalog/product')->getCollection();
-        //$productCount=$collection->count();
-
         $storesArr = array();
         foreach ($websites as $website) {
             $code = $website->getCode();
@@ -240,13 +274,12 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         if (count($storesArr) == 1) {
             try {
                 $dataArr = array(
-//                         'stores'  => array(array_pop($storesArr)),
-                        'stores' => array_pop($storesArr),
-                        'version' => $version,
+                    'stores' => array_pop($storesArr),
+                    'version' => $version,
                 );
             } catch (Exception $e) {
                 $dataArr = array(
-                    'stores' => $multistoreData,
+                    'stores' => array(),
                     'version' => $version,
                 );
             }
@@ -256,44 +289,18 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 
             $multistoreJson = json_encode($dataArr);
         } else {
-            $storeUrls = $this->getConfigMultiDataByFullPath('web/unsecure/base_url');
-            $locales = $this->getConfigMultiDataByFullPath('general/locale/code');
-            $storeComplete = array();
+            $multistoreData = $this->_createMultiStoreJson($storesArr);
 
-            foreach ($storesArr as $key => $value) {
-                if (!$value['is_active']) {
-                    continue;
-                }
-
-                $storeComplete = $value;
-                if (array_key_exists($key, $locales)) {
-                    $storeComplete['lang'] = $locales[$key];
-                } else {
-                    $storeComplete['lang'] = $locales[0];
-                }
-
-                if (array_key_exists($key, $storeUrls)) {
-                    $storeComplete['url'] = $storeUrls[$key];
-                } else {
-                    $storeComplete['url'] = $storeUrls[0];
-                }
-
-                if ($useStoreCode) {
-                    $storeComplete['url'] = $storeUrls[0].$value['code'];
-                }
-
-                $multistoreData[] = $storeComplete;
-            }
+            $multistoreDataByScope = $this->_createMultiStoreByScopeJson($storesArr);
 
             $dataArr = array(
                 'stores' => $multistoreData,
+                'stores2' => $multistoreDataByScope,
                 'version' => $version,
             );
 
             $dataArr['site'] = $url;
             $dataArr['email'] = $storeMail;
-            //$dataArr['product_count']=$productCount;
-
             $multistoreJson = json_encode($dataArr);
         }
 
@@ -424,7 +431,7 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         $product_type = $product->getTypeID();
 
         $checksum_string = $product_id.$product_title.$product_description.$product_short_desc.$product_url.
-                        $product_visibility.$product_in_stock.$product_price.$product_thumb_url.$product_type;
+            $product_visibility.$product_in_stock.$product_price.$product_thumb_url.$product_type;
 
         $checksum_md5 = md5($checksum_string);
 
@@ -732,7 +739,7 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 
     public function escapeXml($xml)
     {
-        //        $pairs = array(
+//        $pairs = array(
 //            "\x03" => "&#x03;",
 //            "\x05" => "&#x05;",
 //            "\x0E" => "&#x0E;",
@@ -766,5 +773,105 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
     protected function _getEncryptionKey()
     {
         return (string) Mage::getConfig()->getNode('global/crypt/key');
+    }
+
+    /**
+     * @param $storesArr
+     * @param $multistoreData
+     * @return array
+     */
+    protected function _createMultiStoreByScopeJson($storesArr)
+    {
+        $multistoreData = array();
+        $storeComplete = array();
+
+        $storeUrls = $this->getConfigMultiScopesDataByFullPath('web/unsecure/base_url');
+        $locales = $this->getConfigMultiScopesDataByFullPath('general/locale/code');
+        $useStoreCode = $this->getConfigDataByFullPath('web/url/use_store');
+
+        foreach ($storesArr as $storeId => $value) {
+            if (!$value['is_active']) {
+                continue;
+            }
+
+            $storeComplete = $value;
+
+            if (array_key_exists(self::STORES_SCOPE, $locales) &&
+                array_key_exists($storeId, $locales[self::STORES_SCOPE]))
+            {
+                $storeComplete['lang'] = $locales[self::STORES_SCOPE][$storeId];
+            } elseif (array_key_exists(self::WEBSITES_SCOPE, $locales) &&
+                      array_key_exists($storeComplete[self::WEBSITE_ID],$locales[self::WEBSITES_SCOPE]))
+            {
+                $storeComplete['lang'] = $locales[self::WEBSITES_SCOPE][$storeComplete[self::WEBSITE_ID]];
+            }else if (array_key_exists(self::DEFAULT_SCOPE, $locales) &&
+                      array_key_exists(0,$locales[self::DEFAULT_SCOPE]))
+            {
+                $storeComplete['lang'] = $locales[self::DEFAULT_SCOPE][0];
+            }
+
+
+            if (!$useStoreCode) {
+                if (array_key_exists(self::STORES_SCOPE, $storeUrls) &&
+                    array_key_exists($storeId, $storeUrls[self::STORES_SCOPE]))
+                {
+                    $storeComplete['url'] = $storeUrls[self::STORES_SCOPE][$storeId];
+                } elseif (array_key_exists(self::WEBSITES_SCOPE, $storeUrls) &&
+                          array_key_exists($storeComplete[self::WEBSITE_ID],$storeUrls[self::WEBSITES_SCOPE]))
+                {
+                    $storeComplete['url'] = $storeUrls[self::WEBSITES_SCOPE][$storeComplete[self::WEBSITE_ID]];
+                }else if (array_key_exists(self::DEFAULT_SCOPE, $storeUrls) &&
+                          array_key_exists(0,$storeUrls[self::DEFAULT_SCOPE]))
+                {
+                    $storeComplete['url'] = $storeUrls[self::DEFAULT_SCOPE][0];
+                }
+            } else {
+                $storeComplete['url'] = $storeUrls[0] . $value['code'];
+            }
+
+            $multistoreData[] = $storeComplete;
+        }
+        return $multistoreData;
+    }
+
+    /**
+     * @param $storesArr
+     * @param $multistoreData
+     * @return array
+     */
+    protected function _createMultiStoreJson($storesArr)
+    {
+        $multistoreData = array();
+        $storeComplete = array();
+
+        $storeUrls = $this->getConfigMultiDataByFullPath('web/unsecure/base_url');
+        $locales = $this->getConfigMultiDataByFullPath('general/locale/code');
+        $useStoreCode = $this->getConfigDataByFullPath('web/url/use_store');
+
+        foreach ($storesArr as $key => $value) {
+            if (!$value['is_active']) {
+                continue;
+            }
+
+            $storeComplete = $value;
+            if (array_key_exists($key, $locales)) {
+                $storeComplete['lang'] = $locales[$key];
+            } else {
+                $storeComplete['lang'] = $locales[0];
+            }
+
+            if (array_key_exists($key, $storeUrls)) {
+                $storeComplete['url'] = $storeUrls[$key];
+            } else {
+                $storeComplete['url'] = $storeUrls[0];
+            }
+
+            if ($useStoreCode) {
+                $storeComplete['url'] = $storeUrls[0] . $value['code'];
+            }
+
+            $multistoreData[] = $storeComplete;
+        }
+        return $multistoreData;
     }
 }

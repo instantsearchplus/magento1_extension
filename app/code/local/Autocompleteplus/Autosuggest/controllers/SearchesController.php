@@ -21,10 +21,7 @@ class Autocompleteplus_Autosuggest_SearchesController extends Mage_Core_Controll
 
         $post = $this->getRequest()->getParams();
 
-//        $enabled= Mage::getStoreConfig('autocompleteplus/config/enabled');
-//        if($enabled=='0'){
-//            die('The user has disabled autocompleteplus.');
-//        }
+        $response = $this->getResponse();
 
         $startInd = $post['offset'];
         if (!$startInd) {
@@ -53,10 +50,13 @@ class Autocompleteplus_Autosuggest_SearchesController extends Mage_Core_Controll
         $xml .= '<searches>';
 
         if ($searchesCount < $startInd) {
-            //if the products count is smaller then specified offset then we return empty xml node
             $xml .= '</searches>';
-            echo $xml;
-            die;
+
+            $response->clearHeaders();
+            $response->setHeader('Content-type', 'text/xml');
+            $response->setBody($xml);
+
+            return;
         }
 
         $connection = $this->_getConnection('core_write');
@@ -76,9 +76,9 @@ class Autocompleteplus_Autosuggest_SearchesController extends Mage_Core_Controll
 
         $xml .= '</searches>';
 
-        header('Content-type: text/xml');
-        echo $xml;
-        die;
+        $response->clearHeaders();
+        $response->setHeader('Content-type', 'text/xml');
+        $response->setBody($xml);
     }
 
     private function _xmlEscape($term)

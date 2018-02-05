@@ -156,61 +156,63 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             'fromdatetime'  =>  $from
         ))->setRootElementName('catalog');
 
+        $updatesBulk=array();
+
+        $productIds=array();
+
         foreach ($updates as $batch) {
+
             if ($batch['action'] == 'update') {
-                $productId = $batch['product_id'];
-                $batchStoreId = $batch['store_id'];
 
-                if ($storeId != $batchStoreId) {
-                    $this->currency = Mage::app()->getStore($batchStoreId)->getCurrentCurrencyCode();
-                }
+                if ($batch['product_id'] != null) {
+                    $updatesBulk[$batch['product_id']] = $batch;
 
-                $productModel = null;
+                    $productIds[] = $batch['product_id'];
 
-                if ($productId != null) {
-                    //                  load product by id
-                    try {
-                        $productModel = Mage::getModel('catalog/product')
-                            ->setStoreId($batchStoreId)
-                            ->load($productId);
-                    } catch (Exception $e) {
-                        $batch['action'] = 'remove';
-                        $this->getBatchRenderer()
-                            ->setXmlElement($xmlGenerator)
-                            ->makeRemoveRow($batch);
-                        continue;
-                    }
                 } else {
-                    // product not found - changing action to remove
                     $batch['action'] = 'remove';
                     $this->getBatchRenderer()
                         ->setXmlElement($xmlGenerator)
                         ->makeRemoveRow($batch);
-                    continue;
                 }
 
-                if ($productModel == null) {
-                    continue;
-                }
+            } elseif ($batch['action'] == 'remove') {
 
-                $updatedate = $batch['update_date'];
-                $action = $batch['action'];
-                $this->getProductRenderer()
-                    ->setXmlElement($xmlGenerator)
-                    ->setAction($action)
-                    ->setProduct($productModel)
-                    ->setStoreId($this->getStoreId())
-                    ->setOrders($this->getOrders())
-                    ->setMonthInterval($this->getMonthInterval())
-                    ->setXmlElement($xmlGenerator)
-                    ->setAttributes($this->getAttributes())
-                    ->setUpdateDate($updatedate)
-                    ->renderXml();
-            } else {
                 $this->getBatchRenderer()
                     ->setXmlElement($xmlGenerator)
                     ->makeRemoveRow($batch);
             }
+
+        }
+
+        $this->currency = Mage::app()->getStore($storeId)->getCurrentCurrencyCode();
+
+        $productCollection = $this->getProductCollection();
+
+        $productCollection->addStoreFilter($storeId);
+
+        $productCollection->setStoreId($storeId);
+
+        $attributesToSelect = $this->_getAttributesToSelect();
+
+        $productCollection->addAttributeToSelect($attributesToSelect)
+            ->addAttributeToFilter('entity_id', array('in' => $productIds));
+
+        foreach ($productCollection as $product) {
+
+            $updatedate = $updatesBulk[$product->getId()]['update_date'];
+
+            $this->getProductRenderer()
+                ->setXmlElement($xmlGenerator)
+                ->setAction('update')
+                ->setProduct($product)
+                ->setStoreId($storeId)
+                ->setOrders($this->getOrders())
+                ->setMonthInterval($this->getMonthInterval())
+                ->setXmlElement($xmlGenerator)
+                ->setAttributes($this->getAttributes())
+                ->setUpdateDate($updatedate)
+                ->renderXml();
         }
 
         return $xmlGenerator->generateXml();

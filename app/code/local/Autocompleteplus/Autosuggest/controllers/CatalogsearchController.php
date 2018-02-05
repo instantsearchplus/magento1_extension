@@ -43,8 +43,6 @@ class Autocompleteplus_Autosuggest_CatalogSearchController extends Mage_Core_Con
      */
     public function indexAction()
     {
-        //die('moshe');
-
         $query = Mage::helper('catalogsearch')->getQuery();
         /* @var $query Mage_CatalogSearch_Model_Query */
 

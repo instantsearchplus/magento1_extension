@@ -389,22 +389,32 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends Autoco
             $attrValue = null;
             $_helper=$this->_getOutputHelper();
 
-            switch ($attr->getFrontendInput()) {
-                case 'select':
-                    $attrValue = method_exists($this->getProduct(), 'getAttributeText') ?
-                        $_helper->productAttribute($this->getProduct(),$this->getProduct()->getAttributeText($action),$action)
-                        : $this->getProduct()->getData($action);
-                    break;
-                case 'textarea':
-                case 'price':
-                case 'text':
-                    $attrValue = $this->getProduct()->getData($action);
-                    break;
-                case 'multiselect':
-                    $attrValue = $this->getProduct()->getResource()
+            try {
+
+                switch ($attr->getFrontendInput()) {
+                    case 'select':
+                        $attrValue = method_exists($this->getProduct(), 'getAttributeText') ?
+                                     $_helper->productAttribute($this->getProduct(),$this->getProduct()->getAttributeText($action),$action) :
+                                     $this->getProduct()->getData($action);
+                        break;
+                    case 'textarea':
+                    case 'price':
+                    case 'text':
+                        $attrValue = $this->getProduct()->getData($action);
+                        break;
+                    case 'multiselect':
+                        $attrValue = $this->getProduct()->getResource()
                         ->getAttribute($action)->getFrontend()->getValue($this->getProduct());
-                    break;
+                        break;
+                    default:
+                        $attrValue = null;
+                        break;
+                }
+
+            } catch(Exception $e) {
+                Mage::log($e->getMessage(), null, 'autocomplete.log', true);
             }
+
 
             if ($attrValue) {
                 $attributeElem = $this->getXmlElement()->createChild('attribute', array(
@@ -423,7 +433,16 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends Autoco
     public function renderXml()
     {
         $categories = $this->getCategoryPathsByProduct();
-        $saleable = $this->getProduct()->isSalable() ? 1 : 0;
+
+        $saleable = 0;
+
+        try {
+            if ($this->getProduct()->isSalable()) {
+                $saleable = 1;
+            }
+        }catch (Exception $e) {
+            Mage::log($e->getMessage(), null, 'autocomplete.log', true);
+        }
 
         if ($this->getProduct()->isConfigurable()) {
             $priceRange = $this->getPriceRange();
@@ -449,12 +468,11 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends Autoco
             'base_image'    =>  utf8_encode(htmlspecialchars((Mage::getModel('catalog/product_media_config')->getMediaUrl($this->getProduct()->getImage())))),
             'selleable' =>  ($saleable),
             'action'    =>  ($this->getAction()),
-            'get_by_id_status'  =>  1,
             'last_updated'  =>  ($this->getProduct()->getUpdatedAt()),
             'updatedate'    =>  ($this->getUpdateDate()),
             'get_by_id_status'  =>  intval($this->getGetByIdStatus())
         ));
-//Mage::getResourceModel('catalog/product')->getAttributeRawValue($this->getProduct()->getId(), 'description', $this->getStoreId());
+
         $productRating = $this->getProduct()->getRatingSummary();
         $this->getXmlElement()->createChild('description', false,
             $this->getProduct()->getDescription(), $productElement);

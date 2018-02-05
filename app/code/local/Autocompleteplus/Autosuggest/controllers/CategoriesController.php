@@ -65,6 +65,7 @@ class Autocompleteplus_Autosuggest_CategoriesController extends Mage_Core_Contro
         $tree = Mage::getResourceSingleton('catalog/category_tree')->load();
         $store = $this->getRequest()->getParam('store', $storeContext);
         $parentId = Mage::app()->getStore($store)->getRootCategoryId();
+        $helper = Mage::helper('autocompleteplus_autosuggest');
 
         $root = $tree->getNodeById($parentId);
 
@@ -76,10 +77,34 @@ class Autocompleteplus_Autosuggest_CategoriesController extends Mage_Core_Contro
             ->setStoreId($store)
             ->addAttributeToSelect('name')
             ->addAttributeToSelect('url_path')
-            ->addAttributeToSelect('image')
-            ->addAttributeToSelect('thumbnail')
-            ->addAttributeToSelect('description')
             ->addAttributeToFilter('is_active', array('eq' => true));
+
+        if (!$helper->getConfigDataByFullPath('catalog/frontend/flat_catalog_category')) {
+            $collection=$collection->addAttributeToSelect('image')
+                ->addAttributeToSelect('description')
+                ->addAttributeToSelect('thumbnail');
+        } else {
+            $resource = Mage::getSingleton('core/resource');
+
+            $readConnection = $resource->getConnection('core_read');
+
+            $tableName=$resource->getTableName('catalog/category_flat') . '_store_' . $store;
+
+            $tableInfo=$readConnection->describeTable($tableName);
+
+            if (array_key_exists('thumbnail',$tableInfo)) {
+                $collection=$collection->addAttributeToSelect('thumbnail');
+            }
+
+            if (array_key_exists('image',$tableInfo)) {
+                $collection=$collection->addAttributeToSelect('image');
+            }
+
+            if (array_key_exists('description',$tableInfo)) {
+                $collection=$collection->addAttributeToSelect('description');
+            }
+
+        }
 
         $tree->addCollectionData($collection, true);
 

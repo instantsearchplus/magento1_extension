@@ -164,7 +164,7 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
             }
         }
         $dt = Mage::getSingleton('core/date')->gmtTimestamp();
-        //$dt = Mage::getSingleton('core/date')->gmtDate();
+
         $simple_product_parents = ($product->getTypeID() == 'simple') ? Mage::getModel('catalog/product_type_configurable')->getParentIdsByChild($product->getId()) : array();
 
         $product_stores = ($storeId == 0 && method_exists($product, 'getStoreIds')) ? $product->getStoreIds() : array($storeId);
@@ -175,7 +175,9 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                     ->addFieldToFilter('product_id', $productId)
                     ->addFieldToFilter('store_id', $product_store);
 
-                $updates->getSelect()->limit(1);
+                $updates->getSelect()
+                    ->order('update_date','DESC')
+                    ->limit(1);
 
                 if ($updates && $updates->getSize() > 0) {
                     // @codingStandardsIgnoreLine
@@ -204,18 +206,22 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                 } catch (Exception $e) {
                     Mage::logException($e);
                 }
+
                 // trigger update for simple product's configurable parent
                 if (!empty($simple_product_parents)) {   // simple product has configural parent
                     foreach ($simple_product_parents as $configurable_product) {
+
                         $batches = Mage::getModel('autocompleteplus_autosuggest/batches')->getCollection()
                             ->addFieldToFilter('product_id', $configurable_product)
                             ->addFieldToFilter('store_id', $product_store);
 
-                        $batches->getSelect()->limit(1);
+                        $batches->getSelect()
+                            ->order('update_date','DESC')
+                            ->limit(1);
 
                         // @codingStandardsIgnoreLine
-                        $batch = $batches->getFirstItem();
-                        if ($batch->getSize() > 0) {
+                        if ($batches->getSize() > 0) {
+                            $batch = $batches->getFirstItem();
                             $batch->setUpdateDate($dt)
                                 ->setAction('update')
                                 // @codingStandardsIgnoreLine
@@ -287,11 +293,15 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                         ->addFieldToFilter('product_id', $productId)
                         ->addFieldToFilter('store_id', $product_store);
 
+                    $batches->getSelect()
+                        ->order('update_date','DESC')
+                        ->limit(1);
+
                     // @codingStandardsIgnoreLine
-                    $batch = $batches->getFirstItem();
-                    if ($batch->getSize() > 0) {
+                    if ($batches->getSize() > 0) {
+                        $batch = $batches->getFirstItem();
                         $batch->setUpdateDate($dt)
-                            ->setAction('update')
+                            ->setAction('remove')
                             // @codingStandardsIgnoreLine
                             ->save();
                     } else {
@@ -299,7 +309,7 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                         $newBatch->setProductId($productId)
                             ->setStoreId($product_store)
                             ->setUpdateDate($dt)
-                            ->setAction('update')
+                            ->setAction('remove')
                             ->setSku($sku)
                             // @codingStandardsIgnoreLine
                             ->save();

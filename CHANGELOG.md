@@ -67,3 +67,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - sku in the list of product attributes
 - default values for offset and count
+
+## [3.0.0.10] - 2016-09-22 16:42:00
+### Fixed
+- Fix multistores json by adding url and lang by scope and entity id (stores2)
+- Fix recording product updates for already updated item
+### Added
+- Xml header in searches controller
+- Send magento updates using collection api
+- Flat categories catalog support
+- Cache serp template for 1 minute
