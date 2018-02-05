@@ -48,6 +48,8 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 
     const WEBSITE_ID = 'website_id';
 
+    protected $blacklisted_modules = array('Anowave_Ec');
+
     protected $server_url = 'http://magento.instantsearchplus.com';
 
     /**
@@ -432,8 +434,8 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
             $multistoreDataByScope = $this->_createMultiStoreByScopeJson($storesArr);
 
             $dataArr = array(
-                'stores' => $multistoreData,
-                'stores2' => $multistoreDataByScope,
+                'stores2' => $multistoreData,
+                'stores' => $multistoreDataByScope,
                 'version' => $version,
             );
 
@@ -1011,7 +1013,11 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
                     $storeComplete['url'] = $storeUrls[self::DEFAULT_SCOPE][0];
                 }
             } else {
-                $storeComplete['url'] = $storeUrls[0].$value['code'];
+                if (array_key_exists(self::DEFAULT_SCOPE, $storeUrls)
+                    && array_key_exists(0, $storeUrls[self::DEFAULT_SCOPE])
+                ) {
+                    $storeComplete['url'] = $storeUrls[self::DEFAULT_SCOPE][0] . $value['code'];
+                }
             }
 
             $multistoreData[] = $storeComplete;

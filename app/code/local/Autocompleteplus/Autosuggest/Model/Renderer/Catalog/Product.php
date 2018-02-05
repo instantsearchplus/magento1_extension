@@ -810,6 +810,8 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             $lastModifiedDate = $this->getUpdateDate();
         }
 
+        $base_image = $this->getProduct()->getImage() ?
+            $this->getProduct()->getImage() : $this->getProduct()->getSmallImage();
         $xmlAttributes = array(
             'price_min' => ($priceRange['price_min']),
             'price_max' => ($priceRange['price_max']),
@@ -822,15 +824,22 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             'visibility' => ($this->getProduct()->getVisibility()),
             'price' => $calculatedFinalPrice,
             'url' => $url,
-            'thumbs' => utf8_encode(htmlspecialchars((Mage::helper('catalog/image')->init($this->getProduct(), $this->getImageField())))),
-            'base_image' => utf8_encode(htmlspecialchars((Mage::getModel('catalog/product_media_config')->getMediaUrl($this->getProduct()->getImage())))),
+            'thumbs' => utf8_encode(
+                htmlspecialchars(
+                    (Mage::helper('catalog/image')->init($this->getProduct(), $this->getImageField()))
+                )
+            ),
+            'base_image' => utf8_encode(
+                htmlspecialchars(
+                    (Mage::getModel('catalog/product_media_config')->getMediaUrl($base_image))
+                )
+            ),
             'selleable' => ($saleable),
             'action' => ($this->getAction()),
             'last_updated' => ($this->getProduct()->getUpdatedAt()),
             'updatedate' => ($lastModifiedDate),
             'get_by_id_status' => intval($this->getGetByIdStatus()),
         );
-
         if ($calculatedFinalPrice < $regularPrice) {
             $xmlAttributes['price_compare_at_price'] = $regularPrice;
         }

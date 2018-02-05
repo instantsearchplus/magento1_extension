@@ -183,3 +183,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Miniform url change flag in vers
 ### Modified
 - Calls for template to 0-1ms
+
+## [3.1.10] - 2017-08-30 11:07:00
+### Added
+- Not compatible modules list
+- Store code in url support
+- Alternative ways to get product image and thumbnails
+### Modified
+- Start using stores2 in multistore json
