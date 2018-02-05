@@ -122,7 +122,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Option to fetch variant attributes by frontend_label if store_label does not exist
 
-## [3.1.0] - 2017-01-24 13:00:00
+## [3.1.0] - 2017-03-05 14:29:00
 ### Added
 - Bundle products support
 - Alternative way to get product url
