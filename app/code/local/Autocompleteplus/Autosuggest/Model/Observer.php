@@ -261,7 +261,10 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
 
     public function catalog_product_import_finish_before($observer){
         try {
-            if (Mage_ImportExport_Model_Import::BEHAVIOR_DELETE == $observer->getAdapter()->getBehavior()) {
+            if (
+                !method_exists($observer->getAdapter(), 'getBehavior')
+                || Mage_ImportExport_Model_Import::BEHAVIOR_DELETE == $observer->getAdapter()->getBehavior()
+            ) {
                 return; //we do not support delete from csv
             }
             if ($observer->getAdapter()->getEntityTypeID() != '4') {

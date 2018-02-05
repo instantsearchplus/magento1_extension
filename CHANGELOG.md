@@ -229,3 +229,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Count of products (take index into account)
 ### Added
 - Print product ids for debugging
+
+## [3.2.6] - 2018-02-04 12:57:00
+### Fixed
+- Product import using profiles support
