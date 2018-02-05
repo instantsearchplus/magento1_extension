@@ -35,8 +35,8 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         Varien_Profiler::start('Autocompleteplus_Autosuggest_Products_Send');
         $response = $this->getResponse();
         $request = $this->getRequest();
-        $startInd = $request->getParam('offset');
-        $count = $request->getParam('count');
+        $startInd = $request->getParam('offset', 0);
+        $count = $request->getParam('count', 100);
         $store = $request->getParam('store_id', '');
         $storeId = $request->getParam('store', $store);
         $orders = $request->getParam('orders', '');
@@ -451,63 +451,6 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         $this->getResponse()->setBody(1);
     }
 
-    public function changeSerpAction()
-    {
-        $scope_name = 'stores';
-        $request = $this->getRequest();
-        $response = $this->getResponse();
-
-        $helper = Mage::helper('autocompleteplus_autosuggest');
-        $site_url = $helper->getConfigDataByFullPath('web/unsecure/base_url');
-        $is_new_serp = $request->getParam('new_serp', 0);
-
-        $store_id = $request->getParam('store_id', 0);
-        if (!$store_id) {
-            $scope_name = 'default';
-        }
-
-        define('SOAP_WSDL', $site_url.'/api/?wsdl');
-        define('SOAP_USER', 'instant_search');
-        define('SOAP_PASS', 'Rilb@kped3');
-
-        try {
-            $client = new SoapClient(SOAP_WSDL, array('trace' => 1, 'cache_wsdl' => 0));
-            $session = $client->login(SOAP_USER, SOAP_PASS);
-
-            switch ($is_new_serp) {
-
-                case 'status':
-                    $current_state = $client->call($session, 'autocompleteplus_autosuggest.getLayeredSearchConfig', array($store_id));
-                    $resp = array('current_status' => $current_state);
-                    $response->setBody(json_encode($resp));
-
-                    return;
-
-                case '1':
-                    $status = $client->call($session, 'autocompleteplus_autosuggest.setLayeredSearchOn', array($scope_name, $store_id));
-                    break;
-                default:
-                    $status = $client->call($session, 'autocompleteplus_autosuggest.setLayeredSearchOff', array($scope_name, $store_id));
-                    break;
-            }
-
-            $new_state = $client->call($session, 'autocompleteplus_autosuggest.getLayeredSearchConfig', array($store_id));
-
-            $resp = array(
-                'request_state' => $is_new_serp,
-                'new_state' => $new_state,
-                'site_url' => $site_url,
-                'status' => $status,
-            );
-
-            $response->setBody(json_encode($resp));
-        } catch (Exception $e) {
-            $resp = array('status' => 'exception: '.print_r($e, true));
-            $response->setBody(json_encode($resp));
-            Mage::logException($e);
-            throw $e;
-        }
-    }
 
     /**
      * Bulk Push to ISP with JSON

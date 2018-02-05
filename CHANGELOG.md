@@ -52,7 +52,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Is_loggedin in user info for frontend injection
 - Usage of Varien_Profiler 
-- Use magento api to switch on/off serp
 ### Removed
 - Drop old isp_config if exists
 - validateInput method
@@ -61,3 +60,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [3.0.0.8] - 2016-08-02 10:02:00
 ### Modified
 - Refactor getting product attributes
+
+## [3.0.0.9] - 2016-09-21 15:29:00
+### Fixed
+- Urlencoding of serp template
+### Added
+- sku in the list of product attributes
+- default values for offset and count

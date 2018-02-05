@@ -318,7 +318,8 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             'price',
             'meta_title',
             'meta_description',
-            'special_price'
+            'special_price',
+            'sku'
         );
 
         if ($this->canUseAttributes()) {
