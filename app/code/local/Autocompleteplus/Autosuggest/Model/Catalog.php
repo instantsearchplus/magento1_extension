@@ -80,7 +80,7 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
      */
     public function getAllProductIds()
     {
-        $ids = [];
+        $ids = array();
 
         foreach ($this->getProductCollection() as $product) {
             $ids[] = $product->getID();

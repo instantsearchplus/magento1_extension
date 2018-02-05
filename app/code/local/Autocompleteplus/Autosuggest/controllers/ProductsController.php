@@ -337,7 +337,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
             $write = false;
 
             if ($io->fileExists($robotsPath)) {
-                if (strpos($io->read($robotsPath), $sitemapUrl) == false) {
+                if (strpos($io->read($robotsPath), $sitemapUrl) === false) {
                     $write = true;
                 }
             } else {

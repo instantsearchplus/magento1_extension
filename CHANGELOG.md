@@ -95,3 +95,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [3.0.0.13] - 2016-10-31 17:13:00
 ### Added
 - Url rewrite for smart navigation
+
+## [3.0.0.14] - 2016-11-03 17:34:00
+### Fixed
+- Psr errors fixes
