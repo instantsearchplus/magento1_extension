@@ -72,7 +72,7 @@ class Autocompleteplus_Autosuggest_Block_Adminhtml_Sync extends Mage_Adminhtml_B
     public function getSyncUrl()
     {
         return Mage::helper('adminhtml')
-            ->getUrl('adminhtml/autocompleteplus_push/startpush');
+            ->getUrl('adminhtml/push/startpush');
     }
 
     /**

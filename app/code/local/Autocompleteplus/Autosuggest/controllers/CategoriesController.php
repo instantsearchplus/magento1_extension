@@ -17,6 +17,10 @@ class Autocompleteplus_Autosuggest_CategoriesController extends Mage_Core_Contro
 {
     public function sendAction()
     {
+        $request = $this->getRequest();
+        $storeId = $request->getParam('store');
+        Mage::app()->setCurrentStore($storeId);
+        
         $categories = $this->loadTree();
 
         $response = $this->getResponse();

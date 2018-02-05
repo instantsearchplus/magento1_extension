@@ -22,7 +22,7 @@
 			</block>
 		</reference>
     </default>
-    <adminhtml_autocompleteplus_push_startpush>
+    <adminhtml_push_startpush>
         <remove name="root"/>
         <block type="adminhtml/page" name="convert_root" output="toHtml" template="page.phtml">
             <block type="adminhtml/page_head" name="convert_root_head" as="head" template="page/head.phtml">
@@ -34,5 +34,5 @@
             </block>
             <block type="autocompleteplus_autosuggest/adminhtml_process" name="autocompleteplus_autosuggest_adminhtml_process" template="autocompleteplus/process.phtml" output="toHtml"/>
         </block>
-    </adminhtml_autocompleteplus_push_startpush>
+    </adminhtml_push_startpush>
 </layout>

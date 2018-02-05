@@ -23,7 +23,7 @@
         <autocompleteplus>
             <title>InstantSearch+</title>
             <sort_order>999</sort_order>
-            <action>adminhtml/autocompleteplus_redirect/goto</action>
+            <action>adminhtml/redirect/goto</action>
         </autocompleteplus>
     </menu>
 </config>

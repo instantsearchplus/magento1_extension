@@ -99,3 +99,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [3.0.0.14] - 2016-11-03 17:34:00
 ### Fixed
 - Psr errors fixes
+
+## [3.0.0.14] - 2016-11-15 15:32:00
+### Fixed
+- Too long files path
+### Added
+- Store parameter for categories fetch
