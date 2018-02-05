@@ -105,3 +105,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Too long files path
 ### Added
 - Store parameter for categories fetch
+
+## [3.0.16] - 2016-11-23 11:38:00
+### Modified
+- Version number format
+### Added
+- Catalogsearch helper
