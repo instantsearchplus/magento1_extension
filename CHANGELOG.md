@@ -191,3 +191,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Alternative ways to get product image and thumbnails
 ### Modified
 - Start using stores2 in multistore json
+
+## [3.2.0] - 2017-09-17 14:39:00
+### Added
+- Smart navigation on native url support
+### Modified
+- Get back using the main server url for serp
+### Fixed
+- Special price from/to support

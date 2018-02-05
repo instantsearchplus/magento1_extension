@@ -37,4 +37,28 @@
             <block type="core/template" name="search_result_list" template="autocompleteplus/catalog/product/list.phtml"/>
         </reference>
     </instantsearchplus_result_index>
+	<catalog_category_default translate="label">
+        <reference name="category.products">
+            <action method="unsetChild" ifconfig="autocompleteplus/config/smart_nav_native">
+                <child>catalog.leftnav</child>
+            </action>
+        </reference>
+        <reference name="category.products">
+            <action method="setTemplate" ifconfig="autocompleteplus/config/smart_nav_native">
+                <value>autocompleteplus/catalog/product/category.phtml</value>
+            </action>
+        </reference>
+	</catalog_category_default>
+	<catalog_category_layered translate="label">
+        <reference name="category.products">
+            <action method="unsetChild" ifconfig="autocompleteplus/config/smart_nav_native">
+                <child>catalog.leftnav</child>
+            </action>
+        </reference>
+        <reference name="category.products">
+			<action method="setTemplate" ifconfig="autocompleteplus/config/smart_nav_native">
+                <value>autocompleteplus/catalog/product/category.phtml</value>
+            </action>
+		</reference>
+	</catalog_category_layered>
 </layout>

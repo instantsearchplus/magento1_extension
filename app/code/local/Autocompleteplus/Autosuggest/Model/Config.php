@@ -11,6 +11,7 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
     const XML_SEARCH_LAYERED_DISABLED = 0;
     const XML_SEARCH_LAYERED_ENABLED = 1;
     const XML_SEARCH_LAYERED_CONFIG = 'autocompleteplus/config/layered';
+    const XML_SMART_NAV_NATIVE_CONFIG = 'autocompleteplus/config/smart_nav_native';
     const XML_FORM_URL_CONFIG = 'autocompleteplus/config/miniform_change';
     const XML_API_ENDPOINT_CONFIG = 'default/autocompleteplus/config/api_endpoint';
     const XML_STORE_EMAIL_CONFIG = 'autocompleteplus/config/store_email';
@@ -116,6 +117,24 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
     {
         $this->_getMageConfig()->deleteConfig(self::XML_FORM_URL_CONFIG, 'default', $scopeId);
         $this->_getMageConfig()->saveConfig(self::XML_FORM_URL_CONFIG, self::XML_SEARCH_LAYERED_DISABLED, $scope, $scopeId);
+    }
+
+    /**
+     * Switch Smart native navigation.
+     *
+     * @param string $scope
+     * @param int    $scopeId
+     */
+    public function switchSmartNavigationNative($state, $scope = 'stores', $scopeId = 0)
+    {
+        if ($state == 'on') {
+            $this->_getMageConfig()->deleteConfig(self::XML_SMART_NAV_NATIVE_CONFIG, 'default', $scopeId);
+            $this->_getMageConfig()->saveConfig(self::XML_SMART_NAV_NATIVE_CONFIG, self::XML_SEARCH_LAYERED_ENABLED, $scope, $scopeId);
+        } else {
+            $this->_getMageConfig()->deleteConfig(self::XML_SMART_NAV_NATIVE_CONFIG, 'default', $scopeId);
+            $this->_getMageConfig()->saveConfig(self::XML_SMART_NAV_NATIVE_CONFIG, self::XML_SEARCH_LAYERED_DISABLED, $scope, $scopeId);
+        }
+
     }
 
     /**
@@ -346,7 +365,7 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
 
             if (!$this->isConfigDataValid($responseData['uuid'], $responseData['authentication_key'])) {
                 $this->_sendError('UUID or Authentication key are not valid | got UUID: '.$responseData['uuid'].
-                ' | authentication_key: '.$responseData['authentication_key']);
+                    ' | authentication_key: '.$responseData['authentication_key']);
             }
         }
 

@@ -266,7 +266,7 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
                 curl_setopt_array(
                     $ch,
                     array(
-                    CURLOPT_POSTFIELDS => $data,
+                        CURLOPT_POSTFIELDS => $data,
                     )
                 );
             }
@@ -717,7 +717,7 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 
     /**
      * Deprecated, use getAuthorizationKey().
-     * 
+     *
      * @return string | null
      */
     public function getKey()
@@ -754,10 +754,10 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
     {
         try {
             $read = Mage::getSingleton('core/resource')->getConnection('core_read');
-            
+
             $write = Mage::getSingleton('core/resource')
                 ->getConnection('core_write');
-            
+
             $_tableprefix = (string) Mage::getConfig()->getTablePrefix();
             $tblExist = $write->showTableStatus(
                 $_tableprefix.'autocompleteplus_config'
@@ -767,7 +767,7 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
                 return '';
             }
 
-            $sql = 'SELECT * FROM `'. 
+            $sql = 'SELECT * FROM `'.
                 $_tableprefix.'autocompleteplus_config` WHERE `id` =1';
             $licenseData = $read->fetchAll($sql);
             if (array_key_exists('server_type', $licenseData[0])) {
@@ -794,10 +794,10 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         try {
             $_tableprefix = (string) Mage::getConfig()->getTablePrefix();
             $read = Mage::getSingleton('core/resource')->getConnection('core_read');
-            
+
             $write = Mage::getSingleton('core/resource')
                 ->getConnection('core_write');
-            
+
             $tblExist = $write->showTableStatus(
                 $_tableprefix.'autocompleteplus_config'
             );
@@ -806,12 +806,12 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
                 return;
             }
 
-            $sqlFetch = 'SELECT * FROM '.$_tableprefix. 
+            $sqlFetch = 'SELECT * FROM '.$_tableprefix.
                 'autocompleteplus_config WHERE id = 1';
             $updates = $write->fetchAll($sqlFetch);
 
             if ($updates && count($updates) != 0) {
-                $sql = 'UPDATE '.$_tableprefix. 
+                $sql = 'UPDATE '.$_tableprefix.
                     'autocompleteplus_config SET server_type=? WHERE id = 1';
                 $write->query($sql, array($end_point));
             } else {
@@ -952,7 +952,7 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 
     /**
      * CreateMultiStoreByScopeJson
-     * 
+     *
      * @param array $storesArr comment
      *
      * @return array
@@ -975,30 +975,30 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 
             $storeComplete = $value;
 
-            if (array_key_exists(self::STORES_SCOPE, $locales) 
+            if (array_key_exists(self::STORES_SCOPE, $locales)
                 && array_key_exists($storeId, $locales[self::STORES_SCOPE])
             ) {
                 $storeComplete['lang'] = $locales[self::STORES_SCOPE][$storeId];
-            } elseif (array_key_exists(self::WEBSITES_SCOPE, $locales) 
+            } elseif (array_key_exists(self::WEBSITES_SCOPE, $locales)
                 && array_key_exists(
                     $storeComplete[self::WEBSITE_ID], $locales[self::WEBSITES_SCOPE]
                 )
             ) {
                 $storeComplete['lang'] = $locales[self::WEBSITES_SCOPE]
                 [$storeComplete[self::WEBSITE_ID]];
-                
-            } elseif (array_key_exists(self::DEFAULT_SCOPE, $locales) 
+
+            } elseif (array_key_exists(self::DEFAULT_SCOPE, $locales)
                 && array_key_exists(0, $locales[self::DEFAULT_SCOPE])
             ) {
                 $storeComplete['lang'] = $locales[self::DEFAULT_SCOPE][0];
             }
 
             if (!$useStoreCode) {
-                if (array_key_exists(self::STORES_SCOPE, $storeUrls) 
+                if (array_key_exists(self::STORES_SCOPE, $storeUrls)
                     && array_key_exists($storeId, $storeUrls[self::STORES_SCOPE])
                 ) {
                     $storeComplete['url'] = $storeUrls[self::STORES_SCOPE][$storeId];
-                } elseif (array_key_exists(self::WEBSITES_SCOPE, $storeUrls) 
+                } elseif (array_key_exists(self::WEBSITES_SCOPE, $storeUrls)
                     && array_key_exists(
                         $storeComplete[self::WEBSITE_ID],
                         $storeUrls[self::WEBSITES_SCOPE]
@@ -1006,8 +1006,8 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
                 ) {
                     $storeComplete['url'] = $storeUrls[self::WEBSITES_SCOPE]
                     [$storeComplete[self::WEBSITE_ID]];
-                    
-                } elseif (array_key_exists(self::DEFAULT_SCOPE, $storeUrls) 
+
+                } elseif (array_key_exists(self::DEFAULT_SCOPE, $storeUrls)
                     && array_key_exists(0, $storeUrls[self::DEFAULT_SCOPE])
                 ) {
                     $storeComplete['url'] = $storeUrls[self::DEFAULT_SCOPE][0];
@@ -1028,7 +1028,7 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 
     /**
      * CreateMultiStoreJson
-     * 
+     *
      * @param array $storesArr comment
      *
      * @return array

@@ -57,7 +57,7 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
         $scope = $request->getParam('scope', 'stores');
         $scopeId = $request->getParam('store_id', 1);
         $mini_form_url_instantsearchplus = $request->getParam('mini_form_url_instantsearchplus', '0');
-        
+
         if (!$this->valid($uuid, $authkey)) {
             $resp = json_encode(
                 array('status' => 'error: '.'Authentication failed')
@@ -74,7 +74,7 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
             } else {
                 $this->_getConfig()->disableMiniFormUrlRewrite($scope, $scopeId);
             }
-            
+
             Mage::app()->getCacheInstance()->cleanType('config');
         } catch (Exception $e) {
             $resp = json_encode(array('status' => 'error: '.$e->getMessage()));
@@ -86,7 +86,7 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
         }
 
         $resp = array('new_state' => 1,
-                      'status' => 'ok',
+            'status' => 'ok',
         );
 
         $response->setBody(json_encode($resp));
@@ -132,7 +132,7 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
         }
 
         $resp = array('new_state' => 0,
-                      'status' => 'ok',
+            'status' => 'ok',
         );
 
         $response->setBody(json_encode($resp));
@@ -176,6 +176,58 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
 
         $resp = json_encode(array('current_state' => $current_state));
         $response->setBody($resp);
+    }
+
+    /**
+     * Switches smart navigation native on/off
+     *
+     * @return void
+     */
+    public function switchSmartNavigationNativeAction()
+    {
+        $response = $this->getResponse();
+        $request = $this->getRequest();
+        $authkey = $request->getParam('authentication_key');
+        $uuid = $request->getParam('uuid');
+        $scope = $request->getParam('scope', 'stores');
+        $scopeId = $request->getParam('store_id', 1);
+        $state = $request->getParam('state');
+
+        if (!in_array($state, array('on', 'off'))) {
+            $resp = json_encode(
+                array('status' => 'error: '.'Wrong state')
+            );
+            $response->setBody($resp);
+
+            return;
+        }
+
+        if (!$this->valid($uuid, $authkey)) {
+            $resp = json_encode(
+                array('status' => 'error: '.'Authentication failed')
+            );
+            $response->setBody($resp);
+
+            return;
+        }
+
+        try {
+            $this->_getConfig()->switchSmartNavigationNative($state, $scope, $scopeId);
+            Mage::app()->getCacheInstance()->cleanType('config');
+        } catch (Exception $e) {
+            $resp = json_encode(array('status' => 'error: '.$e->getMessage()));
+            $response->setBody($resp);
+
+            Mage::logException($e);
+
+            return;
+        }
+
+        $resp = array('new_state' => $state,
+            'status' => 'ok',
+        );
+
+        $response->setBody(json_encode($resp));
     }
 
     /**

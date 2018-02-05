@@ -126,7 +126,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         Mage::app()->setCurrentStore($storeId);
 
         $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
-        
+
         $response->clearHeaders();
         $response->setHeader('Content-type', 'text/xml');
         $xml = $catalogModel->renderUpdatesCatalogXml($count, $from, $to, $storeId);
@@ -163,10 +163,10 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
     }
 
     /**
-    * Returns version info json
-    *
-    * @return void
-    */
+     * Returns version info json
+     *
+     * @return void
+     */
     public function versAction()
     {
         $response = $this->getResponse();
@@ -194,7 +194,11 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         $miniform_change = Mage::getStoreConfig(
             'autocompleteplus/config/miniform_change'
         );
-        
+
+        $smart_nav_native = Mage::getStoreConfig(
+            'autocompleteplus/config/smart_nav_native'
+        );
+
         if (defined('COMPILER_INCLUDE_PATH')) {
             $compilerEnabled = true;
         } else {
@@ -235,7 +239,8 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
             'flat_products_enabled' => $flatProductsEnabled,
             'flat_categories_enabled' => $flatCategoriesEnabled,
             'compiler_enabled' => $compilerEnabled,
-            'miniform_change' => $miniform_change
+            'miniform_change' => $miniform_change,
+            'smart_nav_native' => $smart_nav_native
         );
 
         $response->clearHeaders();
@@ -265,7 +270,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
             'uuid' => $this->_getConfig()->getUUID(),
             'site_url' => $helper->getConfigDataByFullPath('web/unsecure/base_url'),
             'store_id' => $catalogReport->getCurrentStoreId(),
-            );
+        );
 
         $this->getResponse()->setHeader('Content-type', 'application/json');
         $this->getResponse()->setBody(json_encode($result));
@@ -429,10 +434,10 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
 
         $url = $url_domain.http_build_query(
                 array(
-                        'store_id' => $storeId,
-                        'site_url' => $site_url,
-                     )
-        );
+                    'store_id' => $storeId,
+                    'site_url' => $site_url,
+                )
+            );
 
         $helper = Mage::helper('autocompleteplus_autosuggest');
         $resp = $helper->sendCurl($url);

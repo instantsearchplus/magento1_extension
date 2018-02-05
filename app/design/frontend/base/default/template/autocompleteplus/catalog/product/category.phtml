@@ -1,0 +1,64 @@
+<?php
+$store_id = Mage::app()->getStore()->getStoreId();
+$config = Mage::getModel('autocompleteplus_autosuggest/config');
+$uuid = $config->getUUID();
+$query = htmlentities(Mage::app()->getRequest()->getParam('q'), ENT_QUOTES);
+$match_value = '';
+
+try{
+    $formkey_html = $this->getBlockHtml('formkey');
+    $pattern = '/.*form_key.*value=\"([^\"]+)\"/s';
+    if (preg_match($pattern, $formkey_html, $match)) {
+        if ($match) {
+                $match_value = $match[1];
+        }
+    }
+} catch (Exception $e) {
+    Mage::logException($e);
+}
+
+?>
+<?php
+    $_helper    = $this->helper('catalog/output');
+    $_category  = $this->getCurrentCategory();
+    $_imgHtml   = '';
+    if ($_imgUrl = $_category->getImageUrl()) {
+        $_imgHtml = '<p class="category-image"><img src="'.$_imgUrl.'" alt="'.$this->escapeHtml($_category->getName()).'" title="'.$this->escapeHtml($_category->getName()).'" /></p>';
+        $_imgHtml = $_helper->categoryAttribute($_category, $_imgHtml, 'image');
+    }
+?>
+<div class="page-title category-title">
+    <?php if($this->IsRssCatalogEnable() && $this->IsTopCategory()): ?>
+        <a href="<?php echo $this->getRssLink() ?>" class="link-rss"><?php echo $this->__('Subscribe to RSS Feed') ?></a>
+    <?php endif; ?>
+    <h1><?php echo $_helper->categoryAttribute($_category, $_category->getName(), 'name') ?></h1>
+</div>
+
+<?php echo $this->getMessagesBlock()->toHtml() ?>
+
+<?php if($_imgUrl): ?>
+    <?php echo $_imgHtml ?>
+<?php endif; ?>
+
+<?php if($_description=$this->getCurrentCategory()->getDescription()): ?>
+    <div class="category-description std">
+        <?php echo $_helper->categoryAttribute($_category, $_description, 'description') ?>
+    </div>
+    <?php endif; ?>
+
+<?php if($this->isContentMode()): ?>
+    <?php echo $this->getCmsBlockHtml() ?>
+<?php endif; ?>
+        <!-- <div id="isp_search_result_page"></div> -->
+
+        <script>
+            var __isp_fulltext_search_obj = {
+                uuid: "<?php echo $this->escapeHtml($config->getUUID()); ?>",
+                store_id: <?php echo $this->escapeHtml($store_id); ?>,
+                query: "<?php echo $this->escapeHtml($query); ?>",
+                formkey: "<?php echo $this->escapeHtml($match_value); ?>"
+            };
+        </script>
+<div id="isp_search_result_page"></div>
+<script src="https://magento.instantsearchplus.com/js/search_result_loading_page.js?isp_platform=magento&UUID=<?php echo $this->escapeHtml($config->getUUID()); ?>&store_id=<?php echo $this->escapeHtml($store_id); ?>"></script>
+

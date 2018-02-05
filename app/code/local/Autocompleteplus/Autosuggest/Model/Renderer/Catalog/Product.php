@@ -981,11 +981,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
     {
         $specialFromDateGmt = null;
         if ($specialFromDate != null) {
-            $specialFromDateGmt = strtotime(
-                (string)Mage::app()
-                    ->getLocale()
-                    ->utcDate($this->getStoreId(), $specialFromDate)
-            );
+            $specialFromDateGmt = strtotime(gmdate('d.m.Y H:i', strtotime($specialFromDate)));
         }
         if ($specialFromDateGmt && $specialFromDateGmt > $nowDateGmt) {
             $this->_batchesHelper->writeProductUpdate(
@@ -996,11 +992,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                 $this->getSimpleProductParent()
             );
         } else if ($specialToDate != null) {
-            $specialToDateGmt = strtotime(
-                (string)Mage::app()
-                    ->getLocale()
-                    ->utcDate($this->getStoreId(), $specialToDate)
-            );
+            $specialToDateGmt = strtotime(gmdate('d.m.Y H:i', strtotime($specialToDate)));
             $specialToDateGmt += (86400 + 300); //make "to" limit inclusive and another 5 minutes for safety
             if ($specialToDateGmt > $nowDateGmt) {
                 $this->_batchesHelper->writeProductUpdate(
