@@ -150,3 +150,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [3.1.4] - 2017-06-14 15:45:00
 ### Fixed
 - Send webhooks without waiting for response
+
+## [3.1.5] - 2017-07-04 15:42:00
+### Added
+- Sku change as remove item
+- Disabling item support
+- Overlined price support

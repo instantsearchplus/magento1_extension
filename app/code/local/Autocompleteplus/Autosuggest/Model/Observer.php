@@ -161,8 +161,16 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
             $oldSku = $origData['sku'];
             if ($sku != $oldSku) {
                 $this->_writeproductDeletion($oldSku, $productId, $storeId, $product);
+                return;
             }
         }
+
+        //recording disabled item as deleted
+        if ($product->getStatus() == '2') {
+            $this->_writeproductDeletion($sku, $productId, $storeId, $product);
+            return;
+        }
+
         $dt = Mage::getSingleton('core/date')->gmtTimestamp();
 
         $simple_product_parents = ($product->getTypeID() == 'simple') ? Mage::getModel('catalog/product_type_configurable')->getParentIdsByChild($product->getId()) : array();

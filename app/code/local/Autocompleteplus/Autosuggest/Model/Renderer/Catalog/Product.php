@@ -763,7 +763,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
         }
 
         $url = Mage::helper('catalog/product')->getProductUrl($this->getProduct());
-
+        $regularPrice = 0;
         if ($this->getProduct()->getTypeId() != Mage_Catalog_Model_Product_Type::TYPE_BUNDLE) {
             $specialFromDate = $this->getProduct()->getSpecialFromDate();
             $specialToDate = $this->getProduct()->getSpecialToDate();
@@ -772,6 +772,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             if (!is_null($specialPrice) && $specialPrice != false) {
                 if (Mage::app()->getLocale()->isStoreDateInInterval($this->getStoreId(), $specialFromDate, $specialToDate)) {
                     $calculatedFinalPrice = $this->getProduct()->getSpecialPrice();
+                    $regularPrice = $this->getProduct()->getPrice();
                 }
             }
         } else {
@@ -782,7 +783,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             $url = Mage::helper('catalog/product')->getProductUrl($this->getProduct()->getId());
         }
 
-        $productElement = $this->getXmlElement()->createChild('product', array(
+        $xmlAttributes = array(
             'price_min' => ($priceRange['price_min']),
             'price_max' => ($priceRange['price_max']),
             'store' => ($this->getStoreId()),
@@ -801,7 +802,13 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             'last_updated' => ($this->getProduct()->getUpdatedAt()),
             'updatedate' => ($this->getUpdateDate()),
             'get_by_id_status' => intval($this->getGetByIdStatus()),
-        ));
+        );
+
+        if ($calculatedFinalPrice < $regularPrice) {
+            $xmlAttributes['price_compare_at_price'] = $regularPrice;
+        }
+
+        $productElement = $this->getXmlElement()->createChild('product', $xmlAttributes);
 
         $productRating = $this->getProduct()->getRatingSummary();
         $this->getXmlElement()->createChild('description', false,
