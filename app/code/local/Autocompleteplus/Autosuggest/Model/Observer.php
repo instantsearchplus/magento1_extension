@@ -199,13 +199,6 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                     // @codingStandardsIgnoreLine
                     $batch->save();
                 }
-                try {
-                    $helper = Mage::helper('autocompleteplus_autosuggest');
-                    $checksum = $helper->calculateChecksum($product);
-                    $helper->updateSavedProductChecksum($productId, $sku, $product_store, $checksum);
-                } catch (Exception $e) {
-                    Mage::logException($e);
-                }
 
                 // trigger update for simple product's configurable parent
                 if (!empty($simple_product_parents)) {   // simple product has configural parent

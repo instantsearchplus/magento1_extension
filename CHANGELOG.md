@@ -111,3 +111,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Version number format
 ### Added
 - Catalogsearch helper
+
+## [3.0.17] - 2017-01-15 10:51:00
+### Added
+- Miniform url change handle
+- Special price from/to support
+- Xml headers for products/updates fetch

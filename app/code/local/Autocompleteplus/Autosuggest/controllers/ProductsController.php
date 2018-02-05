@@ -80,6 +80,8 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
 
         Mage::app()->setCurrentStore($storeId);
 
+        $response->clearHeaders();
+        $response->setHeader('Content-type', 'text/xml');
         $xml = $catalogModel->renderCatalogXml(
             $startInd,
             $count,
@@ -88,8 +90,6 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
             $monthInterval,
             $checksum
         );
-        
-        $response->setHeader('Content-type', 'text/xml');
         $response->setBody($xml);
         Varien_Profiler::stop('Autocompleteplus_Autosuggest_Products_Send');
     }
@@ -129,11 +129,10 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         Mage::app()->setCurrentStore($storeId);
 
         $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
-
-        $xml = $catalogModel->renderUpdatesCatalogXml($count, $from, $to, $storeId);
-
+        
         $response->clearHeaders();
         $response->setHeader('Content-type', 'text/xml');
+        $xml = $catalogModel->renderUpdatesCatalogXml($count, $from, $to, $storeId);
         $response->setBody($xml);
     }
 

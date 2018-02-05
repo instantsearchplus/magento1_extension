@@ -719,6 +719,16 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
         }
 
         $url = Mage::helper('catalog/product')->getProductUrl($this->getProduct());
+        
+        $specialFromDate = $this->getProduct()->getSpecialFromDate();
+        $specialToDate = $this->getProduct()->getSpecialToDate();
+        $calculatedFinalPrice = $this->getProduct()->getFinalPrice();
+        $specialPrice = $this->getProduct()->getSpecialPrice();
+        if (!is_null($specialPrice) && $specialPrice != false) {
+            if (Mage::app()->getLocale()->isStoreDateInInterval($this->getStoreId(), $specialFromDate, $specialToDate)) {
+                $calculatedFinalPrice = $this->getProduct()->getSpecialPrice();
+            }
+        }
 
         if ($url == null || $url == '') {
             $url = Mage::helper('catalog/product')->getProductUrl($this->getProduct()->getId());
@@ -734,7 +744,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             'type' => ($this->getProduct()->getTypeId()),
             'currency' => ($this->getCurrency()),
             'visibility' => ($this->getProduct()->getVisibility()),
-            'price' => ($this->getProduct()->getFinalPrice()),
+            'price' => $calculatedFinalPrice,
             'url' => $url,
             'thumbs' => utf8_encode(htmlspecialchars((Mage::helper('catalog/image')->init($this->getProduct(), $this->getImageField())))),
             'base_image' => utf8_encode(htmlspecialchars((Mage::getModel('catalog/product_media_config')->getMediaUrl($this->getProduct()->getImage())))),

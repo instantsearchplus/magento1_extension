@@ -56,7 +56,8 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
         $uuid = $request->getParam('uuid');
         $scope = $request->getParam('scope', 'stores');
         $scopeId = $request->getParam('store_id', 1);
-
+        $mini_form_url_instantsearchplus = $request->getParam('mini_form_url_instantsearchplus', '0');
+        
         if (!$this->valid($uuid, $authkey)) {
             $resp = json_encode(
                 array('status' => 'error: '.'Authentication failed')
@@ -68,6 +69,12 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
 
         try {
             $this->_getConfig()->enableLayeredNavigation($scope, $scopeId);
+            if ($mini_form_url_instantsearchplus === '1') {
+                $this->_getConfig()->enableMiniFormUrlRewrite($scope, $scopeId);
+            } else {
+                $this->_getConfig()->disableMiniFormUrlRewrite($scope, $scopeId);
+            }
+            
             Mage::app()->getCacheInstance()->cleanType('config');
         } catch (Exception $e) {
             $resp = json_encode(array('status' => 'error: '.$e->getMessage()));
@@ -113,6 +120,7 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
 
         try {
             $this->_getConfig()->disableLayeredNavigation($scope, $scopeId);
+            $this->_getConfig()->disableMiniFormUrlRewrite($scope, $scopeId);
             Mage::app()->getCacheInstance()->cleanType('config');
         } catch (Exception $e) {
             $resp = json_encode(array('status' => 'error: '.$e->getMessage()));

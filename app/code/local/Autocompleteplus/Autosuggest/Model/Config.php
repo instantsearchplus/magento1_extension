@@ -11,6 +11,7 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
     const XML_SEARCH_LAYERED_DISABLED = 0;
     const XML_SEARCH_LAYERED_ENABLED = 1;
     const XML_SEARCH_LAYERED_CONFIG = 'autocompleteplus/config/layered';
+    const XML_FORM_URL_CONFIG = 'autocompleteplus/config/miniform_change';
     const XML_API_ENDPOINT_CONFIG = 'default/autocompleteplus/config/api_endpoint';
     const XML_STORE_EMAIL_CONFIG = 'autocompleteplus/config/store_email';
     const XML_AUTHORIZATION_KEY_CONFIG = 'autocompleteplus_autosuggest/config/authorization_key';
@@ -91,6 +92,30 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
     public function getLayeredNavigationStatus($scopeId)
     {
         return Mage::getStoreConfig(self::XML_SEARCH_LAYERED_CONFIG, $scopeId);
+    }
+
+    /**
+     * Enable Layered Navigation.
+     *
+     * @param string $scope
+     * @param int    $scopeId
+     */
+    public function enableMiniFormUrlRewrite($scope = 'stores', $scopeId = 0)
+    {
+        $this->_getMageConfig()->deleteConfig(self::XML_FORM_URL_CONFIG, 'default', $scopeId);
+        $this->_getMageConfig()->saveConfig(self::XML_FORM_URL_CONFIG, self::XML_SEARCH_LAYERED_ENABLED, $scope, $scopeId);
+    }
+
+    /**
+     * Disable Layered Navigation.
+     *
+     * @param string $scope
+     * @param int    $scopeId
+     */
+    public function disableMiniFormUrlRewrite($scope = 'stores', $scopeId = 0)
+    {
+        $this->_getMageConfig()->deleteConfig(self::XML_FORM_URL_CONFIG, 'default', $scopeId);
+        $this->_getMageConfig()->saveConfig(self::XML_FORM_URL_CONFIG, self::XML_SEARCH_LAYERED_DISABLED, $scope, $scopeId);
     }
 
     /**

@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Autocompleteplus_Autosuggest>
-            <version>3.0.16</version>
+            <version>3.0.17</version>
             <url>http://autocompleteplus.com/</url>
             <modulename>Autocompleteplus_Autosuggest</modulename>
         </Autocompleteplus_Autosuggest>
@@ -89,15 +89,6 @@
                     </autocompleteplus_autosuggest>
                 </observers>
             </catalog_product_delete_before>
-            <adminhtml_controller_catalogrule_prepare_save>
-                <observers>
-                    <autocompleteplus_autosuggest>
-                        <type>singleton</type>
-                        <class>autocompleteplus_autosuggest/observer</class>
-                        <method>adminhtml_controller_catalogrule_prepare_save</method>
-                    </autocompleteplus_autosuggest>
-                </observers>
-            </adminhtml_controller_catalogrule_prepare_save>
         </events>
         <resources>
             <autosuggest_setup>
@@ -137,6 +128,11 @@
             <autocompleteplus_autosuggest>
                 <class>Autocompleteplus_Autosuggest_Helper</class>
             </autocompleteplus_autosuggest>
+            <catalogsearch>
+                <rewrite>
+                    <data>Autocompleteplus_Autosuggest_Helper_Catalogsearch</data>
+                </rewrite>
+            </catalogsearch>
         </helpers>
         <sales>
             <quote>

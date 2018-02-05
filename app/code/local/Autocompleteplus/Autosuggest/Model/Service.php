@@ -16,7 +16,10 @@ class Autocompleteplus_Autosuggest_Model_Service
         foreach ($storesInfo->stores as $i => $store) {
             $id = $store->store_id;
 
-            $productCollection = Mage::getModel('catalog/product')->getCollection()->setStoreId($id);
+            $productCollection = Mage::getModel('catalog/product')
+            ->getCollection()
+            ->setStoreId($id);
+            
             $productsCount = $productCollection->getSize();
 
             $batches = ceil($productsCount / 100);
