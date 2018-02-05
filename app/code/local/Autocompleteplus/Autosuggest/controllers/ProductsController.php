@@ -329,7 +329,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
             'autocompleteplus_autosuggest/catalogreport'
         );
         $helper = Mage::helper('autocompleteplus_autosuggest');
-
+        $get_ids = $this->getRequest()->getParam('get_ids', '0');
         $result = array(
             'num_of_products' => $catalogReport->getEnabledProductsCount(),
             'num_of_disabled_products' => $catalogReport->getDisabledProductsCount(),
@@ -341,6 +341,10 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
             'site_url' => $helper->getConfigDataByFullPath('web/unsecure/base_url'),
             'store_id' => $catalogReport->getCurrentStoreId(),
         );
+
+        if ($get_ids === '1') {
+            $result['ids'] = $catalogReport->getSearchableProductsIds();
+        }
 
         $this->getResponse()->setHeader('Content-type', 'application/json');
         $this->getResponse()->setBody(json_encode($result));

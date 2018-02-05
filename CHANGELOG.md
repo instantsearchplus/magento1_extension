@@ -224,3 +224,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Meta_keyword, meta_description, meta_title support
 
+## [3.2.5] - 2018-01-01 16:02:00
+### Fixed
+- Count of products (take index into account)
+### Added
+- Print product ids for debugging

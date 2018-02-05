@@ -28,10 +28,29 @@ class Autocompleteplus_Autosuggest_Model_Catalogreport extends Mage_Core_Model_A
         }
     }
 
+    public function getSearchableProductsIds()
+    {
+        $collection = $this->getProductCollectionStoreFilterFactory();
+        $collection->addMinimalPrice()
+            ->addFinalPrice();
+        $this->addEnabledFilterToCollection($collection);
+        $this->addVisibleInSearchFilterToCollection($collection);
+        $ids = array();
+        foreach($collection as $product) {
+            $ids[] = array(
+                'id' => $product->getID(),
+                'sku' => $product->getSku()
+            );
+        }
+        return $ids;
+    }
+
     public function getSearchableProductsCount()
     {
         try {
             $collection = $this->getProductCollectionStoreFilterFactory();
+            $collection->addMinimalPrice()
+                ->addFinalPrice();
             $this->addEnabledFilterToCollection($collection);
             $this->addVisibleInSearchFilterToCollection($collection);
 
