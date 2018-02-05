@@ -156,7 +156,9 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
 
         $attributesToSelect = $this->_getAttributesToSelect();
 
-        $productCollection->addAttributeToSelect($attributesToSelect);
+        $productCollection->addAttributeToSelect($attributesToSelect)
+            ->addMinimalPrice()
+            ->addFinalPrice();
 
         Mage::getModel('review/review')->appendSummary($productCollection);
 
@@ -270,7 +272,9 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         $attributesToSelect = $this->_getAttributesToSelect();
 
         $productCollection->addAttributeToSelect($attributesToSelect)
-            ->addAttributeToFilter('entity_id', array('in' => $productIds));
+            ->addAttributeToFilter('entity_id', array('in' => $productIds))
+            ->addMinimalPrice()
+            ->addFinalPrice();
 
         foreach ($productCollection as $product) {
             $updatedate = $updatesBulk[$product->getId()]['update_date'];
@@ -307,12 +311,15 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
 
         $attributesToSelect = $this->_getAttributesToSelect();
 
-        $productCollection->addAttributeToSelect($attributesToSelect);
-
         $productCollection->addAttributeToFilter(
             'entity_id',
             array('from' => $fromId)
         );
+
+        $productCollection->addAttributeToSelect($attributesToSelect)
+            ->addMinimalPrice()
+            ->addFinalPrice();
+
         $productCollection->setPageSize($count);
         $productCollection->setCurPage(1);
 
@@ -358,9 +365,11 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
 
         $attributesToSelect = $this->_getAttributesToSelect();
 
-        $productCollection->addAttributeToSelect($attributesToSelect);
-
         $productCollection->addAttributeToFilter('entity_id', array('in' => $ids));
+
+        $productCollection->addAttributeToSelect($attributesToSelect)
+            ->addMinimalPrice()
+            ->addFinalPrice();
 
         Mage::getModel('review/review')->appendSummary($productCollection);
 
@@ -404,6 +413,7 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             'special_from_date',
             'special_to_date',
             'sku',
+            'tier_price',
             'price_type'
         );
 

@@ -388,19 +388,25 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
      *
      * @param Varien_Event_Observer $observer
      */
-    public function webhook_service_call()
+    public function webhook_service_call($observer)
     {
-        // @codingStandardsIgnoreStart
-        /**
-         * Due to backward compatibility issues with Magento < 1.8.1 and cURL/Zend
-         * We need to use PHP's implementation of cURL directly rather than Zend or Varien.
-         */
-        $client = curl_init($this->_getWebhookObjectUri());
-        curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($client);
-        curl_close($client);
-        // @codingStandardsIgnoreEnd
-        return $response;
+        try {
+            // @codingStandardsIgnoreStart
+            /**
+             * Due to backward compatibility issues with Magento < 1.8.1 and cURL/Zend
+             * We need to use PHP's implementation of cURL directly rather than Zend or Varien.
+             */
+            $client = curl_init($this->_getWebhookObjectUri($observer->getEvent()->getName()));
+            curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
+            $response = curl_exec($client);
+            $res_obj = json_decode($response);
+            Mage::log(print_r($res_obj, true), null, 'autocomplete.log', true);
+            curl_close($client);
+            // @codingStandardsIgnoreEnd
+            return $response;
+        } catch (Exception $e) {
+            Mage::log($e->getMessage(), null, 'autocomplete.log', true);
+        }
     }
 
     /**
@@ -408,11 +414,11 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
      *
      * @return string
      */
-    protected function _getWebhookObjectUri()
+    protected function _getWebhookObjectUri($event_name)
     {
         $helper = Mage::helper('autocompleteplus_autosuggest');
         $parameters = array(
-            'event' => $this->getWebhookEventLabel(),
+            'event' => $this->getWebhookEventLabel($event_name),
             'UUID' => $this->getConfig()->getUUID(),
             'key' => $this->getConfig()->getAuthorizationKey(),
             'store_id' => Mage::app()->getStore()->getStoreId(),
@@ -433,23 +439,17 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
      *
      * @return string|void
      */
-    public function getWebhookEventLabel()
+    public function getWebhookEventLabel($event_name)
     {
-        $request = Mage::app()->getRequest();
-        $route = $request->getRouteName();
-        $controller = $request->getControllerName();
-        $action = $request->getActionName();
-        if ($route != 'checkout') {
-            return;
-        }
-        if ($controller == 'cart' && $action == 'index') {
-            return 'cart';
-        }
-        if ($controller == 'onepage' && $action == 'index') {
-            return 'checkout';
-        }
-        if ($controller == 'onepage' && $action == 'success') {
-            return 'success';
+        switch ($event_name) {
+            case 'controller_action_postdispatch_checkout_cart_index':
+                return 'cart';
+            case 'controller_action_postdispatch_checkout_onepage_index':
+                return 'checkout';
+            case 'controller_action_postdispatch_checkout_onepage_success':
+                return 'success';
+            default:
+                return null;
         }
     }
 

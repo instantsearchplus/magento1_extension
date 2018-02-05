@@ -58,6 +58,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
     protected $_outputHelper;
     protected $_attributesValuesCache;
     protected $_attributesSetsCache;
+    protected $_customersGroups;
 
     const ISPKEY = 'ISPKEY_';
 
@@ -68,6 +69,11 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
     {
         $this->_attributesValuesCache = array();
         $this->_attributesSetsCache = array();
+        $this->_customersGroups = array();
+        $customerGroups = Mage::getModel('customer/group')->getCollection();
+        foreach($customerGroups as $type) {
+            $this->_customersGroups[$type->getCustomerGroupId()] = $type->getCustomerGroupCode();
+        }
     }
 
     /**
@@ -603,15 +609,50 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                                         $attribute->getAttributeCode()
                                     ),
                                 ), utf8_encode(
-                                    htmlspecialchars(
-                                        $attribute->getFrontend()->getValue($child_product)
-                                    )
-                                ), $productVariation
+                                htmlspecialchars(
+                                    $attribute->getFrontend()->getValue($child_product)
+                                )
+                            ), $productVariation
                             );
                         }
                     }
                 }
             }
+        }
+    }
+
+    protected function renderTieredPrices($product, $productXmlElem) {
+        $tieredPrices = Mage::getResourceModel('catalog/product_attribute_backend_tierprice')
+            ->loadPriceData(
+                $product->getID(),
+                Mage::app()->getWebsite()->getId()
+            );
+
+        if (count($tieredPrices) > 0) {
+            $tieredPricesElem = $this->getXmlElement()
+                ->createChild(
+                    'tiered_prices',
+                    false,
+                    false,
+                    $productXmlElem
+                );
+
+            foreach ($tieredPrices as $trP) {
+                $this->getXmlElement()
+                    ->createChild(
+                        'tiered_price',
+                        array(
+                            'cust_group' => array_key_exists($trP['cust_group'], $this->_customersGroups) ?
+                                $this->_customersGroups[$trP['cust_group']] : $trP['cust_group'],
+                            'cust_group_id' => $trP['cust_group'],
+                            'price' => $trP['price'],
+                            'min_qty' => $trP['price_qty']
+                        ),
+                        false,
+                        $tieredPricesElem
+                    );
+            }
+
         }
     }
 
@@ -723,18 +764,18 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
 
         $url = Mage::helper('catalog/product')->getProductUrl($this->getProduct());
 
-        $specialFromDate = $this->getProduct()->getSpecialFromDate();
-        $specialToDate = $this->getProduct()->getSpecialToDate();
-        $calculatedFinalPrice = $this->getProduct()->getFinalPrice();
-        $specialPrice = $this->getProduct()->getSpecialPrice();
-        if (!is_null($specialPrice) && $specialPrice != false) {
-            if (Mage::app()->getLocale()->isStoreDateInInterval($this->getStoreId(), $specialFromDate, $specialToDate)) {
-                if ($this->getProduct()->getTypeId() != Mage_Catalog_Model_Product_Type::TYPE_BUNDLE) {
+        if ($this->getProduct()->getTypeId() != Mage_Catalog_Model_Product_Type::TYPE_BUNDLE) {
+            $specialFromDate = $this->getProduct()->getSpecialFromDate();
+            $specialToDate = $this->getProduct()->getSpecialToDate();
+            $calculatedFinalPrice = $this->getProduct()->getFinalPrice();
+            $specialPrice = $this->getProduct()->getSpecialPrice();
+            if (!is_null($specialPrice) && $specialPrice != false) {
+                if (Mage::app()->getLocale()->isStoreDateInInterval($this->getStoreId(), $specialFromDate, $specialToDate)) {
                     $calculatedFinalPrice = $this->getProduct()->getSpecialPrice();
-                } else {
-                    $calculatedFinalPrice = $priceRange['price_min'];
                 }
             }
+        } else {
+            $calculatedFinalPrice = $priceRange['price_min'];
         }
 
         if ($url == null || $url == '') {
@@ -773,7 +814,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             $this->getProduct()->getSku(), $productElement);
 
         $this->getXmlElement()->createChild('url_additional', false,
-                $this->_getAdditionalProductUrl(), $productElement);
+            $this->_getAdditionalProductUrl(), $productElement);
 
         if ($productRating) {
             $this->getXmlElement()->createChild('review', false, $productRating->getRatingSummary(),
@@ -832,13 +873,15 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             }
         }
 
+        $this->renderTieredPrices($this->getProduct(), $productElement);
+
         $this->getXmlElement()->createChild('categories', false,
             implode(';', $categories), $productElement);
 
         $this->getXmlElement()->createChild('meta_title', false,
-                $this->getProduct()->getMetaTitle(), $productElement);
+            $this->getProduct()->getMetaTitle(), $productElement);
         $this->getXmlElement()->createChild('meta_description', false,
-                $this->getProduct()->getMetaDescription(), $productElement);
+            $this->getProduct()->getMetaDescription(), $productElement);
     }
 
     protected function getBundlePriceRange($product) {
@@ -865,7 +908,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
     public function _getAdditionalProductUrl()
     {
         $is_get_url_path_supported = true;
-        if (method_exists('Mage', 'getVersionInfo')) {  
+        if (method_exists('Mage', 'getVersionInfo')) {
             /**
              * GetUrlPath is not supported on EE 1.13... & 1.14...
              */

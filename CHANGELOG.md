@@ -127,3 +127,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Bundle products support
 - Alternative way to get product url
 - Send emails template
+
+## [3.1.1] - 2017-03-19 11:39:00
+### Added
+- Minimal price (indexed) to products collection
+- Customer groups and Tier prices support
+### Fixed
+- Missing checkout custom modules webhooks
+### Removed
+- Thank you emails webhook
