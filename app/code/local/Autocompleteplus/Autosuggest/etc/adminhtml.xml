@@ -15,6 +15,10 @@
                             </config>
                         </children>
                     </system>
+                    <autocompleteplus translate="label" module="autocompleteplus_autosuggest">
+                        <title>InstantSearch+</title>
+                        <sort_order>999</sort_order>
+                    </autocompleteplus>
                 </children>
             </admin>
         </resources>

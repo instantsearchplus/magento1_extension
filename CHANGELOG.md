@@ -176,3 +176,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [3.1.8] - 2017-08-07 16:56:00
 ### Added
 - Image of variants
+
+## [3.1.9] - 2017-08-20 22:56:00
+### Added
+- Instantsearchplus items as an option for permissions
+- Miniform url change flag in vers
+### Modified
+- Calls for template to 0-1ms

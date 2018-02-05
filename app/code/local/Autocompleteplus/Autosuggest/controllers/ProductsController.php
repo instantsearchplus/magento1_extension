@@ -191,6 +191,10 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
             'catalog/frontend/flat_catalog_category', 0
         );
 
+        $miniform_change = Mage::getStoreConfig(
+            'autocompleteplus/config/miniform_change'
+        );
+        
         if (defined('COMPILER_INCLUDE_PATH')) {
             $compilerEnabled = true;
         } else {
@@ -230,7 +234,8 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
             'enabled' => $enabled,
             'flat_products_enabled' => $flatProductsEnabled,
             'flat_categories_enabled' => $flatCategoriesEnabled,
-            'compiler_enabled' => $compilerEnabled
+            'compiler_enabled' => $compilerEnabled,
+            'miniform_change' => $miniform_change
         );
 
         $response->clearHeaders();

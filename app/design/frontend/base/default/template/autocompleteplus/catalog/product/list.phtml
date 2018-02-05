@@ -34,7 +34,7 @@ try{
     $html=Mage::app()->getCacheInstance()->load('autocomplete_template_serp');
 
     if (!$html) {
-        $server_url = $helper->getServerUrl();
+        $server_url = 'http://0-1ms-dot-acp-magento.appspot.com/';//$helper->getServerUrl();
         $url = $server_url .
             '/ma_load_search_page?isp_platform=magento&r=002&uuid=' .
             $config->getUUID() . '&store_id=' . $store_id;
