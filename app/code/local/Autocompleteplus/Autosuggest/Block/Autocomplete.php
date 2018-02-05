@@ -37,7 +37,7 @@ class Autocompleteplus_Autosuggest_Block_Autocomplete extends Mage_Core_Block_Ab
                 $params['alternatives'] = json_encode($alternatives);
             }
             if ($results_for) {
-                $params['results_for'] = urlencode($results_for);
+                $params['results_for'] = $results_for;
             }
         } else {
             $params['wrong_flow'] = 1;
