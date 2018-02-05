@@ -424,7 +424,7 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
      *
      * @return void
      */
-    private function post_without_wait($url, $params=array(), $type='POST')
+    private function post_without_wait($url, $params=array(), $type='POST', $post_params=array())
     {
         foreach ($params as $key => &$val) {
             if (is_array($val)) $val = implode(',', $val);
