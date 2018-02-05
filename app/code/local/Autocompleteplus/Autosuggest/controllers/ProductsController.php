@@ -40,7 +40,6 @@
  */
 class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_Autosuggest_Controller_Abstract
 {
-    const MAX_NUM_OF_PRODUCTS_CHECKSUM_ITERATION = 250;
     const MISSING_PARAMETER = 'false';
     const PUSH_IN_PROGRESS = 1;
     const PUSH_COMPLETE = 2;
@@ -75,7 +74,6 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         $storeId = $request->getParam('store', $store);
         $orders = $request->getParam('orders', '');
         $monthInterval = $request->getParam('month_interval', 12);
-        $checksum = $request->getParam('checksum', '');
         $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
 
         Mage::app()->setCurrentStore($storeId);
@@ -87,8 +85,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
             $count,
             $storeId,
             $orders,
-            $monthInterval,
-            $checksum
+            $monthInterval
         );
         $response->setBody($xml);
         Varien_Profiler::stop('Autocompleteplus_Autosuggest_Products_Send');
@@ -438,221 +435,6 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
 
         if ($helper->validateUuid($response_json->uuid)) {
             $this->_setUUID($response_json->uuid);
-        }
-    }
-
-    /**
-     * Checks deletes
-     *
-     * @return void
-     */
-    public function checkDeletedAction()
-    {
-        $response = $this->getResponse();
-        $helper = Mage::helper('autocompleteplus_autosuggest');
-        if (!$helper->isChecksumTableExists()) {
-            return;
-        }
-        $time_stamp = time();
-
-        $read = Mage::getSingleton('core/resource')->getConnection('core_read');
-        $table_prefix = (string) Mage::getConfig()->getTablePrefix();
-
-        $post = $this->getRequest()->getParams();
-        if (array_key_exists('store_id', $post)) {
-            $store_id = $post['store_id'];
-        } else {
-            $store_id = Mage::app()->getStore()->getStoreId();          // default
-        }
-
-        $sql_fetch = 'SELECT identifier FROM '.$table_prefix.'autocompleteplus_checksum WHERE store_id=?';
-        /**
-         * Empty array if fails
-         */
-        $updates = $read->fetchPairs($sql_fetch, array($store_id));
-        if (empty($updates)) {
-            return;
-        }
-
-        /**
-         * Array of all checksum table identifiers
-         */
-        $checksum_ids = array_keys($updates);
-        $collection = Mage::getResourceModel('catalog/product_collection');
-        $collection->addFieldToFilter('entity_id', array('in' => $checksum_ids));
-        $found_ids = $collection->getAllIds();
-
-        /**
-         * List of identifiers that are not
-         * present in the store (removed at some point)
-         */
-        $removed_products_list = array_diff($checksum_ids, $found_ids);
-        $removed_ids = array();
-
-        /**
-         * Removing non-existing identifiers from checksum table
-         */
-        if (!empty($removed_products_list)) {
-            $write = Mage::getSingleton('core/resource')
-                ->getConnection('core_write');
-            $sql_delete = 'DELETE FROM '.$table_prefix.'autocompleteplus_checksum WHERE identifier IN ('.implode(',', $removed_products_list).')';
-            $write->query($sql_delete);
-
-            foreach ($removed_products_list as $product_id) {
-                $helper->deleteProductFromTables(
-                    $read,
-                    $write,
-                    $table_prefix,
-                    $product_id,
-                    $store_id
-                );
-                $removed_ids[] = $product_id;
-            }
-        }
-
-        $args = array('removed_ids' => $removed_ids,
-            'uuid' => $this->_getConfig()->getUUID(),
-            'store_id' => $store_id,
-            'latency' => time() - $time_stamp,         // seconds
-        );
-
-        $response->clearHeaders();
-        $response->setHeader('Content-type', 'application/json');
-        $response->setBody(json_encode($args));    // returning the summary
-    }
-
-    /**
-     * Returns checksum
-     *
-     * @return void
-     */
-    public function checksumAction()
-    {
-        $request = $this->getRequest();
-        $response = $this->getResponse();
-        $helper = Mage::helper('autocompleteplus_autosuggest');
-        $store_id = $request->getParam(
-            'store_id',
-            Mage::app()->getStore()->getStoreId()
-        );
-        $count = $request->getParam(
-            'count',
-            self::MAX_NUM_OF_PRODUCTS_CHECKSUM_ITERATION
-        );
-        $start_index = $request->getParam('offset', 0);
-        $php_timeout = $request->getParam('timeout', -1);
-        $is_single = $request->getParam('is_single', 0);
-        $uuid = $this->_getConfig()->getUUID();
-        $checksum_server = $helper->getServerUrl();
-        $collection = Mage::getModel('catalog/product')->getCollection();
-
-        if (!$helper->isChecksumTableExists()) {
-            $helper->ispErrorLog('checksum table not exist');
-            $response->setBody(
-                json_encode(array('status' => 'checksum table not exist'))
-            );
-
-            return;
-        }
-
-        $max_exe_time = -1;
-
-        if ($count > self::MAX_NUM_OF_PRODUCTS_CHECKSUM_ITERATION
-            && $php_timeout != -1
-        ) {
-            $max_exe_time = ini_get('max_execution_time');
-            ini_set('max_execution_time', $php_timeout);
-        }
-
-        $site_url = $helper->getConfigDataByFullPath('web/unsecure/base_url');
-
-        if ($store_id) {
-            $collection->addStoreFilter($store_id);
-        }
-
-        $num_of_products = $collection->getSize();
-
-        if ($count + $start_index > $num_of_products) {
-            $count = $num_of_products - $start_index;
-        }
-
-        // sending log to the server
-        $log_msg = 'Update checksum is starting...';
-        $log_msg .= (
-            ' number of products in this store: '.
-            $num_of_products.' | from: '.
-            $start_index.', to: '.($start_index + $count)
-        );
-
-        $server_url = $checksum_server.'/magento_logging_record';
-        $request = $server_url.'?uuid='.$uuid.
-            '&site_url='.$site_url.'&msg='.urlencode($log_msg);
-
-        if ($store_id) {
-            $request .= '&store_id='.$store_id;
-        }
-        $resp = $helper->sendCurl($request);
-
-        $start_time = time();
-        $num_of_updated_checksum = 0;
-        if ($count > self::MAX_NUM_OF_PRODUCTS_CHECKSUM_ITERATION) {
-            $iter = $start_index;
-            while ($iter < $count) {
-                // start updating the checksum table if needed
-                $num_of_updated_checksum += $helper->compareProductsChecksum(
-                    $iter,
-                    self::MAX_NUM_OF_PRODUCTS_CHECKSUM_ITERATION,
-                    $store_id
-                );
-                $iter += self::MAX_NUM_OF_PRODUCTS_CHECKSUM_ITERATION;
-            }
-        } else {
-            // start updating the checksum table if needed
-            $num_of_updated_checksum = $helper->compareProductsChecksum(
-                $start_index,
-                $count,
-                $store_id
-            );
-        }
-
-        $process_time = time() - $start_time;
-        $extVersion = (string) Mage::getConfig()
-            ->getNode()
-            ->modules
-            ->Autocompleteplus_Autosuggest
-            ->version;
-
-        /**
-         * Sending confirmation/summary to the server
-         */
-
-        $args = array(
-            'uuid' => $uuid,
-            'site_url' => $site_url,
-            'store_id' => $store_id,
-            'updated_checksum' => $num_of_updated_checksum,
-            'total_checksum' => $count,
-            'num_of_products' => $num_of_products,
-            'start_index' => $start_index,
-            'end_index' => $start_index + $count,
-            'count' => $count,
-            'ext_version' => $extVersion,
-            'mage_version' => Mage::getVersion(),
-            'latency' => $process_time,
-        );
-
-        if ($is_single) {
-            $args['is_single'] = 1;
-        }
-
-        $response->setBody(json_encode($args));
-
-        $resp = $helper->sendCurl(
-            $checksum_server.'/magento_checksum_iterator?'.http_build_query($args)
-        );
-
-        if ($max_exe_time != -1) {   // restore php max execution time
-            ini_set('max_execution_time', $max_exe_time);
         }
     }
 

@@ -17,25 +17,5 @@ $installer = $this;
 
 $installer->startSetup();
 
-$res = $installer->run("
-
-DROP TABLE IF EXISTS {$this->getTable('autocompleteplus_checksum')};
-
-CREATE TABLE IF NOT EXISTS {$this->getTable('autocompleteplus_checksum')} (
-
-    `identifier` VARCHAR( 255 ) NOT NULL,
-    
-    `sku` VARCHAR( 255 ) NOT NULL,
-    
-    `store_id` INT NOT NULL,
-    
-    `checksum` VARCHAR( 255 ) NOT NULL,
-    
-    PRIMARY KEY (`identifier`, `store_id`)
-
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-");
-
 Mage::log(__FILE__.' triggered', null, 'autocomplete.log', true);
 $installer->endSetup();

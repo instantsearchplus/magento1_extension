@@ -142,3 +142,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Send webhooks without waiting for response
 ### Fixed
 - Adding customer group id to the frontend injection
+
+## [3.1.3] - 2017-05-11 12:36:00
+### Removed
+- Checksum

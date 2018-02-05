@@ -129,15 +129,13 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         $count = 10000,
         $storeId = false,
         $orders = false,
-        $monthInterval = 12,
-        $checksum = false
+        $monthInterval = 12
     ) {
         $xmlGenerator = $this->getXmlGenerator();
         $count = ($count > 10000) ? 10000 : $count;
         $this->setStoreId($storeId);
         $this->setOrders($orders);
         $this->setMonthInterval($monthInterval);
-        $this->setChecksum($checksum);
 
         $xmlGenerator->setRootAttributes(
             array(
@@ -162,10 +160,6 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
 
         Mage::getModel('review/review')->appendSummary($productCollection);
 
-        if ($this->getChecksum() !== false) {
-            $this->setHasChecksum($checksum);
-        }
-
         if ($this->getOrders()) {
             $ordersData = $this->getOrdersPerProduct();
             $this->getProductRenderer()
@@ -182,18 +176,6 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
                 ->setXmlElement($xmlGenerator)
                 ->setAttributes($this->getAttributes())
                 ->renderXml();
-            if ($this->getHasChecksum()) {
-                if ($this->getHelper()->isChecksumTableExists()) {
-                    $checksum = $this->getHelper()->calculateChecksum($product);
-                    $this->getHelper()
-                        ->updateSavedProductChecksum(
-                            $product->getId(),
-                            $product->getSku(),
-                            $this->getStoreId(),
-                            $checksum
-                        );
-                }
-            }
         }
 
         return $xmlGenerator->generateXml();

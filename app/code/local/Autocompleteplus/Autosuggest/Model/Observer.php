@@ -304,7 +304,6 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                             // @codingStandardsIgnoreLine
                             ->save();
                     }
-                    $helper->updateDeletedProductChecksum($productId, $sku, $product_store);
                 }
             } catch (Exception $e) {
                 Mage::logException($e);
