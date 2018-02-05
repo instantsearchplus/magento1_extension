@@ -811,10 +811,10 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
         } else {
             $lastModifiedDate = $this->getUpdateDate();
         }
-        
+
         $thumb = null;
         $base_image = null;
-        
+
         if ($this->getImageField() != null && $this->getImageField() != '') {
             $thumb = $this->getProduct()->getData($this->getImageField());
             $base_image = $this->getProduct()->getData($this->getImageField());
@@ -999,7 +999,8 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
     {
         $specialFromDateGmt = null;
         if ($specialFromDate != null) {
-            $specialFromDateGmt = strtotime(gmdate('d.m.Y H:i', strtotime($specialFromDate)));
+            $localDate = new DateTime($specialFromDate, new DateTimeZone(Mage::getStoreConfig('general/locale/timezone')));
+            $specialFromDateGmt = $localDate->getTimestamp();
         }
         if ($specialFromDateGmt && $specialFromDateGmt > $nowDateGmt) {
             $this->_batchesHelper->writeProductUpdate(
@@ -1010,8 +1011,13 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                 $this->getSimpleProductParent()
             );
         } else if ($specialToDate != null) {
-            $specialToDateGmt = strtotime(gmdate('d.m.Y H:i', strtotime($specialToDate)));
-            $specialToDateGmt += (86400 + 300); //make "to" limit inclusive and another 5 minutes for safety
+            $localDate = new DateTime($specialToDate, new DateTimeZone(Mage::getStoreConfig('general/locale/timezone')));
+            $hour = $localDate->format('H');
+            $mins = $localDate->format('i');
+            if ($hour == '00' && $mins == '00') {
+                $localDate->modify('+86700 seconds'); //make "to" limit inclusive and another 5 minutes for safety
+            }
+            $specialToDateGmt = $localDate->getTimestamp();
             if ($specialToDateGmt > $nowDateGmt) {
                 $this->_batchesHelper->writeProductUpdate(
                     array($this->getStoreId()),

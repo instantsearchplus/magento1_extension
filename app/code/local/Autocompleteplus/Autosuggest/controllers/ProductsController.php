@@ -135,6 +135,69 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
     }
 
     /**
+     * Returns updated products batch
+     *
+     * @return void
+     */
+    public function getbatchesAction()
+    {
+        $request = $this->getRequest();
+        $response = $this->getResponse();
+
+        $currentTime = Mage::getSingleton('core/date')->gmtTimestamp();
+
+        $count = $request->getParam('count');
+        $from = $request->getParam('from');
+        $to = $request->getParam('to', false);
+        $storeId = $request->getParam('store_id', false);
+        $page = $request->getParam('page', 1);
+
+        if (!$storeId) {
+            $returnArr = array(
+                'status' => self::STATUS_FAILURE,
+                'error_code' => self::MISSING_PARAMETER,
+                'error_details' => $this->__(
+                    'The "store id" parameter is mandatory'
+                ),
+            );
+            $response->setHeader('Content-type', 'application/json');
+            $response->setHttpResponseCode(400);
+            $response->setBody(json_encode($returnArr));
+
+            return;
+        }
+
+        Mage::app()->setCurrentStore($storeId);
+
+        $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
+
+        $response->clearHeaders();
+        $response->setHeader('Content-type', 'text/json');
+        $batches_json = $catalogModel->getBatchesTableRecords($count, $from, $to, $storeId, $page);
+        $response->setBody($batches_json);
+    }
+
+    /**
+     * Returns updated products batch
+     *
+     * @return void
+     */
+    public function getbatchbyidAction()
+    {
+        $request = $this->getRequest();
+        $response = $this->getResponse();
+
+        $id = $request->getParam('id', 1);
+
+        $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
+
+        $response->clearHeaders();
+        $response->setHeader('Content-type', 'text/json');
+        $batches_json = $catalogModel->getSingleBatchTableRecord($id);
+        $response->setBody($batches_json);
+    }
+
+    /**
      * Checks install
      *
      * @return void
@@ -230,7 +293,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
                 $installedModules = array();
             }
         }
-
+        $timezone = Mage::getStoreConfig('general/locale/timezone');
         $result = array(
             'mage' => $mage,
             'ext' => $ext,
@@ -246,7 +309,8 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
             'compiler_enabled' => $compilerEnabled,
             'miniform_change' => $miniform_change,
             'smart_nav_native' => $smart_nav_native,
-            'external_image' => $external_image
+            'external_image' => $external_image,
+            'timezone' => $timezone
         );
 
         $response->clearHeaders();

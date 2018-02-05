@@ -192,22 +192,70 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         return $this->_useAttributes;
     }
 
+    public function getSingleBatchTableRecord($id)
+    {
+        $batches = array();
+        $updates = $this->getSingleBatcheCollection($id);
+        $max_update_date = 0;
+        foreach ($updates as $batch) {
+            if (intval($batch['update_date']) > $max_update_date) {
+                $max_update_date = $batch['update_date'];
+            }
+            $batches[] = array(
+                'product_id' => $batch['product_id'],
+                'action' => $batch['action'],
+                'update_date' => $batch['update_date'],
+                'store_id' => $batch['store_id']
+            );
+        }
+
+        return json_encode(
+            array(
+                'max_update_date' => $max_update_date,
+                'batches' => $batches
+            )
+        );
+    }
+
+    public function getBatchesTableRecords($count, $from, $to, $storeId, $page)
+    {
+        $batches = array();
+        $filter = array('from' => $from);
+        if ($to > 0) {
+            $filter['to'] = $to;
+        }
+        $max_update_date = 0;
+        $rows_count = 0;
+        $updates = $this->getBatchesCollection($count, $storeId, $page, $filter);
+        foreach ($updates as $batch) {
+            $rows_count++;
+            if (intval($batch['update_date']) > $max_update_date) {
+                $max_update_date = $batch['update_date'];
+            }
+            $batches[] = array(
+                'product_id' => $batch['product_id'],
+                'action' => $batch['action'],
+                'update_date' => $batch['update_date'],
+                'store_id' => $batch['store_id']
+            );
+        }
+
+        return json_encode(
+            array(
+                'max_update_date' => $max_update_date,
+                'rows_count' => $rows_count,
+                'batches' => $batches
+            )
+        );
+    }
+
     public function renderUpdatesCatalogXml($count, $from, $to, $storeId, $page)
     {
         $filter = array('from' => $from);
         if ($to > 0) {
             $filter['to'] = $to;
         }
-        $updates = Mage::getModel('autocompleteplus_autosuggest/batches')
-            ->getCollection()
-            ->addFieldToFilter('update_date', $filter)
-            ->addFieldToFilter('store_id', $storeId);
-
-        $this->setStoreId($storeId);
-        $updates->setOrder('update_date', 'ASC');
-
-        $updates->setPageSize($count);
-        $updates->setCurPage($page);
+        $updates = $this->getBatchesCollection($count, $storeId, $page, $filter);
         $xmlGenerator = $this->getXmlGenerator();
 
         $xmlGenerator->setRootAttributes(
@@ -449,5 +497,38 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         }
 
         return $attributesToSelect;
+    }
+
+    private function getSingleBatcheCollection($id)
+    {
+        $updates = Mage::getModel('autocompleteplus_autosuggest/batches')
+            ->getCollection()
+            ->addFieldToFilter('product_id', $id);
+
+        $updates->setOrder('update_date', 'ASC');
+
+        return $updates;
+    }
+
+    /**
+     * @param $count
+     * @param $storeId
+     * @param $page
+     * @param $filter
+     * @return mixed
+     */
+    private function getBatchesCollection($count, $storeId, $page, $filter)
+    {
+        $updates = Mage::getModel('autocompleteplus_autosuggest/batches')
+            ->getCollection()
+            ->addFieldToFilter('update_date', $filter)
+            ->addFieldToFilter('store_id', $storeId);
+
+        $this->setStoreId($storeId);
+        $updates->setOrder('update_date', 'ASC');
+
+        $updates->setPageSize($count);
+        $updates->setCurPage($page);
+        return $updates;
     }
 }
