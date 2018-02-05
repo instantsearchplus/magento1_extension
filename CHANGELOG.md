@@ -172,3 +172,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [3.1.7] - 2017-07-30 23:26:00
 ### Fixed
 - Special price from/to support
+
+## [3.1.8] - 2017-08-07 16:56:00
+### Added
+- Image of variants

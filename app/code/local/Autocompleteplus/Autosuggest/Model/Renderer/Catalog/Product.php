@@ -566,17 +566,30 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                         )) ?
                             $simple_products_price[$child_product->getId()] : '';
 
+                        $variantElementAttributes = array(
+                            'id' => $child_product->getId(),
+                            'type' => $child_product->getTypeID(),
+                            'visibility' => $is_variant_visible,
+                            'is_in_stock' => $is_variant_in_stock,
+                            'is_seallable' => $is_variant_sellable,
+                            'price' => $variant_price
+                        );
+
+                        if ($child_product->getImage()
+                            && $child_product->getImage() != ''
+                            && $child_product->getImage() != 'no_selection') {
+                            $variantElementAttributes['variantimage'] = utf8_encode(
+                                htmlspecialchars(
+                                    (Mage::getModel('catalog/product_media_config')
+                                        ->getMediaUrl($child_product->getImage()))
+                                )
+                            );
+                        }
+
                         $productVariation = $this->getXmlElement()
                             ->createChild(
                                 'variant',
-                                array(
-                                    'id' => $child_product->getId(),
-                                    'type' => $child_product->getTypeID(),
-                                    'visibility' => $is_variant_visible,
-                                    'is_in_stock' => $is_variant_in_stock,
-                                    'is_seallable' => $is_variant_sellable,
-                                    'price' => $variant_price,
-                                ),
+                                $variantElementAttributes,
                                 false,
                                 $variantElem
                             );
