@@ -767,6 +767,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
         }
 
         $url = Mage::helper('catalog/product')->getProductUrl($this->getProduct());
+        $nowDateGmt = intval(Mage::getSingleton('core/date')->gmtTimestamp());
         $regularPrice = 0;
         if ($this->getProduct()->getTypeId() != Mage_Catalog_Model_Product_Type::TYPE_BUNDLE) {
             $specialFromDate = $this->getProduct()->getSpecialFromDate();
@@ -778,40 +779,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                     $calculatedFinalPrice = $this->getProduct()->getSpecialPrice();
                     $regularPrice = $this->getProduct()->getPrice();
                 }
-                $nowDateGmt = intval(Mage::getSingleton('core/date')->gmtTimestamp());
-                $specialFromDateGmt = null;
-                if ($specialFromDate != null) {
-                    $specialFromDateGmt = strtotime(
-                        (string)Mage::app()
-                            ->getLocale()
-                            ->utcDate($this->getStoreId(), $specialFromDate)
-                    );
-                }
-                if ($specialFromDateGmt && $specialFromDateGmt > $nowDateGmt) {
-                    $this->_batchesHelper->writeProductUpdate(
-                        array($this->getStoreId()),
-                        $this->getProduct()->getId(),
-                        $specialFromDateGmt,
-                        $this->getProduct()->getSku(),
-                        $this->getSimpleProductParent()
-                    );
-                } else if($specialToDate != null) {
-                    $specialToDateGmt = strtotime(
-                        (string)Mage::app()
-                            ->getLocale()
-                            ->utcDate($this->getStoreId(), $specialToDate)
-                    );
-                    $specialToDateGmt += (86400 + 300);
-                    if ($specialToDateGmt > $nowDateGmt) {
-                        $this->_batchesHelper->writeProductUpdate(
-                            array($this->getStoreId()),
-                            $this->getProduct()->getId(),
-                            $specialToDateGmt,
-                            $this->getProduct()->getSku(),
-                            $this->getSimpleProductParent()
-                        );
-                    }
-                }
+                $this->scheduleDistantUpdate($specialFromDate, $specialToDate, $nowDateGmt);
             }
         } else {
             $calculatedFinalPrice = $priceRange['price_min'];
@@ -821,9 +789,13 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             $url = Mage::helper('catalog/product')->getProductUrl($this->getProduct()->getId());
         }
 
-        $lastModifiedDate = strtotime(
-            (string) $this->getProduct()->getUpdatedAt()
-        );
+        if ($this->getUpdateDate() && $this->getUpdateDate() > $nowDateGmt) {
+            $lastModifiedDate = strtotime(
+                (string) $this->getProduct()->getUpdatedAt()
+            );
+        } else {
+            $lastModifiedDate = $this->getUpdateDate();
+        }
 
         $xmlAttributes = array(
             'price_min' => ($priceRange['price_min']),
@@ -977,5 +949,46 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
         }
 
         return '';
+    }
+
+    /**
+     * @param $specialFromDate
+     * @param $specialToDate
+     */
+    private function scheduleDistantUpdate($specialFromDate, $specialToDate, $nowDateGmt)
+    {
+        $specialFromDateGmt = null;
+        if ($specialFromDate != null) {
+            $specialFromDateGmt = strtotime(
+                (string)Mage::app()
+                    ->getLocale()
+                    ->utcDate($this->getStoreId(), $specialFromDate)
+            );
+        }
+        if ($specialFromDateGmt && $specialFromDateGmt > $nowDateGmt) {
+            $this->_batchesHelper->writeProductUpdate(
+                array($this->getStoreId()),
+                $this->getProduct()->getId(),
+                $specialFromDateGmt,
+                $this->getProduct()->getSku(),
+                $this->getSimpleProductParent()
+            );
+        } else if ($specialToDate != null) {
+            $specialToDateGmt = strtotime(
+                (string)Mage::app()
+                    ->getLocale()
+                    ->utcDate($this->getStoreId(), $specialToDate)
+            );
+            $specialToDateGmt += (86400 + 300); //make "to" limit inclusive and another 5 minutes for safety
+            if ($specialToDateGmt > $nowDateGmt) {
+                $this->_batchesHelper->writeProductUpdate(
+                    array($this->getStoreId()),
+                    $this->getProduct()->getId(),
+                    $specialToDateGmt,
+                    $this->getProduct()->getSku(),
+                    $this->getSimpleProductParent()
+                );
+            }
+        }
     }
 }

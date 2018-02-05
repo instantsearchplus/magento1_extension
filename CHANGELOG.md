@@ -168,3 +168,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Sku change support
 - Updatedate
+
+## [3.1.7] - 2017-07-30 23:26:00
+### Fixed
+- Special price from/to support
