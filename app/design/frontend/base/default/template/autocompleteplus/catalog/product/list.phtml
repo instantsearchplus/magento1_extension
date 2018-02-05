@@ -6,43 +6,51 @@ $query = htmlentities(Mage::app()->getRequest()->getParam('q'), ENT_QUOTES);
 $match_value = '';
 
 try{
-    $formkey_html = $this->getBlockHtml('formkey');	// '<input name="form_key" type="hidden" value="E3rpphc1BL6zyTB3" />' 
+    $formkey_html = $this->getBlockHtml('formkey');
     $pattern = '/.*form_key.*value=\"([^\"]+)\"/s';
-    if (preg_match($pattern, $formkey_html, $match)){
-        if ($match){
-    	   $match_value = $match[1];
+    if (preg_match($pattern, $formkey_html, $match)) {
+        if ($match) {
+                $match_value = $match[1];
         }
     }
-} catch (Exception $e){
+} catch (Exception $e) {
     Mage::logException($e);
 }
 
-?>
-<!-- <div id="isp_search_result_page"></div> -->
-
-<script>
-    var __isp_fulltext_search_obj = {
-        uuid: "<?php echo $this->escapeHtml($config->getUUID()); ?>",
-        store_id: <?php echo $this->escapeHtml($store_id); ?>,
-        query: "<?php echo $this->escapeHtml($query); ?>",
-		formkey: "<?php echo $this->escapeHtml($match_value); ?>"
-    };
-</script>
-    <?php
-        $helper = Mage::helper('autocompleteplus_autosuggest');
-
-        $html=Mage::app()->getCacheInstance()->load('autocomplete_template_serp');
-
-        if(!$html) {
-            $server_url = $helper->getServerUrl();
-            $url = $server_url . '/ma_load_search_page?isp_platform=magento&r=002';
-            $resp = $helper->sendCurl($url);
-            $response_json = json_decode($resp);
-            $html = $response_json->html;
-
-            Mage::app()->getCacheInstance()->save($html, 'autocomplete_template_serp', array("autocomplete_cache"), 60);
-
-        }
-
-        echo $html;
     ?>
+        <!-- <div id="isp_search_result_page"></div> -->
+
+        <script>
+            var __isp_fulltext_search_obj = {
+                uuid: "<?php echo $this->escapeHtml($config->getUUID()); ?>",
+                store_id: <?php echo $this->escapeHtml($store_id); ?>,
+                query: "<?php echo $this->escapeHtml($query); ?>",
+                formkey: "<?php echo $this->escapeHtml($match_value); ?>"
+            };
+        </script>
+    <?php
+    $helper = Mage::helper('autocompleteplus_autosuggest');
+
+    $html=Mage::app()->getCacheInstance()->load('autocomplete_template_serp');
+
+    if (!$html) {
+        $server_url = $helper->getServerUrl();
+        $url = $server_url .
+            '/ma_load_search_page?isp_platform=magento&r=002&uuid=' .
+            $config->getUUID() . '&store_id=' . $store_id;
+        $resp = $helper->sendCurl($url);
+        $response_json = json_decode($resp);
+        $html = $response_json->html;
+
+        Mage::app()->getCacheInstance()
+            ->save(
+                $html, 
+                'autocomplete_template_serp',
+                array("autocomplete_cache"),
+                60
+            );
+
+    }
+
+    echo $html;
+?>

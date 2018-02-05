@@ -45,11 +45,11 @@ class Autocompleteplus_Autosuggest_CategoriesController extends Mage_Core_Contro
             'image' => sprintf('%scatalog/category/%s', $mediaUrl, $node->getImage()),
             'thumbnail' => $thumbnail,
             'description' => strip_tags($node->getDescription()),
-            'parent_id'   => $node->getParentId(),
-            'name'        => $node->getName(),
-            'url_path'    => $category->getUrl(),
-            'is_active'   => $node->getIsActive(),
-            'children'    => array(),
+            'parent_id' => $node->getParentId(),
+            'name' => $node->getName(),
+            'url_path' => $category->getUrl(),
+            'is_active' => $node->getIsActive(),
+            'children' => array(),
         );
 
         foreach ($node->getChildren() as $child) {
@@ -80,7 +80,7 @@ class Autocompleteplus_Autosuggest_CategoriesController extends Mage_Core_Contro
             ->addAttributeToFilter('is_active', array('eq' => true));
 
         if (!$helper->getConfigDataByFullPath('catalog/frontend/flat_catalog_category')) {
-            $collection=$collection->addAttributeToSelect('image')
+            $collection = $collection->addAttributeToSelect('image')
                 ->addAttributeToSelect('description')
                 ->addAttributeToSelect('thumbnail');
         } else {
@@ -88,22 +88,21 @@ class Autocompleteplus_Autosuggest_CategoriesController extends Mage_Core_Contro
 
             $readConnection = $resource->getConnection('core_read');
 
-            $tableName=$resource->getTableName('catalog/category_flat') . '_store_' . $store;
+            $tableName = $resource->getTableName('catalog/category_flat').'_store_'.$store;
 
-            $tableInfo=$readConnection->describeTable($tableName);
+            $tableInfo = $readConnection->describeTable($tableName);
 
-            if (array_key_exists('thumbnail',$tableInfo)) {
-                $collection=$collection->addAttributeToSelect('thumbnail');
+            if (array_key_exists('thumbnail', $tableInfo)) {
+                $collection = $collection->addAttributeToSelect('thumbnail');
             }
 
-            if (array_key_exists('image',$tableInfo)) {
-                $collection=$collection->addAttributeToSelect('image');
+            if (array_key_exists('image', $tableInfo)) {
+                $collection = $collection->addAttributeToSelect('image');
             }
 
-            if (array_key_exists('description',$tableInfo)) {
-                $collection=$collection->addAttributeToSelect('description');
+            if (array_key_exists('description', $tableInfo)) {
+                $collection = $collection->addAttributeToSelect('description');
             }
-
         }
 
         $tree->addCollectionData($collection, true);

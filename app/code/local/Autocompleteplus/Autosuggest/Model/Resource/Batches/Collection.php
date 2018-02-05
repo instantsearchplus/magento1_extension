@@ -10,11 +10,13 @@ class Autocompleteplus_Autosuggest_Model_Resource_Batches_Collection extends Mag
         $this->_init('autocompleteplus_autosuggest/batches');
     }
 
-    protected function _getWriteAdapter() {
+    protected function _getWriteAdapter()
+    {
         return Mage::getSingleton('core/resource')->getConnection('core_write');
     }
 
-    public function clear() {
+    public function clear()
+    {
         $dbAdapter = $this->_getWriteAdapter();
 
         Zend_Db_Table::setDefaultAdapter($dbAdapter);

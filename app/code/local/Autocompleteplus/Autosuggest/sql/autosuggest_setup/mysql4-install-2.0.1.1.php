@@ -15,7 +15,7 @@
  */
 $helper = Mage::helper('autocompleteplus_autosuggest');
 
-Mage::log(__FILE__ . ' triggered', null, 'autocomplete.log', true);
+Mage::log(__FILE__.' triggered', null, 'autocomplete.log', true);
 
 //getting site owner email
 $storeMail = $helper->getConfigDataByFullPath('trans_email/ident_general/email');

@@ -16,7 +16,7 @@ $fileIo->open(array('path' => $baseDir));
  * Required to use file_exists because Varien_Io_File isValid missing < 1.8CE
  */
 // @codingStandardsIgnoreLine
-if (!method_exists('Mage', 'getEdition') && file_exists($baseDir . DS . 'LICENSE_EE.txt') && method_exists('Mage', 'getVersion') && version_compare(Mage::getVersion(), '1.10.0.0.', '<') === true) {
+if (!method_exists('Mage', 'getEdition') && file_exists($baseDir.DS.'LICENSE_EE.txt') && method_exists('Mage', 'getVersion') && version_compare(Mage::getVersion(), '1.10.0.0.', '<') === true) {
     $tableExists = $installer->getConnection()->showTableStatus($tableName);
 } else {
     if (method_exists($installer->getConnection(), 'isTableExists')) {
@@ -101,5 +101,5 @@ if ($tableExists) {
         $res = $helper->sendPostCurl($command, $data);
     }
 
-    Mage::log(__FILE__ . ' triggered', null, 'autocomplete.log', true);
+    Mage::log(__FILE__.' triggered', null, 'autocomplete.log', true);
 }

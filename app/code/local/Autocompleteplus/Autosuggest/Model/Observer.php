@@ -176,7 +176,7 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                     ->addFieldToFilter('store_id', $product_store);
 
                 $updates->getSelect()
-                    ->order('update_date','DESC')
+                    ->order('update_date', 'DESC')
                     ->limit(1);
 
                 if ($updates && $updates->getSize() > 0) {
@@ -210,13 +210,12 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                 // trigger update for simple product's configurable parent
                 if (!empty($simple_product_parents)) {   // simple product has configural parent
                     foreach ($simple_product_parents as $configurable_product) {
-
                         $batches = Mage::getModel('autocompleteplus_autosuggest/batches')->getCollection()
                             ->addFieldToFilter('product_id', $configurable_product)
                             ->addFieldToFilter('store_id', $product_store);
 
                         $batches->getSelect()
-                            ->order('update_date','DESC')
+                            ->order('update_date', 'DESC')
                             ->limit(1);
 
                         // @codingStandardsIgnoreLine
@@ -253,7 +252,6 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         $sku = $product->getSku();
 
         try {
-
             $updates = Mage::getModel('autocompleteplus_autosuggest/batches')->getCollection()
                 ->addFieldToFilter('product_id', array('null' => true))
                 ->addFieldToFilter('sku', $sku)
@@ -264,7 +262,6 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
 
                 $update->save();
             }
-
         } catch (Exception $e) {
             Mage::logException($e);
         }
@@ -294,7 +291,7 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                         ->addFieldToFilter('store_id', $product_store);
 
                     $batches->getSelect()
-                        ->order('update_date','DESC')
+                        ->order('update_date', 'DESC')
                         ->limit(1);
 
                     // @codingStandardsIgnoreLine
@@ -403,7 +400,7 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         // @codingStandardsIgnoreStart
         /**
          * Due to backward compatibility issues with Magento < 1.8.1 and cURL/Zend
-         * We need to use PHP's implementation of cURL directly rather than Zend or Varien
+         * We need to use PHP's implementation of cURL directly rather than Zend or Varien.
          */
         $client = curl_init($this->_getWebhookObjectUri());
         curl_setopt($client, CURLOPT_RETURNTRANSFER, true);

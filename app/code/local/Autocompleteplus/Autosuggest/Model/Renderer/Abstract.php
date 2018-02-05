@@ -16,12 +16,14 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Abstract extends Mage_Core_Mod
         if (!$this->_storeId) {
             $this->_storeId = Mage::app()->getStore()->getId();
         }
+
         return $this->_storeId;
     }
 
     public function setStoreId($storeId)
     {
         $this->_storeId = $storeId;
+
         return $this;
     }
 
@@ -30,6 +32,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Abstract extends Mage_Core_Mod
         if (!$this->_currency) {
             $this->_currency = Mage::app()->getStore($this->getStoreId())->getCurrentCurrencyCode();
         }
+
         return $this->_currency;
     }
 
@@ -38,12 +41,14 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Abstract extends Mage_Core_Mod
         if (!$this->_monthInterval) {
             $this->_monthInterval = 12;
         }
+
         return $this->_monthInterval;
     }
 
     public function setMonthInterval($monthInterval)
     {
         $this->_monthInterval = $monthInterval;
+
         return $this;
     }
 
@@ -52,12 +57,14 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Abstract extends Mage_Core_Mod
         if ($this->_pageNum) {
             $this->_pageNum = 1;
         }
+
         return $this->_pageNum;
     }
 
     public function setPageNum($pageNum)
     {
         $this->_pageNum = $pageNum;
+
         return $this;
     }
 
@@ -66,6 +73,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Abstract extends Mage_Core_Mod
         if (!$this->_helper) {
             $this->_helper = Mage::helper('autocompleteplus_autosuggest');
         }
+
         return $this->_helper;
     }
 

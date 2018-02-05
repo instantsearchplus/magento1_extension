@@ -1,7 +1,22 @@
 <?php
-
 /**
- * Yes/no options for sync.
+ * Autocompleteplus_Autosuggest_Block_Adminhtml_Sync
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * PHP version 5
+ *
+ * @category Mage
+ *
+ * @package   Instantsearchplus
+ * @author    Fast Simon <info@instantsearchplus.com>
+ * @copyright 2014 Fast Simon (http://www.instantsearchplus.com)
+ * @license   Open Software License (OSL 3.0)*
+ * @link      http://opensource.org/licenses/osl-3.0.php
  */
 class Autocompleteplus_Autosuggest_Block_Adminhtml_Sync extends Mage_Adminhtml_Block_System_Config_Form_Field
 {
@@ -14,7 +29,7 @@ class Autocompleteplus_Autosuggest_Block_Adminhtml_Sync extends Mage_Adminhtml_B
     /**
      * Return element html.
      *
-     * @param Varien_Data_Form_Element_Abstract $element
+     * @param Varien_Data_Form_Element_Abstract $element 
      *
      * @return string
      */
@@ -56,7 +71,8 @@ class Autocompleteplus_Autosuggest_Block_Adminhtml_Sync extends Mage_Adminhtml_B
      */
     public function getSyncUrl()
     {
-        return Mage::helper('adminhtml')->getUrl('adminhtml/autocompleteplus_push/startpush');
+        return Mage::helper('adminhtml')
+            ->getUrl('adminhtml/autocompleteplus_push/startpush');
     }
 
     /**
@@ -67,11 +83,13 @@ class Autocompleteplus_Autosuggest_Block_Adminhtml_Sync extends Mage_Adminhtml_B
     public function getButtonHtml()
     {
         $button = $this->getLayout()->createBlock('adminhtml/widget_button')
-            ->setData(array(
+            ->setData(
+                array(
                 'id' => 'autocompleteplus_sync',
                 'label' => $this->helper('adminhtml')->__('Sync'),
                 'onclick' => 'javascript:syncautocomplete(); return false;',
-            ));
+                )
+            );
 
         return $button->toHtml();
     }

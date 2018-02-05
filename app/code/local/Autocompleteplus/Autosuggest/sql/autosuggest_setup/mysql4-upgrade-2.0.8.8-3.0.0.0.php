@@ -33,5 +33,5 @@ if ($row && isset($row[0]['licensekey']) && isset($row[0]['authkey'])) {
 
 Mage::app()->getCacheInstance()->cleanType('config');
 
-Mage::log(__FILE__ . ' triggered', null, 'autocomplete.log', true);
+Mage::log(__FILE__.' triggered', null, 'autocomplete.log', true);
 $installer->endSetup();

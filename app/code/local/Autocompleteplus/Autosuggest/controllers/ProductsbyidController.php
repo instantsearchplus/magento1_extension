@@ -1,6 +1,6 @@
 <?php
 /**
- * InstantSearchPlus (Autosuggest).
+ * ProductsbyidController File
  *
  * NOTICE OF LICENSE
  *
@@ -8,13 +8,43 @@
  * that is available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Mage
+ * PHP version 5
  *
- * @copyright  Copyright (c) 2014 Fast Simon (http://www.instantsearchplus.com)
- * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @category Mage
+ *
+ * @package   Instantsearchplus
+ * @author    Fast Simon <info@instantsearchplus.com>
+ * @copyright 2014 Fast Simon (http://www.instantsearchplus.com)
+ * @license   Open Software License (OSL 3.0)*
+ * @link      http://opensource.org/licenses/osl-3.0.php
+ */
+
+/**
+ * Autocompleteplus_Autosuggest_ProductsbyidController
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * PHP version 5
+ *
+ * @category Mage
+ *
+ * @package   Instantsearchplus
+ * @author    Fast Simon <info@instantsearchplus.com>
+ * @copyright 2014 Fast Simon (http://www.instantsearchplus.com)
+ * @license   Open Software License (OSL 3.0)*
+ * @link      http://opensource.org/licenses/osl-3.0.php
  */
 class Autocompleteplus_Autosuggest_ProductsbyidController extends Autocompleteplus_Autosuggest_Controller_Abstract
 {
+    /**
+     * GetbyidAction
+     *
+     * @return void
+     */
     public function getbyidAction()
     {
         $request = $this->getRequest();
@@ -40,12 +70,17 @@ class Autocompleteplus_Autosuggest_ProductsbyidController extends Autocompletepl
         $ids = explode(',', $id);
         $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
         $xml = $catalogModel->renderCatalogByIds($ids, $storeId);
-
+        
         $response->clearHeaders();
         $response->setHeader('Content-type', 'text/xml');
         $response->setBody($xml);
     }
 
+    /**
+     * GetfromidAction
+     *
+     * @return void
+     */
     public function getfromidAction()
     {
         $request = $this->getRequest();
@@ -58,7 +93,7 @@ class Autocompleteplus_Autosuggest_ProductsbyidController extends Autocompletepl
 
         $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
         $xml = $catalogModel->renderCatalogFromIds($count, $fromId, $storeId);
-
+        
         $response->clearHeaders();
         $response->setHeader('Content-type', 'text/xml');
         $response->setBody($xml);

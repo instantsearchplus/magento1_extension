@@ -27,26 +27,29 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         if (!$this->_helper) {
             $this->_helper = Mage::helper('autocompleteplus_autosuggest');
         }
+
         return $this->_helper;
     }
 
     public function getAttributes()
     {
         if (!$this->_attributes) {
-
             $productModel = Mage::getModel('catalog/product');
-            $this->_attributes = Mage::getResourceModel('eav/entity_attribute_collection')
+            $this->_attributes = Mage::getResourceModel(
+                'eav/entity_attribute_collection'
+            )
                 ->setEntityTypeFilter($productModel->getResource()->getTypeId())
-                ->addFieldToFilter('is_user_defined', '1')
-            ;
+                ->addFieldToFilter('is_user_defined', '1');
         }
+
         return $this->_attributes;
     }
 
     public function getProductCollection($new = false)
     {
         if (!$this->_productCollection) {
-            $this->_productCollection = Mage::getModel('catalog/product')->getCollection();
+            $this->_productCollection = Mage::getModel('catalog/product')
+                ->getCollection();
         }
 
         if ($new === true) {
@@ -58,7 +61,9 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
 
     public function getProductRenderer()
     {
-        return Mage::getSingleton('autocompleteplus_autosuggest/renderer_catalog_product');
+        return Mage::getSingleton(
+            'autocompleteplus_autosuggest/renderer_catalog_product'
+        );
     }
 
     public function getBatchRenderer()
@@ -66,13 +71,67 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         return Mage::getSingleton('autocompleteplus_autosuggest/renderer_batches');
     }
 
-    public function renderCatalogXml($startInd = 0,
-                                     $count = 10000,
-                                     $storeId = false,
-                                     $orders = false,
-                                     $monthInterval = 12,
-                                     $checksum = false)
+    /**
+     * GetAllProductIds
+     *
+     * Get all product ids from loaded products collection
+     *
+     * @return array
+     */
+    public function getAllProductIds()
     {
+        $ids = [];
+
+        foreach ($this->getProductCollection() as $product) {
+            $ids[] = $product->getID();
+        }
+        return $ids;
+    }
+
+    /**
+     * GetOrdersPerProduct
+     *
+     * Get orders information for products from loaded product
+     * collection
+     *
+     * @return array
+     */
+    public function getOrdersPerProduct()
+    {
+        $productIds = implode(',', $this->getAllProductIds());
+        $salesOrderItemCollection = Mage::getResourceModel(
+            'sales/order_item_collection'
+        );
+        $salesOrderItemCollection->getSelect()->reset(Zend_Db_Select::COLUMNS)
+            ->columns(array('product_id', 'SUM(qty_ordered) as qty_ordered'))
+            ->where(new Zend_Db_Expr('store_id = '.$this->getStoreId()))
+            ->where(new Zend_Db_Expr('product_id IN ('.$productIds.')'))
+            ->where(
+                new Zend_Db_Expr(
+                    'created_at BETWEEN NOW() - INTERVAL '.
+                    $this->getMonthInterval().
+                    ' MONTH AND NOW()'
+                )
+            )
+            ->group(array('product_id'));
+
+        $products = array();
+
+        foreach ($salesOrderItemCollection as $item) {
+            $products[$item['product_id']] = (int)$item['qty_ordered'];
+        }
+
+        return $products;
+    }
+
+    public function renderCatalogXml(
+        $startInd = 0,
+        $count = 10000,
+        $storeId = false,
+        $orders = false,
+        $monthInterval = 12,
+        $checksum = false
+    ) {
         $xmlGenerator = $this->getXmlGenerator();
         $count = ($count > 10000) ? 10000 : $count;
         $this->setStoreId($storeId);
@@ -80,15 +139,15 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         $this->setMonthInterval($monthInterval);
         $this->setChecksum($checksum);
 
-
-        $xmlGenerator->setRootAttributes(array(
-            'version'   =>  $this->getHelper()->getVersion(),
-            'magento'   =>  $this->getHelper()->getMageVersion()
-        ))->setRootElementName('catalog');
+        $xmlGenerator->setRootAttributes(
+            array(
+                'version' => $this->getHelper()->getVersion(),
+                'magento' => $this->getHelper()->getMageVersion(),
+            )
+        )->setRootElementName('catalog');
 
         $productCollection = $this->getProductCollection();
 
-        // @codingStandardsIgnoreLine
         $productCollection->getSelect()->limit($count, $startInd);
         if (is_numeric($storeId)) {
             $productCollection->addStoreFilter($storeId);
@@ -105,6 +164,12 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             $this->setHasChecksum($checksum);
         }
 
+        if ($this->getOrders()) {
+            $ordersData = $this->getOrdersPerProduct();
+            $this->getProductRenderer()
+                ->setOrderData($ordersData);
+        }
+
         foreach ($productCollection as $product) {
             $this->getProductRenderer()
                 ->setAction('insert')
@@ -118,7 +183,13 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             if ($this->getHasChecksum()) {
                 if ($this->getHelper()->isChecksumTableExists()) {
                     $checksum = $this->getHelper()->calculateChecksum($product);
-                    $this->getHelper()->updateSavedProductChecksum($product->getId(), $product->getSku(), $this->getStoreId(), $checksum);
+                    $this->getHelper()
+                        ->updateSavedProductChecksum(
+                            $product->getId(),
+                            $product->getSku(),
+                            $this->getStoreId(),
+                            $checksum
+                        );
                 }
             }
         }
@@ -129,18 +200,25 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
     public function canUseAttributes()
     {
         if (!$this->_useAttributes) {
-            $this->_useAttributes = Mage::getStoreConfigFlag('autocompleteplus/config/attributes');
+            $this->_useAttributes = Mage::getStoreConfigFlag(
+                'autocompleteplus/config/attributes'
+            );
         }
+
         return $this->_useAttributes;
     }
 
     public function renderUpdatesCatalogXml($count, $from, $to, $storeId)
     {
-        $updates = Mage::getModel('autocompleteplus_autosuggest/batches')->getCollection()
-            ->addFieldToFilter('update_date', array(
-                'from'  =>  $from,
-                'to'    =>  $to
-            ))
+        $updates = Mage::getModel('autocompleteplus_autosuggest/batches')
+            ->getCollection()
+            ->addFieldToFilter(
+                'update_date',
+                array(
+                    'from' => $from,
+                    'to' => $to,
+                )
+            )
             ->addFieldToFilter('store_id', $storeId);
 
         $this->setStoreId($storeId);
@@ -148,41 +226,37 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
 
         $updates->setPageSize($count);
         $updates->setCurPage(1);
-        $xmlGenerator= $this->getXmlGenerator();
+        $xmlGenerator = $this->getXmlGenerator();
 
-        $xmlGenerator->setRootAttributes(array(
-            'version'   =>  $this->getHelper()->getVersion(),
-            'magento'   =>  $this->getHelper()->getMageVersion(),
-            'fromdatetime'  =>  $from
-        ))->setRootElementName('catalog');
+        $xmlGenerator->setRootAttributes(
+            array(
+                'version' => $this->getHelper()->getVersion(),
+                'magento' => $this->getHelper()->getMageVersion(),
+                'fromdatetime' => $from,
+            )
+        )->setRootElementName('catalog');
 
-        $updatesBulk=array();
+        $updatesBulk = array();
 
-        $productIds=array();
+        $productIds = array();
 
         foreach ($updates as $batch) {
-
             if ($batch['action'] == 'update') {
-
                 if ($batch['product_id'] != null) {
                     $updatesBulk[$batch['product_id']] = $batch;
 
                     $productIds[] = $batch['product_id'];
-
                 } else {
                     $batch['action'] = 'remove';
                     $this->getBatchRenderer()
                         ->setXmlElement($xmlGenerator)
                         ->makeRemoveRow($batch);
                 }
-
             } elseif ($batch['action'] == 'remove') {
-
                 $this->getBatchRenderer()
                     ->setXmlElement($xmlGenerator)
                     ->makeRemoveRow($batch);
             }
-
         }
 
         $this->currency = Mage::app()->getStore($storeId)->getCurrentCurrencyCode();
@@ -199,7 +273,6 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             ->addAttributeToFilter('entity_id', array('in' => $productIds));
 
         foreach ($productCollection as $product) {
-
             $updatedate = $updatesBulk[$product->getId()]['update_date'];
 
             $this->getProductRenderer()
@@ -222,8 +295,8 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
     {
         $xmlGenerator = $this->getXmlGenerator();
         $xmlGenerator->setRootAttributes(array(
-            'version'   =>  $this->getHelper()->getVersion(),
-            'magento'   =>  $this->getHelper()->getMageVersion()
+            'version' => $this->getHelper()->getVersion(),
+            'magento' => $this->getHelper()->getMageVersion(),
         ))->setRootElementName('catalog');
 
         $productCollection = $this->getProductCollection();
@@ -236,7 +309,10 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
 
         $productCollection->addAttributeToSelect($attributesToSelect);
 
-        $productCollection->addAttributeToFilter('entity_id', array('from'  =>  $fromId));
+        $productCollection->addAttributeToFilter(
+            'entity_id',
+            array('from' => $fromId)
+        );
         $productCollection->setPageSize($count);
         $productCollection->setCurPage(1);
 
@@ -267,10 +343,12 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
     public function renderCatalogByIds($ids, $storeId = 0)
     {
         $xmlGenerator = $this->getXmlGenerator();
-        $xmlGenerator->setRootAttributes(array(
-            'version'   =>  $this->getHelper()->getVersion(),
-            'magento'   =>  $this->getHelper()->getMageVersion()
-        ))->setRootElementName('catalog');
+        $xmlGenerator->setRootAttributes(
+            array(
+                'version' => $this->getHelper()->getVersion(),
+                'magento' => $this->getHelper()->getMageVersion(),
+            )
+        )->setRootElementName('catalog');
 
         $productCollection = $this->getProductCollection();
         if (is_numeric($storeId)) {
@@ -282,7 +360,7 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
 
         $productCollection->addAttributeToSelect($attributesToSelect);
 
-        $productCollection->addAttributeToFilter('entity_id', array('in'  =>  $ids));
+        $productCollection->addAttributeToFilter('entity_id', array('in' => $ids));
 
         Mage::getModel('review/review')->appendSummary($productCollection);
 
@@ -301,6 +379,8 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
     }
 
     /**
+     * GetAttributesToSelect
+     * 
      * @return array
      */
     protected function _getAttributesToSelect()
@@ -321,7 +401,7 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             'meta_title',
             'meta_description',
             'special_price',
-            'sku'
+            'sku',
         );
 
         if ($this->canUseAttributes()) {
@@ -330,8 +410,10 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
 
                 $attributesToSelect[] = $action;
             }
+
             return $attributesToSelect;
         }
+
         return $attributesToSelect;
     }
 }

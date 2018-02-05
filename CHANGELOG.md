@@ -77,3 +77,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Send magento updates using collection api
 - Flat categories catalog support
 - Cache serp template for 1 minute
+
+## [3.0.0.12] - 2016-10-27 17:48:00
+### Fixed
+- Fix get orders per product
+### Added
+- Filedocs, Classdocs, Methoddocs
+- Code formatting according to psr standards
+- isp_sellable custom attribute support
+- Alternative way to get product url if regular way does not work
+- Attributes cache
+- Flat catalog usage flags for vers request
+- Json headers for getstores
+### Removed
+- Raw sql searches tables access

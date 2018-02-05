@@ -1,7 +1,6 @@
 <?php
-
 /**
- * InstantSearchPlus (Autosuggest).
+ * Autocompleteplus_Autosuggest_Block_Adminhtml_Button
  *
  * NOTICE OF LICENSE
  *
@@ -9,14 +8,15 @@
  * that is available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Mage
+ * PHP version 5
  *
- * @copyright  Copyright (c) 2014 Fast Simon (http://www.instantsearchplus.com)
- * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
- */
-
-/**
- * Used in creating options for Yes|No config value selection.
+ * @category Mage
+ *
+ * @package   Instantsearchplus
+ * @author    Fast Simon <info@instantsearchplus.com>
+ * @copyright 2014 Fast Simon (http://www.instantsearchplus.com)
+ * @license   Open Software License (OSL 3.0)*
+ * @link      http://opensource.org/licenses/osl-3.0.php
  */
 class Autocompleteplus_Autosuggest_Block_Adminhtml_Button extends Mage_Adminhtml_Block_System_Config_Form_Field
 {
@@ -32,7 +32,7 @@ class Autocompleteplus_Autosuggest_Block_Adminhtml_Button extends Mage_Adminhtml
     /**
      * Return element html.
      *
-     * @param Varien_Data_Form_Element_Abstract $element
+     * @param Varien_Data_Form_Element_Abstract $element 
      *
      * @return string
      */
@@ -43,6 +43,11 @@ class Autocompleteplus_Autosuggest_Block_Adminhtml_Button extends Mage_Adminhtml
         return $this->_toHtml();
     }
 
+    /**
+     * Returns uuid
+     * 
+     * @return mixed
+     */
     public function getUUID()
     {
         $config = Mage::getModel('autocompleteplus_autosuggest/config');
@@ -57,7 +62,8 @@ class Autocompleteplus_Autosuggest_Block_Adminhtml_Button extends Mage_Adminhtml
      */
     public function getAjaxCheckUrl()
     {
-        return Mage::helper('adminhtml')->getUrl('autocompleteplus/products/updateemail');
+        return Mage::helper('adminhtml')
+            ->getUrl('autocompleteplus/products/updateemail');
     }
 
     /**
@@ -69,11 +75,13 @@ class Autocompleteplus_Autosuggest_Block_Adminhtml_Button extends Mage_Adminhtml
     {
         $button = $this->getLayout()->createBlock('adminhtml/widget_button')
 
-            ->setData(array(
+            ->setData(
+                array(
                 'id' => 'autocompleteplus_button',
                 'label' => $this->helper('adminhtml')->__('Update'),
                 'onclick' => 'javascript:updateautocomplete(); return false;',
-            ));
+                )
+            );
 
         return $button->toHtml();
     }

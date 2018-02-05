@@ -28,5 +28,5 @@ CREATE TABLE IF NOT EXISTS {$this->getTable('autocompleteplus_batches')} (
    PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1;");
 
-Mage::log(__FILE__ . ' triggered', null, 'autocomplete.log', true);
+Mage::log(__FILE__.' triggered', null, 'autocomplete.log', true);
 $installer->endSetup();

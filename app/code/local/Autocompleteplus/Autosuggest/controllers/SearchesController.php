@@ -1,6 +1,6 @@
 <?php
 /**
- * InstantSearchPlus (Autosuggest).
+ * SearchesController File
  *
  * NOTICE OF LICENSE
  *
@@ -8,17 +8,45 @@
  * that is available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Mage
+ * PHP version 5
  *
- * @copyright  Copyright (c) 2014 Fast Simon (http://www.instantsearchplus.com)
- * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @category Mage
+ *
+ * @package   Instantsearchplus
+ * @author    Fast Simon <info@instantsearchplus.com>
+ * @copyright 2014 Fast Simon (http://www.instantsearchplus.com)
+ * @license   Open Software License (OSL 3.0)*
+ * @link      http://opensource.org/licenses/osl-3.0.php
+ */
+
+/**
+ * Autocompleteplus_Autosuggest_SearchesController
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * PHP version 5
+ *
+ * @category Mage
+ *
+ * @package   Instantsearchplus
+ * @author    Fast Simon <info@instantsearchplus.com>
+ * @copyright 2014 Fast Simon (http://www.instantsearchplus.com)
+ * @license   Open Software License (OSL 3.0)*
+ * @link      http://opensource.org/licenses/osl-3.0.php
  */
 class Autocompleteplus_Autosuggest_SearchesController extends Mage_Core_Controller_Front_Action
 {
+    /**
+     * Sends searches of the magento at extension install
+     *
+     * @return void
+     */
     public function sendAction()
     {
-        set_time_limit(1800);
-
         $post = $this->getRequest()->getParams();
 
         $response = $this->getResponse();
@@ -36,15 +64,22 @@ class Autocompleteplus_Autosuggest_SearchesController extends Mage_Core_Controll
         }
         //retrieving page number
 
-        //retrieving products collection to check if the offset is not bigger that the product count
-        $collection = Mage::getModel('catalogsearch/query')->getCollection();
+        /**
+         * Retrieving products collection to check
+         * if the offset is not bigger that the product count
+         */
+        $collection = Mage::getModel('catalogsearch/query')->getCollection()
+            ->setOrder('popularity', 'DESC');
 
-        $searchesCount = $collection->count();
+        $collection->getSelect()->limit($count, $startInd);
 
-        /* since the retreiving of product count will load the entire collection of products,
+        $searchesCount = $collection->getSize();
+
+        /**
+         * Since the retreiving of product count
+         * will load the entire collection of products,
          *  we need to annul it in order to get the specified page only
          */
-        unset($collection);
 
         $xml = '<?xml version="1.0"?>';
         $xml .= '<searches>';
@@ -59,18 +94,13 @@ class Autocompleteplus_Autosuggest_SearchesController extends Mage_Core_Controll
             return;
         }
 
-        $connection = $this->_getConnection('core_write');
-        $sql = 'SELECT * FROM '.$this->_getTableName('catalogsearch_query').' ORDER BY `popularity` DESC LIMIT '.$startInd.', '.$count;
-        $searches = $connection->fetchAll($sql);
+        foreach ($collection as $search) {
+            $search_term = htmlspecialchars($search->getData('query_text'));
+            $search_term = $this->xmlEscape($search_term);
+            $popularity = $search->getData('popularity');
 
-        //setting page+products on the page
-
-        foreach ($searches as $search) {
-            $search_term = htmlspecialchars($search['query_text']);
-            $search_term = $this->_xmlEscape($search_term);
-            $popularity = $search['popularity'];
-
-            $row = '<search term="'.$search_term.'" count="'.$popularity.'" ></search>';
+            $row = '<search term="'.
+                       $search_term.'" count="'.$popularity.'" ></search>';
             $xml .= $row;
         }
 
@@ -81,7 +111,14 @@ class Autocompleteplus_Autosuggest_SearchesController extends Mage_Core_Controll
         $response->setBody($xml);
     }
 
-    private function _xmlEscape($term)
+    /**
+     * Clear xml special chars
+     *
+     * @param mixed $term
+     *
+     * @return mixed
+     */
+    protected function xmlEscape($term)
     {
         $arr = array(
             '&' => '&amp;',
@@ -97,11 +134,25 @@ class Autocompleteplus_Autosuggest_SearchesController extends Mage_Core_Controll
         return $term;
     }
 
+    /**
+     * Get db connection object
+     *
+     * @param string $type
+     *
+     * @return mixed
+     */
     protected function _getConnection($type = 'core_read')
     {
         return Mage::getSingleton('core/resource')->getConnection($type);
     }
 
+    /**
+     * Get table name
+     *
+     * @param string $tableName
+     *
+     * @return mixed
+     */
     protected function _getTableName($tableName)
     {
         return Mage::getSingleton('core/resource')->getTableName($tableName);

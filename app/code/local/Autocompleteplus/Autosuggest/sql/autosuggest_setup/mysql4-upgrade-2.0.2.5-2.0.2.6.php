@@ -33,5 +33,5 @@ CREATE TABLE IF NOT EXISTS `{$installer->getTable('autocompleteplus_autosuggest/
 	KEY `IDX_IS_ACTIVE` (`is_active`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ");
-Mage::log(__FILE__ . ' triggered', null, 'autocomplete.log', true);
+Mage::log(__FILE__.' triggered', null, 'autocomplete.log', true);
 $installer->endSetup();

@@ -1,9 +1,8 @@
 <?php
 
 /**
- * For Magento < 1.6 backward compatibility
+ * For Magento < 1.6 backward compatibility.
  */
 class Autocompleteplus_Autosuggest_Model_Mysql4_Checksum_Collection extends Autocompleteplus_Autosuggest_Model_Resource_Checksum_Collection
 {
-
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * InstantSearchPlus (Autosuggest).
+ * Autocompleteplus_Autosuggest_Block_Notifications
  *
  * NOTICE OF LICENSE
  *
@@ -8,10 +8,15 @@
  * that is available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Mage
+ * PHP version 5
  *
- * @copyright  Copyright (c) 2014 Fast Simon (http://www.instantsearchplus.com)
- * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @category Mage
+ *
+ * @package   Instantsearchplus
+ * @author    Fast Simon <info@instantsearchplus.com>
+ * @copyright 2014 Fast Simon (http://www.instantsearchplus.com)
+ * @license   Open Software License (OSL 3.0)*
+ * @link      http://opensource.org/licenses/osl-3.0.php
  */
 class Autocompleteplus_Autosuggest_Block_Notifications extends Mage_Core_Block_Template
 {
@@ -20,13 +25,20 @@ class Autocompleteplus_Autosuggest_Block_Notifications extends Mage_Core_Block_T
      */
     public function getNotifications()
     {
-        /** @var Autocompleteplus_Autosuggest_Model_Mysql4_Notifications_Collection $collection */
+        /** 
+         * @var Autocompleteplus_Autosuggest_Model_Mysql4_Notifications_Collection $collection 
+         */
         $collection = Mage::getModel('autocompleteplus_autosuggest/notifications')
             ->getCollection();
 
         return $collection->addTypeFilter('alert')->addActiveFilter();
     }
 
+    /**
+     * Checks if localhost synced
+     * 
+     * @return bool
+     */
     public function localhostSynced()
     {
         $helper = Mage::helper('autocompleteplus_autosuggest');

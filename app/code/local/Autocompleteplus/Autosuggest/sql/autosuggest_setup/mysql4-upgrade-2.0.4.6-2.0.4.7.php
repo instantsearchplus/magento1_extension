@@ -37,5 +37,5 @@ CREATE TABLE IF NOT EXISTS {$this->getTable('autocompleteplus_checksum')} (
 
 ");
 
-Mage::log(__FILE__ . ' triggered', null, 'autocomplete.log', true);
+Mage::log(__FILE__.' triggered', null, 'autocomplete.log', true);
 $installer->endSetup();

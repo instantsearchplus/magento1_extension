@@ -15,14 +15,14 @@ class Autocompleteplus_Autosuggest_Model_Service
 
         foreach ($storesInfo->stores as $i => $store) {
             $id = $store->store_id;
-            
+
             $productCollection = Mage::getModel('catalog/product')->getCollection()->setStoreId($id);
             $productsCount = $productCollection->getSize();
-            
+
             $batches = ceil($productsCount / 100);
             $offset = 0;
 
-            for ($j = 1;$j <= $batches;++$j) {
+            for ($j = 1; $j <= $batches; ++$j) {
                 $inserts[] = array(
                     'store_id' => $id,
                     'to_send' => $productsCount,

@@ -5,6 +5,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Batches extends Autocompletepl
     public function setXmlElement(&$xmlGenerator)
     {
         $this->_xmlElement = $xmlGenerator;
+
         return $this;
     }
 
@@ -13,12 +14,13 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Batches extends Autocompletepl
         return $this->_xmlElement;
     }
 
-    public function makeRemoveRow($batch) {
+    public function makeRemoveRow($batch)
+    {
         $productElement = $this->getXmlElement()->createChild('product', array(
-            'updatedate' =>  $batch['update_date'],
-            'action'    =>  $batch['action'],
-            'id'    =>  $batch['product_id'],
-            'storeid'   =>  $batch['store_id']
+            'updatedate' => $batch['update_date'],
+            'action' => $batch['action'],
+            'id' => $batch['product_id'],
+            'storeid' => $batch['store_id'],
         ));
 
         $this->getXmlElement()->createChild('sku', false, $batch['sku'], $productElement);

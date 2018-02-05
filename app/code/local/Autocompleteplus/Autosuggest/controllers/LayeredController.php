@@ -1,7 +1,30 @@
 <?php
-
+/**
+ * Autocompleteplus_Autosuggest_LayeredController
+ * Used in creating options for Yes|No config value selection.
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * PHP version 5
+ *
+ * @category Mage
+ *
+ * @package   Instantsearchplus
+ * @author    Fast Simon <info@instantsearchplus.com>
+ * @copyright 2014 Fast Simon (http://www.instantsearchplus.com)
+ * @license   Open Software License (OSL 3.0)*
+ * @link      http://opensource.org/licenses/osl-3.0.php
+ */
 class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controller_Front_Action
 {
+    /**
+     * Set headers
+     *
+     * @return void
+     */
     public function preDispatch()
     {
         parent::preDispatch();
@@ -10,11 +33,21 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
         $this->getResponse()->setHeader('Content-type', 'application/json');
     }
 
+    /**
+     * Get ext config
+     *
+     * @return false|Mage_Core_Model_Abstract
+     */
     protected function _getConfig()
     {
         return Mage::getModel('autocompleteplus_autosuggest/config');
     }
 
+    /**
+     * Switches on layered search
+     *
+     * @return void
+     */
     public function setLayeredSearchOnAction()
     {
         $response = $this->getResponse();
@@ -25,7 +58,9 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
         $scopeId = $request->getParam('store_id', 1);
 
         if (!$this->valid($uuid, $authkey)) {
-            $resp = json_encode(array('status' => 'error: '.'Authentication failed'));
+            $resp = json_encode(
+                array('status' => 'error: '.'Authentication failed')
+            );
             $response->setBody($resp);
 
             return;
@@ -35,7 +70,7 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
             $this->_getConfig()->enableLayeredNavigation($scope, $scopeId);
             Mage::app()->getCacheInstance()->cleanType('config');
         } catch (Exception $e) {
-            $resp = json_encode(array('status' => 'error: '.print_r($e->getMessage(), true)));
+            $resp = json_encode(array('status' => 'error: '.$e->getMessage()));
             $response->setBody($resp);
 
             Mage::logException($e);
@@ -50,6 +85,11 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
         $response->setBody(json_encode($resp));
     }
 
+    /**
+     * Switches off layered search
+     *
+     * @return void
+     */
     public function setLayeredSearchOffAction()
     {
         $request = $this->getRequest();
@@ -60,7 +100,11 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
         $scopeId = $request->getParam('store_id', 1);
 
         if (!$this->valid($uuid, $authkey)) {
-            $resp = json_encode(array('status' => 'error: '.'Authentication failed'));
+            $resp = json_encode(
+                array(
+                    'status' => 'error: '.'Authentication failed'
+                )
+            );
 
             $response->setBody($resp);
 
@@ -71,7 +115,7 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
             $this->_getConfig()->disableLayeredNavigation($scope, $scopeId);
             Mage::app()->getCacheInstance()->cleanType('config');
         } catch (Exception $e) {
-            $resp = json_encode(array('status' => 'error: '.print_r($e->getMessage(), true)));
+            $resp = json_encode(array('status' => 'error: '.$e->getMessage()));
             $response->setBody($resp);
 
             Mage::logException($e);
@@ -86,6 +130,11 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
         $response->setBody(json_encode($resp));
     }
 
+    /**
+     * Get layered configuration
+     *
+     * @return void
+     */
     public function getLayeredSearchConfigAction()
     {
         $request = $this->getRequest();
@@ -96,7 +145,11 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
         $scopeId = $request->getParam('store_id', 1);
 
         if (!$this->valid($uuid, $authkey)) {
-            $resp = json_encode(array('status' => $this->__('error: Authentication failed')));
+            $resp = json_encode(
+                array(
+                    'status' => $this->__('error: Authentication failed')
+                )
+            );
             $response->setBody($resp);
 
             return;
@@ -105,7 +158,7 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
             Mage::app()->getCacheInstance()->cleanType('config');
             $current_state = $this->_getConfig()->getLayeredNavigationStatus($scopeId);
         } catch (Exception $e) {
-            $resp = json_encode(array('status' => 'error: '.print_r($e->getMessage(), true)));
+            $resp = json_encode(array('status' => 'error: '.$e->getMessage()));
             $response->setBody($resp);
 
             Mage::logException($e);
@@ -117,10 +170,19 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
         $response->setBody($resp);
     }
 
+    /**
+     * Checks if uuid is valid
+     *
+     * @param string $uuid
+     * @param string $authkey
+     *
+     * @return bool
+     */
     protected function valid($uuid, $authkey)
     {
         if ($this->_getConfig()->getAuthorizationKey() == $authkey
-            && $this->_getConfig()->getUUID() == $uuid) {
+            && $this->_getConfig()->getUUID() == $uuid
+        ) {
             return true;
         }
 

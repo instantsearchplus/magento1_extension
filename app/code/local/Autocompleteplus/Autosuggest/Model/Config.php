@@ -214,7 +214,8 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
     }
 
     /**
-     * Update robots.txt file with ISP sitemap URL
+     * Update robots.txt file with ISP sitemap URL.
+     *
      * @param $responseData
      */
     protected function _updateRobotsTxt($responseData)
@@ -230,8 +231,8 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
         $robotsTxtWritable = $fileIo->isWriteable('robots.txt');
 
         if ($robotsTxtExists && $robotsTxtWritable && !$siteMapExists) {
-            $fileIo->write('robots.txt', $robotsTxtContent . $siteMapUrl);
-        } else if (!$robotsTxtExists && $baseDirWritable) {
+            $fileIo->write('robots.txt', $robotsTxtContent.$siteMapUrl);
+        } elseif (!$robotsTxtExists && $baseDirWritable) {
             $fileIo->write('robots.txt', $siteMapUrl);
         } else {
             $this->_sendError('Unable to properly update robots.txt with ISP Sitemap');
@@ -251,29 +252,44 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
     public function generateConfig($UUID = null, $key = null)
     {
         $params = array(
-            'site'       => $this->_getHelper()->getConfigDataByFullPath('web/unsecure/base_url'),
-            'email'      => Mage::getStoreConfig(self::XML_STORE_EMAIL_CONFIG),
-            'f'          => $this->_getHelper()->getVersion(),
+            'site' => $this->_getHelper()->getConfigDataByFullPath('web/unsecure/base_url'),
+            'email' => Mage::getStoreConfig(self::XML_STORE_EMAIL_CONFIG),
+            'f' => $this->_getHelper()->getVersion(),
             'multistore' => $this->_getHelper()->getMultiStoreDataJson(),
         );
 
         if ($UUID && $key) {
             $params['uuid'] = $UUID;
-            $params['key']  = $key;
+            $params['key'] = $key;
         }
+
+        $responseData = null;
 
         // @codingStandardsIgnoreStart
         /**
          * Due to backward compatibility issues with Magento < 1.8.1 and cURL/Zend
-         * We need to use PHP's implementation of cURL directly rather than Zend or Varien
+         * We need to use PHP's implementation of cURL directly rather than Zend or Varien.
          */
-        $client = curl_init($this->getEndpoint() . '/install');
+        $client = curl_init($this->getEndpoint().'/install');
         curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($client, CURLOPT_POSTFIELDS, $params);
 
         $response = curl_exec($client);
         curl_close($client);
         // @codingStandardsIgnoreEnd
+
+        if (!$response && ($key == null || $key == '')) {
+            $notSecureUrl = str_replace('https', 'http', $this->getEndpoint().'/install');
+
+            $client = curl_init($notSecureUrl);
+            curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($client, CURLOPT_POSTFIELDS, $params);
+            curl_setopt($client, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($client, CURLOPT_SSL_VERIFYHOST, 0);
+
+            $response = curl_exec($client);
+            curl_close($client);
+        }
 
         if ($response) {
             $responseData = json_decode($response, true);
@@ -284,25 +300,29 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
             if (isset($responseData['uuid']) && strlen($responseData['uuid']) > 50) {
                 Mage::log('Registration failed - please check response below', null, 'autocomplete.log', true);
                 $this->_sendError('Could not get license string.');
+
                 return false;
             } elseif (!isset($responseData['uuid'])) {
                 Mage::log('Registration failed - please check response below', null, 'autocomplete.log', true);
                 $this->_sendError('Could not get license string.');
+
                 return false;
             }
 
             $this->_updateRobotsTxt($responseData);
         }
 
-        $this->setAuthorizationKey($responseData['authentication_key']);
-        $this->setUUID($responseData['uuid']);
-        $this->setSiteUrl($this->_getHelper()->getConfigDataByFullPath('web/unsecure/base_url'));
-        $this->setIsReachable($responseData['is_reachable']);
-        $this->setErrorMessage(isset($errorMessage) ? $errorMessage : '');
-        
-        if (!$this->isConfigDataValid($responseData['uuid'], $responseData['authentication_key'])){
-            $this->_sendError('UUID or Authentication key are not valid | got UUID: ' . $responseData['uuid'] . 
-                              ' | authentication_key: ' . $responseData['authentication_key']);
+        if (isset($responseData['authentication_key'])) {
+            $this->setAuthorizationKey($responseData['authentication_key']);
+            $this->setUUID($responseData['uuid']);
+            $this->setSiteUrl($this->_getHelper()->getConfigDataByFullPath('web/unsecure/base_url'));
+            $this->setIsReachable($responseData['is_reachable']);
+            $this->setErrorMessage(isset($errorMessage) ? $errorMessage : '');
+
+            if (!$this->isConfigDataValid($responseData['uuid'], $responseData['authentication_key'])) {
+                $this->_sendError('UUID or Authentication key are not valid | got UUID: '.$responseData['uuid'].
+                ' | authentication_key: '.$responseData['authentication_key']);
+            }
         }
 
         Mage::dispatchEvent('autocompleteplus_autosuggest_config_creation_after',
@@ -333,9 +353,9 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
         // @codingStandardsIgnoreStart
         /**
          * Due to backward compatibility issues with Magento < 1.8.1 and cURL/Zend
-         * We need to use PHP's implementation of cURL directly rather than Zend or Varien
+         * We need to use PHP's implementation of cURL directly rather than Zend or Varien.
          */
-        $client = curl_init($this->getEndpoint() . '/install_error');
+        $client = curl_init($this->getEndpoint().'/install_error');
         curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($client, CURLOPT_POSTFIELDS, $params);
         $response = curl_exec($client);
@@ -354,18 +374,19 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
             'licensekey' => $this->getUUID(),
         ));
     }
-    
-    public function isConfigDataValid($input_uuid = null, $input_key = null){
+
+    public function isConfigDataValid($input_uuid = null, $input_key = null)
+    {
         $uuid = ($input_uuid) ? $input_uuid : $this->getUUID();
         $authentication_key = ($input_key) ? $input_key : $this->getAuthorizationKey();
-                
-        if (!$uuid || strlen($uuid) != 36 || substr_count($uuid, '-') != 4){
+
+        if (!$uuid || strlen($uuid) != 36 || substr_count($uuid, '-') != 4) {
             return false;
         }
-        if (!$authentication_key || strlen($authentication_key) == 0){
+        if (!$authentication_key || strlen($authentication_key) == 0) {
             return false;
         }
-        
+
         return true;
     }
 }

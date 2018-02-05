@@ -1,6 +1,6 @@
 <?php
 /**
- * InstantSearchPlus (Autosuggest).
+ * Data File
  *
  * NOTICE OF LICENSE
  *
@@ -8,33 +8,65 @@
  * that is available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Mage
+ * PHP version 5
  *
- * @copyright  Copyright (c) 2014 Fast Simon (http://www.instantsearchplus.com)
- * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @category Mage
+ *
+ * @package   Instantsearchplus
+ * @author    Fast Simon <info@instantsearchplus.com>
+ * @copyright 2014 Fast Simon (http://www.instantsearchplus.com)
+ * @license   Open Software License (OSL 3.0)*
+ * @link      http://opensource.org/licenses/osl-3.0.php
+ */
+
+/**
+ * Autocompleteplus_Autosuggest_Helper_Data
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * PHP version 5
+ *
+ * @category Mage
+ *
+ * @package   Instantsearchplus
+ * @author    Fast Simon <info@instantsearchplus.com>
+ * @copyright 2014 Fast Simon (http://www.instantsearchplus.com)
+ * @license   Open Software License (OSL 3.0)*
+ * @link      http://opensource.org/licenses/osl-3.0.php
  */
 class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 {
-
     const WEBSITES_SCOPE = 'websites';
 
     const STORES_SCOPE = 'stores';
 
     const DEFAULT_SCOPE = 'default';
 
-
     const WEBSITE_ID = 'website_id';
 
-    //     private $server_url = 'http://0-2vk.acp-magento.appspot.com';
-    private $server_url = 'http://magento.instantsearchplus.com';
+    protected $server_url = 'http://magento.instantsearchplus.com';
 
-    protected $_authKey;
-
+    /**
+     * Return server url
+     *
+     * @return string
+     */
     public function getServerUrl()
     {
         return $this->server_url;
     }
 
+    /**
+     * Validate uuid
+     *
+     * @param string $uuid comment
+     *
+     * @return bool
+     */
     public function validateUuid($uuid)
     {
         if (strlen($uuid) == 36
@@ -46,21 +78,45 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         return false;
     }
 
+    /**
+     * Return extension config model
+     *
+     * @return false|Mage_Core_Model_Abstract
+     */
     public function getConfig()
     {
         return Mage::getModel('autocompleteplus_autosuggest/config');
     }
 
+    /**
+     * Return Magento version
+     *
+     * @return string
+     */
     public function getMageVersion()
     {
         return Mage::getVersion();
     }
 
+    /**
+     * Return Extension version
+     *
+     * @return string
+     */
     public function getVersion()
     {
-        return (string) Mage::getConfig()->getModuleConfig('Autocompleteplus_Autosuggest')->version;
+        return (string) Mage::getConfig()
+            ->getModuleConfig('Autocompleteplus_Autosuggest')
+            ->version;
     }
 
+    /**
+     * Get data from magento config by path
+     *
+     * @param string $path comment
+     *
+     * @return mixed|string
+     */
     public function getConfigDataByFullPath($path)
     {
         $valsArr = $this->getConfigMultiDataByFullPath($path);
@@ -74,15 +130,28 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         return $value;
     }
 
+    /**
+     * Get multi line data from magento config by path
+     *
+     * @param string $path comment
+     *
+     * @return mixed|string
+     */
     public function getConfigMultiDataByFullPath($path)
     {
         $values = array();
 
-        if (!$rows = Mage::getSingleton('core/config_data')->getCollection()->getItemsByColumnValue('path', $path)) {
-            $conf = Mage::getSingleton('core/config')->init()->getXpath('/config/default/'.$path);
-            $values[] = array_shift($conf);
-        } else {
+        $rows = Mage::getSingleton('core/config_data')
+            ->getCollection()
+            ->getItemsByColumnValue('path', $path);
 
+        if (!$rows) {
+            $conf = Mage::getSingleton('core/config')
+                ->init()
+                ->getXpath('/config/default/'.$path);
+            $values[] = array_shift($conf);
+
+        } else {
             foreach ($rows as $row) {
                 $scopeId = $row->getScopeId();
 
@@ -97,11 +166,21 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         return $values;
     }
 
+    /**
+     * Get multi line data by scopes
+     * from magento config by path
+     *
+     * @param string $path comment
+     *
+     * @return mixed|string
+     */
     public function getConfigMultiScopesDataByFullPath($path)
     {
         $values = array();
 
-        $rows = Mage::getSingleton('core/config_data')->getCollection()->getItemsByColumnValue('path', $path);
+        $rows = Mage::getSingleton('core/config_data')
+            ->getCollection()
+            ->getItemsByColumnValue('path', $path);
 
         foreach ($rows as $row) {
             $scope = $row->getScope();
@@ -111,8 +190,7 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
             $rowValue = $row->getValue();
 
             if ($scope != null && $scopeId != null && $rowValue != null) {
-
-                if (!array_key_exists($scope,$values)) {
+                if (!array_key_exists($scope, $values)) {
                     $values[$scope] = array();
                 }
 
@@ -120,10 +198,16 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
             }
         }
 
-
         return $values;
     }
 
+    /**
+     * Send curl request
+     *
+     * @param string $command comment
+     *
+     * @return mixed|string
+     */
     public function sendCurl($command)
     {
         if (isset($ch)) {
@@ -144,8 +228,20 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         return $str;
     }
 
-    public static function sendPostCurl($command, $data = array(), $cookie_file = 'genCookie.txt')
-    {
+    /**
+     * Send curl POST request
+     *
+     * @param string $command     comment
+     * @param array  $data        comment
+     * @param string $cookie_file comment
+     *
+     * @return mixed|string
+     */
+    public static function sendPostCurl(
+        $command,
+        $data = array(),
+        $cookie_file = 'genCookie.txt'
+    ) {
         if (isset($ch)) {
             unset($ch);
         }
@@ -158,18 +254,29 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
             curl_setopt($ch, CURLOPT_HEADER, 0);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($ch, CURLOPT_FRESH_CONNECT, 1);
-            curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; rv:21.0) Gecko/20100101 Firefox/21.0');
+            curl_setopt(
+                $ch,
+                CURLOPT_USERAGENT,
+                'Mozilla/5.0 (Windows NT 6.1; rv:21.0) Gecko/20100101 Firefox/21.0'
+            );
             //curl_setopt($ch,CURLOPT_POST,0);
             if (!empty($data)) {
-                curl_setopt_array($ch, array(
+                curl_setopt_array(
+                    $ch,
+                    array(
                     CURLOPT_POSTFIELDS => $data,
-                ));
+                    )
+                );
             }
 
-            //  curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            //      'Connection: Keep-Alive',
-            //      'Keep-Alive: 800'
-            //  ));
+            /**
+             * Setting Http Header
+             * curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+             * 'Connection: Keep-Alive',
+             * 'Keep-Alive: 800'
+             * ));
+             */
+
 
             $str = curl_exec($ch);
         } else {
@@ -179,9 +286,18 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         return $str;
     }
 
+    /**
+     * Prepare grouped product price
+     *
+     * @param mixed $groupedProduct comment
+     *
+     * @return void
+     */
     public function prepareGroupedProductPrice($groupedProduct)
     {
-        $aProductIds = $groupedProduct->getTypeInstance()->getChildrenIds($groupedProduct->getId());
+        $aProductIds = $groupedProduct
+            ->getTypeInstance()
+            ->getChildrenIds($groupedProduct->getId());
 
         $prices = array();
         foreach ($aProductIds as $ids) {
@@ -206,9 +322,18 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
             $groupedProduct->setPrice(0);
         }
 
-        // or you can return price
+        /**
+         * Or you can return price
+         */
     }
 
+    /**
+     * Get bundled product price
+     *
+     * @param mixed $product comment
+     *
+     * @return float
+     */
     public function getBundlePrice($product)
     {
         $optionCol = $product->getTypeInstance(true)
@@ -245,6 +370,11 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         return $price;
     }
 
+    /**
+     * Get multi stores json
+     *
+     * @return string
+     */
     public function getMultiStoreDataJson()
     {
         $websites = Mage::getModel('core/website')->getCollection();
@@ -252,14 +382,22 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         $ext = Mage::helper('autocompleteplus_autosuggest')->getVersion();
         $version = array('mage' => $mage, 'ext' => $ext);
 
-        //getting site url
+        /**
+         * Getting site url
+         */
         $url = $this->getConfigDataByFullPath('web/unsecure/base_url');
 
-        //getting site owner email
-        $storeMail = $this->getConfigDataByFullPath('autocompleteplus/config/store_email');
+        /**
+         * Getting site owner email
+         */
+        $storeMail = $this->getConfigDataByFullPath(
+            'autocompleteplus/config/store_email'
+        );
 
         if (!$storeMail) {
-            $storeMail = $this->getConfigDataByFullPath('trans_email/ident_general/email');
+            $storeMail = $this->getConfigDataByFullPath(
+                'trans_email/ident_general/email'
+            );
         }
 
         $storesArr = array();
@@ -307,17 +445,27 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         return $multistoreJson;
     }
 
+    /**
+     * Get extension conflicts
+     *
+     * @param bool $all_conflicts comment
+     *
+     * @return array
+     */
     public function getExtensionConflict($all_conflicts = false)
     {
         $all_rewrite_classes = array();
         $node_type_list = array('model', 'helper', 'block');
 
         foreach ($node_type_list as $node_type) {
-            foreach (Mage::getConfig()->getNode('modules')->children() as $name => $module) {
+            $children = Mage::getConfig()->getNode('modules')->children();
+
+            foreach ($children as $name => $module) {
                 if ($module->codePool == 'core' || $module->active != 'true') {
                     continue;
                 }
-                $config_file_path = Mage::getConfig()->getModuleDir('etc', $name).DS.'config.xml';
+                $config_file_path = Mage::getConfig()
+                        ->getModuleDir('etc', $name).DS.'config.xml';
                 $config = new Varien_Simplexml_Config();
                 $config->loadString('<config/>');
                 $config->loadFile($config_file_path);
@@ -329,13 +477,22 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
                 }
                 foreach ($nodes->children() as $node_name => $config) {
                     if ($config->rewrite) {  // there is rewrite for current config
-                        foreach ($config->rewrite->children() as $class_tag => $derived_class) {
-                            $base_class_name = $this->_getMageBaseClass($node_type, $node_name, $class_tag);
+                        $reWriteChildren = $config->rewrite->children();
+
+                        foreach ($reWriteChildren as $class_tag => $derived_class) {
+                            $base_class_name = $this->_getMageBaseClass(
+                                $node_type, $node_name, $class_tag
+                            );
 
                             $lead_derived_class = '';
-                            $conf = Mage::getConfig()->getNode()->global->{$node_type.'s'}->{$node_name};
+                            $conf = Mage::getConfig()
+                                ->getNode()
+                                ->global
+                                ->{$node_type.'s'}->{$node_name};
+
                             if (isset($conf->rewrite->$class_tag)) {
-                                $lead_derived_class = (string) $conf->rewrite->$class_tag;
+                                $lead_derived_class = (string) $conf
+                                    ->rewrite->$class_tag;
                             }
                             if ($derived_class == '') {
                                 $derived_class = $lead_derived_class;
@@ -349,8 +506,14 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
                                     'name' => array((string) $name),
                                 );
                             } else {
-                                array_push($all_rewrite_classes[$base_class_name]['derived'], (string) $derived_class);
-                                array_push($all_rewrite_classes[$base_class_name]['name'], (string) $name);
+                                array_push(
+                                    $all_rewrite_classes[$base_class_name]['derived'],
+                                    (string) $derived_class
+                                );
+                                array_push(
+                                    $all_rewrite_classes[$base_class_name]['name'],
+                                    (string) $name
+                                );
                             }
                         }
                     }
@@ -364,8 +527,14 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         $isp_rewrite_classes = array();
         $isp_module_name = 'Autocompleteplus_Autosuggest';
         foreach ($all_rewrite_classes as $base => $conflict_info) {
-            if (in_array($isp_module_name, $conflict_info['name'])) {        // if isp extension rewrite this base class
-                if (count($conflict_info['derived']) > 1) {                  // more then 1 class rewrite this base class => there is a conflict
+            /**
+             * If isp extension rewrite this base class
+             */
+            if (in_array($isp_module_name, $conflict_info['name'])) {
+                /**
+                 * More then 1 class rewrite this base class => there is a conflict
+                 */
+                if (count($conflict_info['derived']) > 1) {
                     $isp_rewrite_classes[$base] = $conflict_info;
                 }
             }
@@ -374,6 +543,15 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         return $isp_rewrite_classes;
     }
 
+    /**
+     * Get Mage base class
+     *
+     * @param string $node_type param
+     * @param string $node_name param
+     * @param string $class_tag param
+     *
+     * @return string
+     */
     protected function _getMageBaseClass($node_type, $node_name, $class_tag)
     {
         $config = Mage::getConfig()->getNode()->global->{$node_type.'s'}->$node_name;
@@ -393,6 +571,8 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 
     /**
      *  Checksum functionality.
+     *
+     * @return bool
      */
     public function isChecksumTableExists()
     {
@@ -405,42 +585,71 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         }
     }
 
+    /**
+     * Calculate checksum
+     *
+     * @param mixed $product param
+     *
+     * @return string
+     */
     public function calculateChecksum($product)
     {
         $product_id = $product->getId();
         $product_title = $product->getName();
         $product_description = $product->getDescription();
         $product_short_desc = $product->getShortDescription();
-        $product_url = $product->getUrlPath();   //Mage::helper('catalog/product')->getProductUrl($product_id); | $product->getProductUrl()
+        /**
+         * Mage::helper('catalog/product')->getProductUrl($product_id);
+         * $product->getProductUrl()
+         */
+        $product_url = $product->getUrlPath();
         $product_visibility = $product->getVisibility();
         $product_in_stock = $product->isInStock();
         $product_price = (float) $product->getPrice();
         try {
             $product_thumb_url = '/'.$product->getImage();
 
-//             $product_thumb_url = $product->getThumbnailUrl();  //Mage::helper('catalog/image')->init($product, 'thumbnail');
-//             $thumb_pattern = '/\/[^\/]+(?![^\/]*\/)/';
-//             if (preg_match($thumb_pattern, $product_thumb_url, $matches) && count($matches) > 0){
-//                 $product_thumb_url = $matches[0];
-//             } else {
-//                 $product_thumb_url = '';
-//             }
+            /**
+             * Gets thumbs code
+             * $product_thumb_url = $product->getThumbnailUrl();
+             * //Mage::helper('catalog/image')->init($product, 'thumbnail');
+             * $thumb_pattern = '/\/[^\/]+(?![^\/]*\/)/';
+             * if (preg_match($thumb_pattern, $product_thumb_url, $matches)
+             * && count($matches) > 0){
+             *     $product_thumb_url = $matches[0];
+             * } else {
+             *     $product_thumb_url = '';
+             * }
+            */
         } catch (Exception $e) {
             $product_thumb_url = '';
         }
         $product_type = $product->getTypeID();
 
-        $checksum_string = $product_id.$product_title.$product_description.$product_short_desc.$product_url.
-            $product_visibility.$product_in_stock.$product_price.$product_thumb_url.$product_type;
+        $checksum_string = $product_id.$product_title.$product_description.
+            $product_short_desc.$product_url.
+            $product_visibility.$product_in_stock.$product_price.
+            $product_thumb_url.$product_type;
 
         $checksum_md5 = md5($checksum_string);
 
         return $checksum_md5;
     }
 
+    /**
+     * Get saved checksum
+     *
+     * @param string $table_prefix param
+     * @param mixed  $read         param
+     * @param int    $product_id   param
+     * @param int    $store_id     param
+     *
+     * @return string
+     */
     public function getSavedChecksum($table_prefix, $read, $product_id, $store_id)
     {
-        $sql_fetch = 'SELECT checksum FROM '.$table_prefix.'autocompleteplus_checksum WHERE identifier=? AND store_id=?';
+        $sql_fetch = 'SELECT checksum FROM '.$table_prefix.
+            'autocompleteplus_checksum WHERE identifier=? AND store_id=?';
         $updates = $read->fetchAll($sql_fetch, array($product_id, $store_id));
         if ($updates && (count($updates) != 0)) {
             return $updates[0]['checksum'];
@@ -449,8 +658,22 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         }
     }
 
-    public function updateSavedProductChecksum($product_id, $sku, $store_id, $checksum)
-    {
+    /**
+     * Update checksum
+     *
+     * @param mixed  $product_id param
+     * @param string $sku        param
+     * @param mixed  $store_id   param
+     * @param mixed  $checksum   param
+     *
+     * @return void
+     */
+    public function updateSavedProductChecksum(
+        $product_id,
+        $sku,
+        $store_id,
+        $checksum
+    ) {
         return;
         if ($product_id == null || $sku == null) {
             return;
@@ -475,6 +698,18 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         }
     }
 
+    /**
+     * Update Deleted Product Checksum
+     *
+     * @param mixed $table_prefix param
+     * @param mixed $read         param
+     * @param mixed $write        param
+     * @param mixed $product_id   param
+     * @param mixed $sku          param
+     * @param mixed $store_id     param
+     *
+     * @return void
+     */
     public function updateDeletedProductChecksum($table_prefix, $read, $write, $product_id, $sku, $store_id)
     {
         return;
@@ -482,7 +717,8 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
             return;
         }
 
-        $checksums = Mage::getModel('autocompleteplus_autosuggest/checksum')->getCollection()
+        $checksums = Mage::getModel('autocompleteplus_autosuggest/checksum')
+            ->getCollection()
             ->addFieldToFilter('identifier', $product_id)
             ->addFieldToFilter('store_id', $store_id);
 
@@ -493,8 +729,24 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         }
     }
 
-    private function setUpdateNeededForProduct($read, $write, $product_id, $product_sku, $store_id)
-    {
+    /**
+     * Set Update Needed For Product
+     *
+     * @param mixed $read        param
+     * @param mixed $write       param
+     * @param mixed $product_id  param
+     * @param mixed $product_sku param
+     * @param mixed $store_id    param
+     *
+     * @return void
+     */
+    private function setUpdateNeededForProduct(
+        $read,
+        $write,
+        $product_id,
+        $product_sku,
+        $store_id
+    ) {
         if ($product_id == null) {
             return;
         }
@@ -503,27 +755,63 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         }
         try {
             $table_prefix = (string) Mage::getConfig()->getTablePrefix();
-            $is_table_exist = $write->showTableStatus($table_prefix.'autocompleteplus_batches');
-            if (!$is_table_exist) {   // table not exists
+            $is_table_exist = $write
+                ->showTableStatus($table_prefix.'autocompleteplus_batches');
+
+            /**
+             * Table not exists
+             */
+            if (!$is_table_exist) {
                 return;
             }
 
-            $sql_fetch = 'SELECT * FROM '.$table_prefix.'autocompleteplus_batches WHERE product_id=? AND store_id=?';
+            $sql_fetch = 'SELECT * FROM '.
+                $table_prefix.
+                'autocompleteplus_batches WHERE product_id=? AND store_id=?';
             $updates = $read->fetchAll($sql_fetch, array($product_id, $store_id));
 
             if ($updates && (count($updates) != 0)) {
-                $sql = 'UPDATE '.$table_prefix.'autocompleteplus_batches  SET update_date=?,action=? WHERE product_id=? AND store_id=?';
-                $write->query($sql, array(strtotime('now'), 'update', $product_id, $store_id));
+                $sql = 'UPDATE '.$table_prefix.
+                    'autocompleteplus_batches  SET update_date=?,action=? WHERE product_id=? AND store_id=?';
+                $write->query(
+                    $sql,
+                    array(strtotime('now'), 'update', $product_id, $store_id)
+                );
             } else {
-                $sql = 'INSERT INTO '.$table_prefix.'autocompleteplus_batches (product_id,store_id,update_date,action,sku) VALUES (?,?,?,?,?)';
-                $write->query($sql, array($product_id, $store_id, strtotime('now'), 'update', $product_sku));
+                $sql = 'INSERT INTO '.
+                    $table_prefix.
+                    'autocompleteplus_batches (product_id,store_id,update_date,action,sku) VALUES (?,?,?,?,?)';
+                $write->query(
+                    $sql,
+                    array($product_id,
+                        $store_id,
+                        strtotime('now'),
+                        'update',
+                        $product_sku
+                    )
+                );
             }
         } catch (Exception $e) {
-            Mage::log('Exception raised in setUpdateNeededForProduct() - '.$e->getMessage(), null, 'autocompleteplus.log');
-            $this->ispErrorLog('Exception raised in setUpdateNeededForProduct() - '.$e->getMessage());
+            Mage::log(
+                'Exception raised in setUpdateNeededForProduct()- '.$e->getMessage(),
+                null,
+                'autocompleteplus.log'
+            );
+            $this->ispErrorLog(
+                'Exception raised in setUpdateNeededForProduct() - '.$e->getMessage()
+            );
         }
     }
 
+    /**
+     * Compare product check sum
+     *
+     * @param int  $from     param
+     * @param int  $count    param
+     * @param null $store_id param
+     *
+     * @return int|void
+     */
     public function compareProductsChecksum($from, $count, $store_id = null)
     {
         $num_of_updates = 0;
@@ -549,25 +837,61 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
                     ->setStore($store_id)->setStoreId($store_id)
                     ->load($product_collection_data['entity_id']);
 
-                $current_checksum = $this->getSavedChecksum($table_prefix, $read, $product_model->getId(), $store_id);
+                $current_checksum = $this->getSavedChecksum(
+                    $table_prefix,
+                    $read,
+                    $product_model->getId(),
+                    $store_id
+                );
                 $new_checksum = $this->calculateChecksum($product_model);
             } catch (Exception $e) {
-                Mage::log('Exception raised in compareProductsChecksum() on id: '.$product->getId().' -> '.$e->getMessage(), null, 'autocompleteplus.log');
-                $this->ispErrorLog('Exception raised in compareProductsChecksum() on id: '.$product->getId().' -> '.$e->getMessage());
+                Mage::log(
+                    'Exception raised in compareProductsChecksum() on id: '.
+                    $product->getId().' -> '.$e->getMessage(),
+                    null,
+                    'autocompleteplus.log'
+                );
+                $this->ispErrorLog(
+                    'Exception raised in compareProductsChecksum() on id: '.
+                    $product->getId().' -> '.$e->getMessage()
+                );
 
                 return 0;
             }
             if ($current_checksum == '' || $current_checksum != $new_checksum) {
                 ++$num_of_updates;
-                $this->updateSavedProductChecksum($table_prefix, $read, $write, $product_model->getId(), $product_model->getSku(),
-                    $store_id, $new_checksum);
-                $this->setUpdateNeededForProduct($read, $write, $product_model->getId(), $product_model->getSku(), $store_id);
+                $this->updateSavedProductChecksum(
+                    $table_prefix,
+                    $read,
+                    $write,
+                    $product_model->getId(),
+                    $product_model->getSku(),
+                    $store_id, $new_checksum
+                );
+                $this->setUpdateNeededForProduct(
+                    $read,
+                    $write,
+                    $product_model->getId(),
+                    $product_model->getSku(),
+                    $store_id
+                );
             }
         }
 
         return $num_of_updates;
     }
 
+    /**
+     * Delete product from table
+     *
+     * @param mixed $read         param
+     * @param mixed $write        param
+     * @param mixed $table_prefix param
+     * @param int   $product_id   param
+     * @param int   $store_id     param
+     *
+     * @return void
+     */
     public function deleteProductFromTables($read, $write, $table_prefix, $product_id, $store_id)
     {
         $dt = strtotime('now');
@@ -586,11 +910,25 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         $this->updateDeletedProductChecksum($table_prefix, $read, $write, $product_id, $sku, $store_id);
     }
 
+    /**
+     * IspLog
+     *
+     * @param string $log comment
+     *
+     * @return void
+     */
     public function ispLog($log)
     {
         Mage::log($log, null, 'autocompleteplus.log');
     }
 
+    /**
+     * IspErrorLog
+     *
+     * @param string $log comment
+     *
+     * @return void
+     */
     public function ispErrorLog($log)
     {
         $uuid = $this->getUUID();
@@ -598,47 +936,76 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         $store_id = Mage::app()->getStore()->getStoreId();
 
         $server_url = $this->server_url.'/magento_logging_error';
-        $request = $server_url.'?uuid='.$uuid.'&site_url='.$site_url.'&store_id='.$store_id.'&msg='.urlencode($log);
+        $request = $server_url.'?uuid='.$uuid.'&site_url='.
+            $site_url.'&store_id='.$store_id.'&msg='.urlencode($log);
 
         $resp = $this->sendCurl($request);
     }
 
+    /**
+     * GetUUID
+     *
+     * @return mixed
+     */
     public function getUUID()
     {
         return $this->getConfig()->getUUID();
     }
 
     /**
-     * Deprecated, use getAuthorizationKey()
+     * Deprecated, use getAuthorizationKey().
+     * 
+     * @return string | null
      */
     public function getKey()
     {
         return $this->getAuthorizationKey();
     }
 
+    /**
+     * GetAuthorizationKey
+     *
+     * @return string | null
+     */
     public function getAuthorizationKey()
     {
         return $this->getConfig()->getAuthorizationKey();
     }
 
+    /**
+     * GetIsReachable
+     *
+     * @return string | null
+     */
     public function getIsReachable()
     {
         return $this->getConfig()->isReachable();
     }
 
+    /**
+     * GetServerEndPoint
+     *
+     * @return string
+     */
     public function getServerEndPoint()
     {
         try {
             $read = Mage::getSingleton('core/resource')->getConnection('core_read');
-            $write = Mage::getSingleton('core/resource')->getConnection('core_write');
+            
+            $write = Mage::getSingleton('core/resource')
+                ->getConnection('core_write');
+            
             $_tableprefix = (string) Mage::getConfig()->getTablePrefix();
-            $tblExist = $write->showTableStatus($_tableprefix.'autocompleteplus_config');
+            $tblExist = $write->showTableStatus(
+                $_tableprefix.'autocompleteplus_config'
+            );
 
             if (!$tblExist) {
                 return '';
             }
 
-            $sql = 'SELECT * FROM `'.$_tableprefix.'autocompleteplus_config` WHERE `id` =1';
+            $sql = 'SELECT * FROM `'. 
+                $_tableprefix.'autocompleteplus_config` WHERE `id` =1';
             $licenseData = $read->fetchAll($sql);
             if (array_key_exists('server_type', $licenseData[0])) {
                 $key = $licenseData[0]['server_type'];
@@ -652,23 +1019,37 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         return $key;
     }
 
+    /**
+     * SetServerEndPoint
+     *
+     * @param string $end_point comment
+     *
+     * @return void
+     */
     public function setServerEndPoint($end_point)
     {
         try {
             $_tableprefix = (string) Mage::getConfig()->getTablePrefix();
             $read = Mage::getSingleton('core/resource')->getConnection('core_read');
-            $write = Mage::getSingleton('core/resource')->getConnection('core_write');
-            $tblExist = $write->showTableStatus($_tableprefix.'autocompleteplus_config');
+            
+            $write = Mage::getSingleton('core/resource')
+                ->getConnection('core_write');
+            
+            $tblExist = $write->showTableStatus(
+                $_tableprefix.'autocompleteplus_config'
+            );
 
             if (!$tblExist) {
                 return;
             }
 
-            $sqlFetch = 'SELECT * FROM '.$_tableprefix.'autocompleteplus_config WHERE id = 1';
+            $sqlFetch = 'SELECT * FROM '.$_tableprefix. 
+                'autocompleteplus_config WHERE id = 1';
             $updates = $write->fetchAll($sqlFetch);
 
             if ($updates && count($updates) != 0) {
-                $sql = 'UPDATE '.$_tableprefix.'autocompleteplus_config SET server_type=? WHERE id = 1';
+                $sql = 'UPDATE '.$_tableprefix. 
+                    'autocompleteplus_config SET server_type=? WHERE id = 1';
                 $write->query($sql, array($end_point));
             } else {
                 Mage::log('cant update server_type', null, 'autocompleteplus.log');
@@ -678,6 +1059,11 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         }
     }
 
+    /**
+     * GetErrormessage
+     *
+     * @return string
+     */
     public function getErrormessage()
     {
         $read = Mage::getSingleton('core/resource')->getConnection('core_read');
@@ -692,7 +1078,8 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
             return '';
         }
 
-        $sql = 'SELECT * FROM `'.$_tableprefix.'autocompleteplus_config` WHERE `id` =1';
+        $sql = 'SELECT * FROM `'.
+            $_tableprefix.'autocompleteplus_config` WHERE `id` =1';
 
         $licenseData = $read->fetchAll($sql);
 
@@ -701,6 +1088,11 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         return $errormessage;
     }
 
+    /**
+     * GetIfSyncWasInitiated
+     *
+     * @return bool
+     */
     public function getIfSyncWasInitiated()
     {
         $collection = Mage::getModel('autocompleteplus_autosuggest/pusher')->getCollection();
@@ -708,6 +1100,11 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         return $collection->getSize() > 0;
     }
 
+    /**
+     * GetPushId
+     *
+     * @return mixed
+     */
     public function getPushId()
     {
         $collection = Mage::getModel('autocompleteplus_autosuggest/pusher')
@@ -720,6 +1117,13 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         return $collection->getLastItem()->getId();
     }
 
+    /**
+     * GetPushUrl
+     *
+     * @param null $id comment
+     *
+     * @return string
+     */
     public function getPushUrl($id = null)
     {
         if ($id == null) {
@@ -729,7 +1133,11 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         $url = Mage::getUrl();
 
         if (strpos($url, 'index.php') !== false) {
-            $url = $url.'/autocompleteplus/products/pushbulk/pushid/'.$id;
+            if (substr($url, -1) != '/') {
+                $url .= '/';
+            }
+
+            $url = $url.'autocompleteplus/products/pushbulk/pushid/'.$id;
         } else {
             $url = $url.'index.php/autocompleteplus/products/pushbulk/pushid/'.$id;
         }
@@ -739,13 +1147,15 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 
     public function escapeXml($xml)
     {
-//        $pairs = array(
-//            "\x03" => "&#x03;",
-//            "\x05" => "&#x05;",
-//            "\x0E" => "&#x0E;",
-//            "\x16" => "&#x16;",
-//        );
-//        $xml = strtr($xml, $pairs);
+        /**
+         *  $pairs = array(
+         *      "\x03" => "&#x03;",
+         *      "\x05" => "&#x05;",
+         *      "\x0E" => "&#x0E;",
+         *      "\x16" => "&#x16;",
+         * );
+         * $xml = strtr($xml, $pairs);
+         */
 
         $xml = preg_replace('/[\x00-\x1f]/', '', $xml);
 
@@ -760,7 +1170,9 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
      */
     public function getSessionId()
     {
-        return md5(Mage::app()->getCookie()->get('frontend').$this->_getEncryptionKey());
+        return md5(
+            Mage::app()->getCookie()->get('frontend').$this->_getEncryptionKey()
+        );
     }
 
     /**
@@ -776,8 +1188,10 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * @param $storesArr
-     * @param $multistoreData
+     * CreateMultiStoreByScopeJson
+     * 
+     * @param array $storesArr comment
+     *
      * @return array
      */
     protected function _createMultiStoreByScopeJson($storesArr)
@@ -785,7 +1199,9 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         $multistoreData = array();
         $storeComplete = array();
 
-        $storeUrls = $this->getConfigMultiScopesDataByFullPath('web/unsecure/base_url');
+        $storeUrls = $this->getConfigMultiScopesDataByFullPath(
+            'web/unsecure/base_url'
+        );
         $locales = $this->getConfigMultiScopesDataByFullPath('general/locale/code');
         $useStoreCode = $this->getConfigDataByFullPath('web/url/use_store');
 
@@ -796,47 +1212,58 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 
             $storeComplete = $value;
 
-            if (array_key_exists(self::STORES_SCOPE, $locales) &&
-                array_key_exists($storeId, $locales[self::STORES_SCOPE]))
-            {
+            if (array_key_exists(self::STORES_SCOPE, $locales) 
+                && array_key_exists($storeId, $locales[self::STORES_SCOPE])
+            ) {
                 $storeComplete['lang'] = $locales[self::STORES_SCOPE][$storeId];
-            } elseif (array_key_exists(self::WEBSITES_SCOPE, $locales) &&
-                      array_key_exists($storeComplete[self::WEBSITE_ID],$locales[self::WEBSITES_SCOPE]))
-            {
-                $storeComplete['lang'] = $locales[self::WEBSITES_SCOPE][$storeComplete[self::WEBSITE_ID]];
-            }else if (array_key_exists(self::DEFAULT_SCOPE, $locales) &&
-                      array_key_exists(0,$locales[self::DEFAULT_SCOPE]))
-            {
+            } elseif (array_key_exists(self::WEBSITES_SCOPE, $locales) 
+                && array_key_exists(
+                    $storeComplete[self::WEBSITE_ID], $locales[self::WEBSITES_SCOPE]
+                )
+            ) {
+                $storeComplete['lang'] = $locales[self::WEBSITES_SCOPE]
+                [$storeComplete[self::WEBSITE_ID]];
+                
+            } elseif (array_key_exists(self::DEFAULT_SCOPE, $locales) 
+                && array_key_exists(0, $locales[self::DEFAULT_SCOPE])
+            ) {
                 $storeComplete['lang'] = $locales[self::DEFAULT_SCOPE][0];
             }
 
-
             if (!$useStoreCode) {
-                if (array_key_exists(self::STORES_SCOPE, $storeUrls) &&
-                    array_key_exists($storeId, $storeUrls[self::STORES_SCOPE]))
-                {
+                if (array_key_exists(self::STORES_SCOPE, $storeUrls) 
+                    && array_key_exists($storeId, $storeUrls[self::STORES_SCOPE])
+                ) {
                     $storeComplete['url'] = $storeUrls[self::STORES_SCOPE][$storeId];
-                } elseif (array_key_exists(self::WEBSITES_SCOPE, $storeUrls) &&
-                          array_key_exists($storeComplete[self::WEBSITE_ID],$storeUrls[self::WEBSITES_SCOPE]))
-                {
-                    $storeComplete['url'] = $storeUrls[self::WEBSITES_SCOPE][$storeComplete[self::WEBSITE_ID]];
-                }else if (array_key_exists(self::DEFAULT_SCOPE, $storeUrls) &&
-                          array_key_exists(0,$storeUrls[self::DEFAULT_SCOPE]))
-                {
+                } elseif (array_key_exists(self::WEBSITES_SCOPE, $storeUrls) 
+                    && array_key_exists(
+                        $storeComplete[self::WEBSITE_ID],
+                        $storeUrls[self::WEBSITES_SCOPE]
+                    )
+                ) {
+                    $storeComplete['url'] = $storeUrls[self::WEBSITES_SCOPE]
+                    [$storeComplete[self::WEBSITE_ID]];
+                    
+                } elseif (array_key_exists(self::DEFAULT_SCOPE, $storeUrls) 
+                    && array_key_exists(0, $storeUrls[self::DEFAULT_SCOPE])
+                ) {
                     $storeComplete['url'] = $storeUrls[self::DEFAULT_SCOPE][0];
                 }
             } else {
-                $storeComplete['url'] = $storeUrls[0] . $value['code'];
+                $storeComplete['url'] = $storeUrls[0].$value['code'];
             }
 
             $multistoreData[] = $storeComplete;
         }
+
         return $multistoreData;
     }
 
     /**
-     * @param $storesArr
-     * @param $multistoreData
+     * CreateMultiStoreJson
+     * 
+     * @param array $storesArr comment
+     *
      * @return array
      */
     protected function _createMultiStoreJson($storesArr)
@@ -867,11 +1294,12 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
             }
 
             if ($useStoreCode) {
-                $storeComplete['url'] = $storeUrls[0] . $value['code'];
+                $storeComplete['url'] = $storeUrls[0].$value['code'];
             }
 
             $multistoreData[] = $storeComplete;
         }
+
         return $multistoreData;
     }
 }

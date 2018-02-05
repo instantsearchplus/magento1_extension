@@ -1,26 +1,29 @@
 <?php
 /**
- * InstantSearchPlus (Autosuggest).
- *
+ * Autocompleteplus_Autosuggest_Adminhtml_Model_Button
+ * Used in creating options for Yes|No config value selection.
  * NOTICE OF LICENSE
  *
  * This source file is subject to the Open Software License (OSL 3.0)
  * that is available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
  *
- * @category   Mage
+ * PHP version 5
  *
- * @copyright  Copyright (c) 2014 Fast Simon (http://www.instantsearchplus.com)
- * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @category Mage
+ *
+ * @package   Instantsearchplus
+ * @author    Fast Simon <info@instantsearchplus.com>
+ * @copyright 2014 Fast Simon (http://www.instantsearchplus.com)
+ * @license   Open Software License (OSL 3.0)*
+ * @link      http://opensource.org/licenses/osl-3.0.php
  */
-
-/**
- * Used in creating options for Yes|No config value selection.
- */
-class Autocompleteplus_Autosuggest_Adminhtml_Model_Button  extends Mage_Adminhtml_Block_System_Config_Form_Field
+class Autocompleteplus_Autosuggest_Adminhtml_Model_Button extends Mage_Adminhtml_Block_System_Config_Form_Field
 {
-    /*
+    /**
      * Set template
+     * 
+     * @return void
      */
     protected function _construct()
     {
@@ -31,7 +34,7 @@ class Autocompleteplus_Autosuggest_Adminhtml_Model_Button  extends Mage_Adminhtm
     /**
      * Return element html.
      *
-     * @param Varien_Data_Form_Element_Abstract $element
+     * @param Varien_Data_Form_Element_Abstract $element 
      *
      * @return string
      */
@@ -42,6 +45,11 @@ class Autocompleteplus_Autosuggest_Adminhtml_Model_Button  extends Mage_Adminhtm
         return $this->_toHtml();
     }
 
+    /**
+     * Return uuid
+     *
+     * @return mixed
+     */
     public function getUUID()
     {
         $config = Mage::getModel('autocompleteplus_autosuggest/config');
@@ -56,7 +64,8 @@ class Autocompleteplus_Autosuggest_Adminhtml_Model_Button  extends Mage_Adminhtm
      */
     public function getAjaxCheckUrl()
     {
-        return Mage::helper('adminhtml')->getUrl('autocompleteplus/products/updateemail');
+        return Mage::helper('adminhtml')
+            ->getUrl('autocompleteplus/products/updateemail');
     }
 
     /**
@@ -67,11 +76,13 @@ class Autocompleteplus_Autosuggest_Adminhtml_Model_Button  extends Mage_Adminhtm
     public function getButtonHtml()
     {
         $button = $this->getLayout()->createBlock('adminhtml/widget_button')
-            ->setData(array(
-            'id' => 'autocompleteplus_button',
-            'label' => $this->helper('adminhtml')->__('Update'),
-            'onclick' => 'javascript:updateautocomplete(); return false;',
-        ));
+            ->setData(
+                array(
+                'id' => 'autocompleteplus_button',
+                'label' => $this->helper('adminhtml')->__('Update'),
+                'onclick' => 'javascript:updateautocomplete(); return false;',
+                )
+            );
 
         return $button->toHtml();
     }

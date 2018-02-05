@@ -13,8 +13,7 @@
  * @copyright  Copyright (c) 2014 Fast Simon (http://www.instantsearchplus.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
-class Autocompleteplus_Autosuggest_Model_Resource_Notifications_Collection
-    extends Mage_Core_Model_Mysql4_Collection_Abstract
+class Autocompleteplus_Autosuggest_Model_Resource_Notifications_Collection extends Mage_Core_Model_Mysql4_Collection_Abstract
 {
     protected function _construct()
     {
