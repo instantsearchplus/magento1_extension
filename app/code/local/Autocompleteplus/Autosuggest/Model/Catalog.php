@@ -374,6 +374,7 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
      */
     protected function _getAttributesToSelect()
     {
+        $externalImage = $this->getProductRenderer()->getImageField();
         $attributesToSelect = array(
             'store_id',
             'name',
@@ -396,6 +397,10 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             'tier_price',
             'price_type'
         );
+
+        if ($externalImage != null && $externalImage != '') {
+            $attributesToSelect[] = $externalImage;
+        }
 
         if ($this->canUseAttributes()) {
             foreach ($this->getAttributes() as $attr) {

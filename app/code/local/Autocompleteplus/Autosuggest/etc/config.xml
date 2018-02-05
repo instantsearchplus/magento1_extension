@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Autocompleteplus_Autosuggest>
-            <version>3.2.0</version>
+            <version>3.2.1</version>
             <url>http://autocompleteplus.com/</url>
             <modulename>Autocompleteplus_Autosuggest</modulename>
         </Autocompleteplus_Autosuggest>
@@ -215,7 +215,6 @@
     <default>
         <autocompleteplus>
             <config>
-                <imagefield>thumbnail</imagefield>
                 <attributes>1</attributes>
                 <layered>0</layered>
                 <api_endpoint><![CDATA[https://magento.instantsearchplus.com]]></api_endpoint>

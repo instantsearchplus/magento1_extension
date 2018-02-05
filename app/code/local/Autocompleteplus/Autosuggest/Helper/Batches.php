@@ -42,6 +42,12 @@ class Autocompleteplus_Autosuggest_Helper_Batches
 {
     public function writeProductDeletion($sku, $productId, $storeId, $product = null)
     {
+        /**
+         * Filter out cases of item duplication where product id is null at the start
+         */
+        if ($productId == null) {
+            return;
+        }
         $dt = Mage::getSingleton('core/date')->gmtTimestamp();
         try {
             try {

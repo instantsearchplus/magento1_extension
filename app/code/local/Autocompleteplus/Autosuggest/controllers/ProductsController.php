@@ -199,6 +199,10 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
             'autocompleteplus/config/smart_nav_native'
         );
 
+        $external_image = Mage::getStoreConfig(
+            'autocompleteplus/config/imagefield'
+        );
+
         if (defined('COMPILER_INCLUDE_PATH')) {
             $compilerEnabled = true;
         } else {
@@ -240,7 +244,8 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
             'flat_categories_enabled' => $flatCategoriesEnabled,
             'compiler_enabled' => $compilerEnabled,
             'miniform_change' => $miniform_change,
-            'smart_nav_native' => $smart_nav_native
+            'smart_nav_native' => $smart_nav_native,
+            'external_image' => $external_image
         );
 
         $response->clearHeaders();

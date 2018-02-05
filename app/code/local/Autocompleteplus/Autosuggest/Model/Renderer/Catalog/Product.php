@@ -365,6 +365,8 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             ['is_filterable'] = $attributeFull['is_filterable'];
             $configurableAttributes[$productAttribute['store_label']]
             ['frontend_input'] = $attributeFull['frontend_input'];
+            $configurableAttributes[$productAttribute['store_label']]
+            ['attribute_code'] = $attributeFull['attribute_code'];
         }
 
         return $configurableAttributes;
@@ -508,7 +510,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                     if (is_array($confAttrN)
                         && array_key_exists('values', $confAttrN)
                     ) {
-                        $variants[] = $attrName;
+                        $variants[] = $confAttrN['attribute_code'];
                         $values = implode(' , ', $confAttrN['values']);
                         $this->getXmlElement()->createChild(
                             'attribute',
@@ -604,7 +606,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                         $attributes = $child_product->getAttributes();
                         foreach ($attributes as $attribute) {
                             if (!$attribute['is_configurable']
-                                || (!in_array($attribute['store_label'], $variants) && (!in_array($attribute['frontend_label'], $variants)))
+                                || (!in_array($attribute['attribute_code'], $variants))
                             ) {
                                 continue;
                             }
@@ -809,9 +811,29 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
         } else {
             $lastModifiedDate = $this->getUpdateDate();
         }
+        
+        $thumb = null;
+        $base_image = null;
+        
+        if ($this->getImageField() != null && $this->getImageField() != '') {
+            $thumb = $this->getProduct()->getData($this->getImageField());
+            $base_image = $this->getProduct()->getData($this->getImageField());
+        }
 
-        $base_image = $this->getProduct()->getImage() ?
-            $this->getProduct()->getImage() : $this->getProduct()->getSmallImage();
+        if ($thumb == null || $thumb == '' || substr( $thumb, 0, 4 ) !== "http") {
+            $thumb = utf8_encode(htmlspecialchars((Mage::helper('catalog/image')->init($this->getProduct(), 'thumbnail'))));
+        }
+
+        if ($base_image == null || $base_image == '' || substr( $base_image, 0, 4 ) !== "http") {
+            $base_image_url = $this->getProduct()->getImage() ?
+                $this->getProduct()->getImage() : $this->getProduct()->getSmallImage();
+            $base_image = utf8_encode(
+                htmlspecialchars(
+                    (Mage::getModel('catalog/product_media_config')->getMediaUrl($base_image_url))
+                )
+            );
+        }
+
         $xmlAttributes = array(
             'price_min' => ($priceRange['price_min']),
             'price_max' => ($priceRange['price_max']),
@@ -824,16 +846,8 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             'visibility' => ($this->getProduct()->getVisibility()),
             'price' => $calculatedFinalPrice,
             'url' => $url,
-            'thumbs' => utf8_encode(
-                htmlspecialchars(
-                    (Mage::helper('catalog/image')->init($this->getProduct(), $this->getImageField()))
-                )
-            ),
-            'base_image' => utf8_encode(
-                htmlspecialchars(
-                    (Mage::getModel('catalog/product_media_config')->getMediaUrl($base_image))
-                )
-            ),
+            'thumbs' => $thumb,
+            'base_image' => $base_image,
             'selleable' => ($saleable),
             'action' => ($this->getAction()),
             'last_updated' => ($this->getProduct()->getUpdatedAt()),

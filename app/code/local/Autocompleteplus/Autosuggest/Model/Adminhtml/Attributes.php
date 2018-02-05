@@ -40,16 +40,18 @@ class Autocompleteplus_Autosuggest_Model_Adminhtml_Attributes
         $entityTypeId = $entityType->getId();
         $attributeInfo = Mage::getResourceModel('eav/entity_attribute_collection')
             ->setEntityTypeFilter($entityTypeId)
+            ->setFrontendInputTypeFilter('text')
             ->getData();
 
         $result = array();
         $result[] = array('value' => '', 'label' => 'Choose an attribute');
 
         foreach ($attributeInfo as $_key => $_value) {
+            if (!isset($_value['is_user_defined']) || $_value['is_user_defined'] != '1') {
+                continue;
+            }
             if (isset($_value['frontend_label']) && ($_value['frontend_label'] != '')) {
                 $result[] = array('value' => $_value['attribute_code'], 'label' => $_value['frontend_label']);
-            } else {
-                $result[] = array('value' => $_value['attribute_code'], 'label' => $_value['attribute_code']);
             }
         }
 

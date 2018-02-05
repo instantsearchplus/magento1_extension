@@ -163,6 +163,7 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         $origData = $observer->getProduct()->getOrigData();
         $storeId = $product->getStoreId();
         $productId = $product->getId();
+        $added     = array_diff_key($product->getData(), $product->getOrigData());
         $sku = $product->getSku();
         if (is_array($origData) &&
             array_key_exists('sku', $origData)) {
@@ -184,9 +185,19 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
          * recording out of stock item as deleted
          * if shoper does not show out of stock items in catalog
          */
-        $isStock = Mage::getModel('cataloginventory/stock_item')
-            ->loadByProduct($product)
-            ->getIsInStock();
+        if (
+            is_array($added)
+            && array_key_exists('stock_data', $added)
+            && is_array($added['stock_data'])
+            && array_key_exists('is_in_stock', $added['stock_data'])
+        ) {
+            $isStock = $added['stock_data']['is_in_stock'];
+        } else {
+            $isStock = Mage::getModel('cataloginventory/stock_item')
+                ->loadByProduct($product)
+                ->getIsInStock();
+        }
+
         if (Mage::getStoreConfig('cataloginventory/options/show_out_of_stock', 0) == '0') {
             if ($isStock == '0') {
                 $this->batchesHelper

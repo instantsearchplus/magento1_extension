@@ -199,3 +199,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Get back using the main server url for serp
 ### Fixed
 - Special price from/to support
+
+## [3.2.1] - 2017-10-18 17:09:00
+### Modified
+- Restrict the list of attributes for custom field for image to text type
+- Get alternative way to find out if item is_in_stock and delete if not (if owner does not want to show out of stock items)
+- Make matching of variant attributes by attribute_code
