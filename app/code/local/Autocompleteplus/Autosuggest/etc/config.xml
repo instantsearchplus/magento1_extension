@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Autocompleteplus_Autosuggest>
-            <version>3.0.0.12</version>
+            <version>3.0.0.13</version>
             <url>http://autocompleteplus.com/</url>
             <modulename>Autocompleteplus_Autosuggest</modulename>
         </Autocompleteplus_Autosuggest>
@@ -150,7 +150,7 @@
         <rewrite>
             <fancy_url>
                 <from><![CDATA[/instantsearchplus\/result\/(.*)/]]></from>
-                <to><![CDATA[/instantsearchplus/result/index/q/$1/]]></to>
+                <to><![CDATA[/instantsearchplus/result/index/]]></to>
                 <complete>1</complete>
             </fancy_url>
         </rewrite>

@@ -91,3 +91,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Json headers for getstores
 ### Removed
 - Raw sql searches tables access
+
+## [3.0.0.13] - 2016-10-31 17:13:00
+### Added
+- Url rewrite for smart navigation
