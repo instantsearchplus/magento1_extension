@@ -100,7 +100,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Psr errors fixes
 
-## [3.0.0.14] - 2016-11-15 15:32:00
+## [3.0.0.15] - 2016-11-15 15:32:00
 ### Fixed
 - Too long files path
 ### Added
