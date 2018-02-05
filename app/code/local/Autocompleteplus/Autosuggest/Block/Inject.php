@@ -195,8 +195,7 @@ class Autocompleteplus_Autosuggest_Block_Inject extends Mage_Checkout_Block_Cart
      */
     public function getSrc()
     {
-        $customerGroupId = Mage::getSingleton('customer/session')
-            ->getCustomerGroupId();
+
         $parameters = array(
             'mage_v' => $this->getMagentoVersion(),
             'ext_v' => $this->getVersion(),
@@ -209,8 +208,14 @@ class Autocompleteplus_Autosuggest_Block_Inject extends Mage_Checkout_Block_Cart
             'sessionID' => $this->_helper->getSessionId(),
             'QuoteID' => $this->getQuoteId(),
             'is_user_logged_in' => $this->isLoggedInUser(),
-            'customer_group_id' => $customerGroupId,
         );
+
+        $isLoggedIn = Mage::getSingleton('customer/session')->isLoggedIn();
+        /* If customer is logged in */
+        if ($isLoggedIn) {
+            $parameters['customer_group_id'] = Mage::getSingleton('customer/session')
+                ->getCustomerGroupId();
+        }
 
         return self::AUTOCOMPLETE_JS_URL.'?'.http_build_query($parameters, '', '&');
     }

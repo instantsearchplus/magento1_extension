@@ -136,3 +136,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Missing checkout custom modules webhooks
 ### Removed
 - Thank you emails webhook
+
+## [3.1.2] - 2017-04-26 12:26:00
+### Added
+- Send webhooks without waiting for response
+### Fixed
+- Adding customer group id to the frontend injection

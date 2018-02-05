@@ -391,22 +391,79 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
     public function webhook_service_call($observer)
     {
         try {
-            // @codingStandardsIgnoreStart
-            /**
-             * Due to backward compatibility issues with Magento < 1.8.1 and cURL/Zend
-             * We need to use PHP's implementation of cURL directly rather than Zend or Varien.
-             */
-            $client = curl_init($this->_getWebhookObjectUri($observer->getEvent()->getName()));
-            curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
-            $response = curl_exec($client);
-            $res_obj = json_decode($response);
-            Mage::log(print_r($res_obj, true), null, 'autocomplete.log', true);
-            curl_close($client);
-            // @codingStandardsIgnoreEnd
-            return $response;
+            $hook_url = $this->_getWebhookObjectUri($observer->getEvent()->getName());
+            if(function_exists('fsockopen')) {
+                $this->post_without_wait(
+                    $hook_url,
+                    array(),
+                    'GET'
+                );
+            } else {
+                /**
+                 * Due to backward compatibility issues with Magento < 1.8.1 and cURL/Zend
+                 * We need to use PHP's implementation of cURL directly rather than Zend or Varien.
+                 */
+                $client = curl_init($hook_url);
+                curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
+                $response = curl_exec($client);
+                $res_obj = json_decode($response);
+                //Mage::log(print_r($res_obj, true), null, 'autocomplete.log', true);
+                curl_close($client);
+            }
+
         } catch (Exception $e) {
             Mage::log($e->getMessage(), null, 'autocomplete.log', true);
         }
+    }
+
+    /**
+     * post_without_wait send http call and close the connection without waiting for response
+     *
+     * @param $url
+     * @param array $params
+     * @param string $type
+     *
+     * @return void
+     */
+    private function post_without_wait($url, $params=array(), $type='POST')
+    {
+        foreach ($params as $key => &$val) {
+            if (is_array($val)) $val = implode(',', $val);
+            $post_params[] = $key.'='.urlencode($val);
+        }
+
+        $post_string = implode('&', $post_params);
+        $parts=parse_url($url);
+
+        if ($type == 'GET') {
+            $post_string = $parts['query'];
+        }
+
+        $fp = fsockopen($parts['host'],
+            isset($parts['port'])?$parts['port']:80,
+            $errno, $errstr, 30);
+
+        // Data goes in the path for a GET request
+        if('GET' == $type) {
+            $parts['path'] .= '?'.$post_string;
+        }
+
+        $out = "$type ".$parts['path']." HTTP/1.1\r\n";
+        $out.= "Host: ".$parts['host']."\r\n";
+
+        if ($type == 'POST') {
+            $out.= "Content-Type: application/x-www-form-urlencoded\r\n";
+            $out.= "Content-Length: ".strlen($post_string)."\r\n";
+        }
+
+        $out.= "Connection: Close\r\n\r\n";
+        // Data goes in the request body for a POST request
+        if ('POST' == $type && isset($post_string)) {
+            $out.= $post_string;
+        }
+
+        fwrite($fp, $out);
+        fclose($fp);
     }
 
     /**
