@@ -480,7 +480,8 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             'news_to_date',
             'sku',
             'tier_price',
-            'price_type'
+            'price_type',
+            'display_price'
         );
 
         if ($externalImage != null && $externalImage != '') {

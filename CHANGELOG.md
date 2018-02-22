@@ -233,3 +233,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [3.2.6] - 2018-02-04 12:57:00
 ### Fixed
 - Product import using profiles support
+
+## [3.3.0] - 2018-02-22 14:45:00
+### Added
+- Ajax add to cart
+- Mageworx starting_at price support
+### Fixed
+- Handle configurable item gets that gets out of stock because of purchase

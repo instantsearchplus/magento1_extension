@@ -477,16 +477,40 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         $store_id = Mage::app()->getStore()->getStoreId();
         if ($event_name == 'controller_action_postdispatch_checkout_onepage_success'
             && Mage::getStoreConfig('cataloginventory/options/show_out_of_stock') == '0') {
+            $dt = Mage::getSingleton('core/date')->gmtTimestamp();
             foreach ($cart_items as $prod) {
-                $isStock = Mage::getModel('cataloginventory/stock_item')
-                    ->loadByProduct($prod['product_id'])
-                    ->getIsInStock();
-                if ($isStock == '0') {
-                    $this->batchesHelper
-                        ->writeProductDeletion(null, intval($prod['product_id']), 0, null);
+                $stockData = Mage::getModel('cataloginventory/stock_item')
+                    ->loadByProduct($prod['product_id']);
+                $isInStock = $stockData->getIsInStock();
+                if ($stockData->getTypeId() == 'simple') {
+                    if ($isInStock == '0') {
+                        $this->batchesHelper
+                            ->writeProductDeletion(null, intval($prod['product_id']), 0, null);
+                    }
+                } else {
+                    /*
+                     * sending product to updates queue,
+                     * since we do not know if it became out of stock
+                    */
+                    $product = Mage::getModel('catalog/product')->load($prod['product_id']);
+                    $product_stores = array(1);
+                    if (method_exists($product, 'getStoreIds')) {
+                        $product_stores = $product->getStoreIds();
+                        if (count($product_stores) == 0) {
+                            $product_stores = array(1);
+                        }
+                    }
+                    $this->batchesHelper->writeProductUpdate(
+                        $product_stores,
+                        intval($prod['product_id']),
+                        $dt,
+                        $product->getSku(),
+                        array()
+                    );
                 }
             }
         }
+
         $parameters = array(
             'event' => $this->getWebhookEventLabel($event_name),
             'UUID' => $this->getConfig()->getUUID(),

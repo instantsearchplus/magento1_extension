@@ -833,6 +833,11 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                 )
             );
         }
+        //Mageworx starting_at price support
+        $display_price = $this->getProduct()->getData('display_price');
+        if ($display_price && ($calculatedFinalPrice == 0 || !$calculatedFinalPrice)) {
+            $calculatedFinalPrice = $display_price;
+        }
 
         $xmlAttributes = array(
             'price_min' => ($priceRange['price_min']),
