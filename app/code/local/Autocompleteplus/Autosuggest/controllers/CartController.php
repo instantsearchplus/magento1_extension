@@ -141,10 +141,10 @@ class Autocompleteplus_Autosuggest_CartController extends Mage_Checkout_CartCont
     private function _quitOnError($message)
     {
         $response = $this->getResponse();
-        $responseData = [
+        $responseData = array(
             'success' => false,
             'message' => $message
-        ];
+        );
         $response->clearHeaders();
         $response->setHeader('Content-type', 'text/json');
         $response->setBody(json_encode($responseData));
