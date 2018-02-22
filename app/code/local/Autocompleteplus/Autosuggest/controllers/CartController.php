@@ -96,11 +96,11 @@ class Autocompleteplus_Autosuggest_CartController extends Mage_Checkout_CartCont
             if (!$cart->getQuote()->getHasError()) {
                 $message = $this->__('%s was added to your shopping cart.', Mage::helper('core')->escapeHtml($product->getName()));
                 $response = $this->getResponse();
-                $responseData = [
+                $responseData = array(
                     'success' => true,
                     'message' => $message,
                     'content' => $cartBlock->toHtml()
-                ];
+                );
                 $response->clearHeaders();
                 $response->setHeader('Content-type', 'text/json');
                 $response->setBody(json_encode($responseData));
@@ -121,10 +121,10 @@ class Autocompleteplus_Autosuggest_CartController extends Mage_Checkout_CartCont
                 $url = Mage::helper('checkout/cart')->getCartUrl();
             }
             $response = $this->getResponse();
-            $responseData = [
+            $responseData = array(
                 'success' => false,
                 'url' => $url
-            ];
+            );
             $response->clearHeaders();
             $response->setHeader('Content-type', 'text/json');
             $response->setBody(json_encode($responseData));

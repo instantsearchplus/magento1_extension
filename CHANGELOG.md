@@ -240,3 +240,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Mageworx starting_at price support
 ### Fixed
 - Handle configurable item gets that gets out of stock because of purchase
+
+## [3.3.1] - 2018-02-22 15:53:00
+### Fixed
+- Static array syntax fix
