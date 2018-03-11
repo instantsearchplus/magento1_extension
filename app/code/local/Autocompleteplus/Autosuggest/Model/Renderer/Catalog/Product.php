@@ -316,8 +316,8 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
     {
         $productCategories = $this->getProduct()->getCategoryIds();
         $rootCategoryId = $this->getRootCategoryId();
-        $paths = [];
-        $category_names = [];
+        $paths = array();
+        $category_names = array();
         $all_categories = $this->getCategoryMap();
         foreach ($all_categories as $category) {
             if (in_array($category['id'], $productCategories)) {
