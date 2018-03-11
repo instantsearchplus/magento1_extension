@@ -246,6 +246,9 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         $installedModules = array();
 
         $enabled = Mage::getStoreConfigFlag('autocompleteplus/config/enabled', 0);
+        $show_out_of_stock = Mage::getStoreConfigFlag(
+            'cataloginventory/options/show_out_of_stock', 0
+        );
 
         $flatProductsEnabled = Mage::getStoreConfigFlag(
             'catalog/frontend/flat_catalog_product', 0
@@ -310,7 +313,8 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
             'miniform_change' => $miniform_change,
             'smart_nav_native' => $smart_nav_native,
             'external_image' => $external_image,
-            'timezone' => $timezone
+            'timezone' => $timezone,
+            'show_out_of_stock' => $show_out_of_stock
         );
 
         $response->clearHeaders();
@@ -328,13 +332,17 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         $catalogReport = Mage::getModel(
             'autocompleteplus_autosuggest/catalogreport'
         );
+        $show_out_of_stock = Mage::getStoreConfigFlag(
+            'cataloginventory/options/show_out_of_stock',
+            0
+        );
         $helper = Mage::helper('autocompleteplus_autosuggest');
         $get_ids = $this->getRequest()->getParam('get_ids', '0');
         $result = array(
             'num_of_products' => $catalogReport->getEnabledProductsCount(),
             'num_of_disabled_products' => $catalogReport->getDisabledProductsCount(),
             'num_of_searchable_products' => $catalogReport
-                ->getSearchableProductsCount(),
+                ->getSearchableProductsCount($show_out_of_stock),
             'num_of_searchable_products2' => $catalogReport
                 ->getSearchableProducts2Count(),
             'uuid' => $this->_getConfig()->getUUID(),

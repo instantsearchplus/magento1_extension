@@ -45,12 +45,14 @@ class Autocompleteplus_Autosuggest_Model_Catalogreport extends Mage_Core_Model_A
         return $ids;
     }
 
-    public function getSearchableProductsCount()
+    public function getSearchableProductsCount($show_out_of_stock)
     {
         try {
             $collection = $this->getProductCollectionStoreFilterFactory();
-            $collection->addMinimalPrice()
-                ->addFinalPrice();
+            if (!$show_out_of_stock) {
+                $collection->addMinimalPrice()
+                    ->addFinalPrice();
+            }
             $this->addEnabledFilterToCollection($collection);
             $this->addVisibleInSearchFilterToCollection($collection);
 
@@ -67,8 +69,8 @@ class Autocompleteplus_Autosuggest_Model_Catalogreport extends Mage_Core_Model_A
                 ->addStoreFilter($this->getCurrentStoreId())
                 ->addAttributeToFilter('status', array('eq' => 1))          // Mage_Catalog_Model_Product_Status::STATUS_ENABLED
                 ->addAttributeToFilter(array(
-                        array('attribute' => 'visibility', 'finset' => 3),  // visibility Search
-                        array('attribute' => 'visibility', 'finset' => 4),  // visibility Catalog, Search
+                    array('attribute' => 'visibility', 'finset' => 3),  // visibility Search
+                    array('attribute' => 'visibility', 'finset' => 4),  // visibility Catalog, Search
                 ))
                 ->getSize();
 
@@ -81,7 +83,7 @@ class Autocompleteplus_Autosuggest_Model_Catalogreport extends Mage_Core_Model_A
     protected function getProductCollectionStoreFilterFactory()
     {
         return Mage::getModel('catalog/product')->getCollection()
-                ->addStoreFilter($this->getCurrentStoreId());
+            ->addStoreFilter($this->getCurrentStoreId());
     }
 
     public function addEnabledFilterToCollection($collection)

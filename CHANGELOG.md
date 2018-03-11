@@ -244,3 +244,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [3.3.1] - 2018-02-22 15:53:00
 ### Fixed
 - Static array syntax fix
+
+## [3.4.0] - 2018-03-11 15:53:00
+### Added
+- Category names
+### Fixed
+- Product count
+- Compare at price

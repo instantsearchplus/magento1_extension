@@ -244,7 +244,9 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
     {
         if (!$this->_categories) {
             $categoryMap = array();
-            $categories = Mage::getModel('catalog/category')->getCollection();
+            $categories = Mage::getModel('catalog/category')
+                ->getCollection()
+                ->addAttributeToSelect('name');
 
             foreach ($categories as $category) {
                 $categoryMap[] = new Varien_Object(
@@ -252,6 +254,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                         'id' => $category->getId(),
                         'path' => $category->getPath(),
                         'parent_id' => $category->getParentId(),
+                        'name' => $category->getName()
                     )
                 );
             }
@@ -313,27 +316,27 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
     {
         $productCategories = $this->getProduct()->getCategoryIds();
         $rootCategoryId = $this->getRootCategoryId();
-        $paths = array_map(
-            function ($category) use ($productCategories, $rootCategoryId) {
-                if (in_array($category->getId(), $productCategories)) {
-                    $path = explode('/', $category->getPath());
-                    //we don't want the root category for the entire site
-                    array_shift($path);
-                    if ($rootCategoryId
-                        && is_array($path)
-                        && isset($path[0])
-                        && $path[0] != $rootCategoryId
-                    ) {
-                        return array();
-                    }
-                    //we want more specific categories first
-                    return implode(':', array_reverse($path));
+        $paths = [];
+        $category_names = [];
+        $all_categories = $this->getCategoryMap();
+        foreach ($all_categories as $category) {
+            if (in_array($category['id'], $productCategories)) {
+                $path = explode('/', $category['path']);
+                //we don't want the root category for the entire site
+                array_shift($path);
+                if ($rootCategoryId &&
+                    is_array($path) &&
+                    isset($path[0]) &&
+                    $path[0] != $rootCategoryId
+                ) {
+                    continue;
                 }
-            },
-            $this->getCategoryMap()
-        );
-
-        return array_filter($paths);
+                //we want more specific categories first
+                $paths[] =  implode(':', array_reverse($path));
+                $category_names[] = $category['name'];
+            }
+        }
+        return array(array_filter($paths), $category_names);
     }
 
     /**
@@ -757,7 +760,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
 
     public function renderXml()
     {
-        $categories = $this->getCategoryPathsByProduct();
+        $categories_data = $this->getCategoryPathsByProduct();
 
         $saleable = 0;
 
@@ -789,10 +792,10 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             $specialToDate = $this->getProduct()->getSpecialToDate();
             $calculatedFinalPrice = $this->getProduct()->getFinalPrice();
             $specialPrice = $this->getProduct()->getSpecialPrice();
+            $regularPrice = $this->getProduct()->getPrice();
             if (!is_null($specialPrice) && $specialPrice != false) {
                 if (Mage::app()->getLocale()->isStoreDateInInterval($this->getStoreId(), $specialFromDate, $specialToDate)) {
                     $calculatedFinalPrice = $this->getProduct()->getSpecialPrice();
-                    $regularPrice = $this->getProduct()->getPrice();
                 }
                 $this->scheduleDistantUpdate($specialFromDate, $specialToDate, $nowDateGmt);
             }
@@ -942,7 +945,17 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
         $this->renderTieredPrices($this->getProduct(), $productElement);
 
         $this->getXmlElement()->createChild('categories', false,
-            implode(';', $categories), $productElement);
+            implode(';', $categories_data[0]), $productElement);
+
+        $attributeElem = $this->getXmlElement()->createChild('attribute', array(
+            'is_filterable' => 0,
+            'name' => 'category_names',
+        ), false, $productElement);
+
+        $this->getXmlElement()->createChild('attribute_values', false,
+            implode(',', $categories_data[1]), $attributeElem);
+        $this->getXmlElement()->createChild('attribute_label', false,
+            'category_names', $attributeElem);
 
         $this->getXmlElement()->createChild('meta_keywords', false,
             $this->getProduct()->getMetaKeyword(), $productElement);

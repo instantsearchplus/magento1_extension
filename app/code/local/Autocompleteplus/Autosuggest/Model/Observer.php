@@ -163,7 +163,10 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         $origData = $observer->getProduct()->getOrigData();
         $storeId = $product->getStoreId();
         $productId = $product->getId();
-        $added     = array_diff_key($product->getData(), $product->getOrigData());
+        $added = null;
+        if (is_array($product->getOrigData()) && is_array($product->getData())) {
+            $added     = array_diff_key($product->getData(), $product->getOrigData());
+        }
         $sku = $product->getSku();
         if (is_array($origData) &&
             array_key_exists('sku', $origData)) {
