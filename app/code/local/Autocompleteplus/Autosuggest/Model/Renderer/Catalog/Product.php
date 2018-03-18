@@ -508,6 +508,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                 && count($this->getConfigurableAttributes()) > 0
             ) {
                 $variants = array();
+                $configurable_simple_skus = array();
                 foreach ($this->getConfigurableAttributes()
                          as $attrName => $confAttrN) {
                     if (is_array($confAttrN)
@@ -637,7 +638,16 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                             ), $productVariation
                             );
                         }
+                        $configurable_simple_skus[] = $child_product->getSku();
                     }
+                    $attributeElem = $this->getXmlElement()->createChild('attribute', array(
+                        'is_filterable' => 0,
+                        'name' => 'configurable_simple_skus',
+                    ), false, $productXmlElem);
+                    $this->getXmlElement()->createChild('attribute_values', false,
+                        implode(',', $configurable_simple_skus), $attributeElem);
+                    $this->getXmlElement()->createChild('attribute_label', false,
+                        'configurable_simple_skus', $attributeElem);
                 }
             }
         }

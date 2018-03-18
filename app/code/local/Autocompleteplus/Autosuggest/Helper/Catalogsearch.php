@@ -50,13 +50,13 @@
          if (isset($layered) && $layered == 1) {
              return $this->_getUrl('instantsearchplus/result', array(
                  '_query' => array(self::QUERY_VAR_NAME => $query),
-                 '_secure' => $this->_getApp()->getFrontController()->getRequest()->isSecure()
+                 '_secure' => Mage::app()->getFrontController()->getRequest()->isSecure()
              ));
              
          } else {
              return $this->_getUrl('catalogsearch/result', array(
                  '_query' => array(self::QUERY_VAR_NAME => $query),
-                 '_secure' => $this->_getApp()->getFrontController()->getRequest()->isSecure()
+                 '_secure' => Mage::app()->getFrontController()->getRequest()->isSecure()
              ));
              
          }
