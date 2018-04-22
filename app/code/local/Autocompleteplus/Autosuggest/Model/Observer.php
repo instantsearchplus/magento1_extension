@@ -392,7 +392,12 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
     {
         try {
             $eventName = $observer->getEvent()->getName();
-            $hook_url = $this->_getWebhookObjectUri($eventName);
+            if ($eventName == 'controller_isp_custom_onepage_success') {
+                $eventName = 'controller_action_postdispatch_checkout_onepage_success';
+            } else {
+                Mage::getSingleton('core/session')->setIspQuoteID($this->getQuoteId());
+            }
+            $hook_url = $this->_getWebhookObjectUri($eventName, $observer);
             if(function_exists('fsockopen')) {
                 $this->post_without_wait(
                     $hook_url,
@@ -472,10 +477,10 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
      *
      * @return string
      */
-    protected function _getWebhookObjectUri($event_name)
+    protected function _getWebhookObjectUri($event_name, $observer)
     {
         $helper = Mage::helper('autocompleteplus_autosuggest');
-        $cart_items = $this->_getVisibleItems();
+        $cart_items = $this->_getVisibleItems($observer);
         $cart_products_json = json_encode($cart_items);
         $store_id = Mage::app()->getStore()->getStoreId();
         if ($event_name == 'controller_action_postdispatch_checkout_onepage_success'
@@ -564,7 +569,11 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
             return $quoteId;
         }
 
-        return $this->getOrder()->getQuoteId();
+        $quoteId = $this->getOrder()->getQuoteId();
+        if (!$quoteId) {
+            $quoteId = Mage::getSingleton('core/session')->getIspQuoteID();
+        }
+        return $quoteId;
     }
 
     /**
@@ -590,13 +599,30 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         return json_encode($this->_getVisibleItems());
     }
 
-    /**
-     * Format visible cart contents into a multidimensional keyed array.
+    /** Method _getVisibleItems
      *
+     * @param null $observer
      * @return array
      */
-    protected function _getVisibleItems()
+    protected function _getVisibleItems($observer = null)
     {
+        if ($observer && $observer->getEvent()->getName() == 'controller_isp_custom_onepage_success') {
+            if ($observer->getData('0') && get_class($observer->getData('0')) == 'Hla_HlaCheckout_Block_Javascript') {
+                $order = $observer->getData('0')->getOrder();
+                $orderlines = $observer->getData('0')->getOrderlines();
+                $cart_items = array();
+                foreach($orderlines as $orderline) {
+                    $line_item = array();
+                    $line_item['product_id'] = $orderline->getData('ol_prod_int_num');
+                    $line_item['price'] = $orderline->getData('ol_price');
+                    $line_item['quantity'] = (int)$orderline->getData('ol_qty_ord');
+                    $line_item['currency'] = Mage::app()->getStore()->getCurrentCurrencyCode();
+                    $line_item['attribution'] = $orderline->getAddedFromSearch();
+                    $cart_items[] = $line_item;
+                }
+                return $cart_items;
+            }
+        }
         if ($cartItems = Mage::getSingleton('checkout/session')->getQuote()->getAllVisibleItems()) {
             return $this->_buildCartArray($cartItems);
         }

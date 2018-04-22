@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Autocompleteplus_Autosuggest>
-            <version>3.4.2</version>
+            <version>3.4.3</version>
             <url>http://autocompleteplus.com/</url>
             <modulename>Autocompleteplus_Autosuggest</modulename>
         </Autocompleteplus_Autosuggest>
@@ -62,6 +62,14 @@
                     </autocompleteplus_autosuggest>
                 </observers>
             </controller_action_postdispatch_checkout_onepage_success>
+            <controller_isp_custom_onepage_success>
+                <observers>
+                    <autocompleteplus_autosuggest>
+                        <class>autocompleteplus_autosuggest/observer</class>
+                        <method>webhook_service_call</method>
+                    </autocompleteplus_autosuggest>
+                </observers>
+            </controller_isp_custom_onepage_success>
             <catalog_product_save_before>
                 <observers>
                     <autocompleteplus_autosuggest>
