@@ -599,12 +599,12 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         return json_encode($this->_getVisibleItems());
     }
 
-    /** Method _getVisibleItems
+    /**
+     * Format visible cart contents into a multidimensional keyed array.
      *
-     * @param null $observer
      * @return array
      */
-    protected function _getVisibleItems($observer = null)
+    protected function _getVisibleItems($observer=null)
     {
         if ($observer && $observer->getEvent()->getName() == 'controller_isp_custom_onepage_success') {
             if ($observer->getData('0') && get_class($observer->getData('0')) == 'Hla_HlaCheckout_Block_Javascript') {
@@ -612,8 +612,9 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                 $orderlines = $observer->getData('0')->getOrderlines();
                 $cart_items = array();
                 foreach($orderlines as $orderline) {
+                    $product_id = Mage::getModel('catalog/product')->getIdBySku($orderline->getData('ol_prod_num'));
                     $line_item = array();
-                    $line_item['product_id'] = $orderline->getData('ol_prod_int_num');
+                    $line_item['product_id'] = $product_id;
                     $line_item['price'] = $orderline->getData('ol_price');
                     $line_item['quantity'] = (int)$orderline->getData('ol_qty_ord');
                     $line_item['currency'] = Mage::app()->getStore()->getCurrentCurrencyCode();
