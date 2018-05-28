@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [3.5.0] - 2018-05-28 11:06:00
+### Changed
+- Skip not visible products in sync
+- Stop using pricing index in sync
+- Refactor validation check, move it to the helper
+- Getting attributes by variant_attributes codes at variants rendering 
+### Removed
+- Check for not sent products in sending updates
+### Added
+- Price monitoring, authenticated
+- Calculate final and minimal prices on the fly
+
 ## [3.4.4] - 2018-04-26 12:41:00
 ### Fixed
 - Custom success page event

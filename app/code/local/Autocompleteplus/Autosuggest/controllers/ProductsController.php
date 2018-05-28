@@ -654,4 +654,53 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
 
         $response->setBody(json_encode($responseArr));
     }
+
+    public function getpriceindexAction() {
+        $response = $this->getResponse();
+        $request = $this->getRequest();
+
+        $authkey = $request->getParam('authentication_key');
+        $uuid = $request->getParam('uuid');
+
+        if (!Mage::helper('autocompleteplus_autosuggest')->validate_auth($uuid, $authkey)) {
+            $resp = json_encode(
+                array(
+                    'status' => $this->__('error: Authentication failed')
+                )
+            );
+            $response->setBody($resp);
+
+            return;
+        }
+
+        $startInd = $request->getParam('offset', 0);
+        if (!is_numeric($startInd)) {
+            $startInd = 0;
+        }
+        $count = $request->getParam('count', 1000);
+        if (!is_numeric($count)) {
+            $count = 1000;
+        }
+        $customer_group = $request->getParam('customer_group', 0);
+        if (!is_numeric($customer_group)) {
+            $customer_group = 0;
+        }
+        $store = $request->getParam('store', 1);
+        if (!is_numeric($store)) {
+            $store = 1;
+        }
+
+        $product_id = $request->getParam('id', 0);
+        if (!is_numeric($product_id)) {
+            $product_id = 0;
+        }
+
+        $catalogReport = Mage::getModel(
+            'autocompleteplus_autosuggest/catalogreport'
+        );
+
+        $result = $catalogReport->getPricesFromIndex($store, $customer_group, $count, $startInd, $product_id);
+        $response->setHeader('Content-type', 'application/json');
+        $response->setBody(json_encode($result));
+    }
 }

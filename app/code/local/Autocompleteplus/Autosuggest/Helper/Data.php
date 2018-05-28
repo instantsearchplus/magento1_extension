@@ -1069,4 +1069,23 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 
         return $multistoreData;
     }
+
+    /**
+     * Checks if uuid and auth_key is valid
+     *
+     * @param string $uuid
+     * @param string $authkey
+     *
+     * @return bool
+     */
+    public function validate_auth($uuid, $authkey)
+    {
+        if ($this->getConfig()->getAuthorizationKey() == $authkey
+            && $this->getConfig()->getUUID() == $uuid
+        ) {
+            return true;
+        }
+
+        return false;
+    }
 }

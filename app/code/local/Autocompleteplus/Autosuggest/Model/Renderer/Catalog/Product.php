@@ -392,11 +392,10 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
      *
      * @return array
      */
-    public function getPriceRange()
+    public function getPriceRange($basePrice)
     {
         $pricesByAttributeValues = array();
         $attributes = $this->getProductAttributes();
-        $basePrice = $this->getProduct()->getFinalPrice();
         $items = $attributes->getItems();
         $min_price = null;
         $max_price = null;
@@ -607,8 +606,9 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                             $productVariation
                         );
 
-                        $attributes = $child_product->getAttributes();
-                        foreach ($attributes as $attribute) {
+                        foreach ($variants as $attribute_code) {
+                            $attribute = Mage::getSingleton('eav/config')
+                                ->getAttribute(Mage_Catalog_Model_Product::ENTITY, $attribute_code);
                             if (!$attribute['is_configurable']
                                 || (!in_array($attribute['attribute_code'], $variants))
                             ) {
@@ -784,6 +784,10 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             Mage::log($e->getMessage(), null, 'autocomplete.log', true);
         }
 
+        $calculatedFinalPrice = $this->getProduct()
+            ->getPriceModel()
+            ->getFinalPrice(1, $this->getProduct());
+
         if ($this->getProduct()->isConfigurable()) {
             $priceRange = $this->getPriceRange();
         } elseif ($this->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_SIMPLE) {
@@ -800,13 +804,9 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
         if ($this->getProduct()->getTypeId() != Mage_Catalog_Model_Product_Type::TYPE_BUNDLE) {
             $specialFromDate = $this->getProduct()->getSpecialFromDate();
             $specialToDate = $this->getProduct()->getSpecialToDate();
-            $calculatedFinalPrice = $this->getProduct()->getFinalPrice();
             $specialPrice = $this->getProduct()->getSpecialPrice();
             $regularPrice = $this->getProduct()->getPrice();
             if (!is_null($specialPrice) && $specialPrice != false) {
-                if (Mage::app()->getLocale()->isStoreDateInInterval($this->getStoreId(), $specialFromDate, $specialToDate)) {
-                    $calculatedFinalPrice = $this->getProduct()->getSpecialPrice();
-                }
                 $this->scheduleDistantUpdate($specialFromDate, $specialToDate, $nowDateGmt);
             }
         } else {
@@ -977,9 +977,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
 
     protected function getBundlePriceRange($product) {
 
-        $_priceModel  = $product->getPriceModel();
-
-        list($_minimalPriceTax, $_maximalPriceTax) = $_priceModel->getTotalPrices($product, null, null, false);
+        list($_minimalPriceTax, $_maximalPriceTax) = $product->getPriceModel()->getTotalPrices($product);
 
         return array(
             'price_min' => $_minimalPriceTax,

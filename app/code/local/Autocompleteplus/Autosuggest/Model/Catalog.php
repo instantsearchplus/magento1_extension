@@ -155,8 +155,14 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         $attributesToSelect = $this->_getAttributesToSelect();
 
         $productCollection->addAttributeToSelect($attributesToSelect)
-            ->addMinimalPrice()
-            ->addFinalPrice();
+            ->addFieldToFilter('visibility', array(
+                    'in' => array(
+                        Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH,
+                        Mage_Catalog_Model_Product_Visibility::VISIBILITY_IN_SEARCH,
+                        Mage_Catalog_Model_Product_Visibility::VISIBILITY_IN_CATALOG
+                    )
+                )
+            );
 
         Mage::getModel('review/review')->appendSummary($productCollection);
 
@@ -269,24 +275,19 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         $updatesBulk = array();
 
         $productIds = array();
-        $all_pr_ids = array();
-        $xml_indexed_ids = array();
         foreach ($updates as $batch) {
-            $all_pr_ids[] = $batch['product_id'];
             if ($batch['action'] == 'update') {
                 if ($batch['product_id'] != null) {
                     $updatesBulk[$batch['product_id']] = $batch;
 
                     $productIds[] = $batch['product_id'];
                 } else {
-                    $xml_indexed_ids[] = $batch['product_id'];
                     $batch['action'] = 'remove';
                     $this->getBatchRenderer()
                         ->setXmlElement($xmlGenerator)
                         ->makeRemoveRow($batch);
                 }
             } elseif ($batch['action'] == 'remove') {
-                $xml_indexed_ids[] = $batch['product_id'];
                 $this->getBatchRenderer()
                     ->setXmlElement($xmlGenerator)
                     ->makeRemoveRow($batch);
@@ -304,13 +305,10 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         $attributesToSelect = $this->_getAttributesToSelect();
 
         $productCollection->addAttributeToSelect($attributesToSelect)
-            ->addAttributeToFilter('entity_id', array('in' => $productIds))
-            ->addMinimalPrice()
-            ->addFinalPrice();
+            ->addAttributeToFilter('entity_id', array('in' => $productIds));
 
         foreach ($productCollection as $product) {
             $updatedate = $updatesBulk[$product->getId()]['update_date'];
-            $xml_indexed_ids[] = $product->getId();
             $this->getProductRenderer()
                 ->setXmlElement($xmlGenerator)
                 ->setAction('update')
@@ -322,34 +320,6 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
                 ->setAttributes($this->getAttributes())
                 ->setUpdateDate($updatedate)
                 ->renderXml();
-        }
-        $not_indexed_ids = array();
-        if (count($all_pr_ids) != count($xml_indexed_ids)) {
-            foreach ($all_pr_ids as $id) {
-                if (!in_array($id, $xml_indexed_ids)) {
-                    $not_indexed_ids[] = $id;
-                }
-            }
-            $productCollection = $this->getProductCollection(true);
-            $productCollection->addStoreFilter($storeId);
-            $productCollection->setStoreId($storeId);
-            $productCollection->addAttributeToSelect($attributesToSelect)
-                ->addAttributeToFilter('entity_id', array('in' => $not_indexed_ids));
-
-            foreach ($productCollection as $product) {
-                $updatedate = $updatesBulk[$product->getId()]['update_date'];
-                $this->getProductRenderer()
-                    ->setXmlElement($xmlGenerator)
-                    ->setAction('update')
-                    ->setProduct($product)
-                    ->setStoreId($storeId)
-                    ->setOrders($this->getOrders())
-                    ->setMonthInterval($this->getMonthInterval())
-                    ->setXmlElement($xmlGenerator)
-                    ->setAttributes($this->getAttributes())
-                    ->setUpdateDate($updatedate)
-                    ->renderXml();
-            }
         }
         return $xmlGenerator->generateXml();
     }
@@ -375,9 +345,7 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             array('from' => $fromId)
         );
 
-        $productCollection->addAttributeToSelect($attributesToSelect)
-            ->addMinimalPrice()
-            ->addFinalPrice();
+        $productCollection->addAttributeToSelect($attributesToSelect);
 
         $productCollection->setPageSize($count);
         $productCollection->setCurPage(1);

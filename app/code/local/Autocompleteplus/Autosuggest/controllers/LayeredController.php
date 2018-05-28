@@ -58,7 +58,7 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
         $scopeId = $request->getParam('store_id', 1);
         $mini_form_url_instantsearchplus = $request->getParam('mini_form_url_instantsearchplus', '0');
 
-        if (!$this->valid($uuid, $authkey)) {
+        if (!Mage::helper('autocompleteplus_autosuggest')->validate_auth($uuid, $authkey)) {
             $resp = json_encode(
                 array('status' => 'error: '.'Authentication failed')
             );
@@ -106,7 +106,7 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
         $scope = $request->getParam('scope', 'stores');
         $scopeId = $request->getParam('store_id', 1);
 
-        if (!$this->valid($uuid, $authkey)) {
+        if (!Mage::helper('autocompleteplus_autosuggest')->validate_auth($uuid, $authkey)) {
             $resp = json_encode(
                 array(
                     'status' => 'error: '.'Authentication failed'
@@ -152,7 +152,7 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
         $uuid = $request->getParam('uuid');
         $scopeId = $request->getParam('store_id', 1);
 
-        if (!$this->valid($uuid, $authkey)) {
+        if (!Mage::helper('autocompleteplus_autosuggest')->validate_auth($uuid, $authkey)) {
             $resp = json_encode(
                 array(
                     'status' => $this->__('error: Authentication failed')
@@ -202,7 +202,7 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
             return;
         }
 
-        if (!$this->valid($uuid, $authkey)) {
+        if (!Mage::helper('autocompleteplus_autosuggest')->validate_auth($uuid, $authkey)) {
             $resp = json_encode(
                 array('status' => 'error: '.'Authentication failed')
             );
@@ -228,24 +228,5 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
         );
 
         $response->setBody(json_encode($resp));
-    }
-
-    /**
-     * Checks if uuid is valid
-     *
-     * @param string $uuid
-     * @param string $authkey
-     *
-     * @return bool
-     */
-    protected function valid($uuid, $authkey)
-    {
-        if ($this->_getConfig()->getAuthorizationKey() == $authkey
-            && $this->_getConfig()->getUUID() == $uuid
-        ) {
-            return true;
-        }
-
-        return false;
     }
 }
