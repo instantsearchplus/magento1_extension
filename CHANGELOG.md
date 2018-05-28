@@ -6,15 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [3.5.0] - 2018-05-28 11:06:00
 ### Changed
-- Skip not visible products in sync
-- Stop using pricing index in sync
-- Refactor validation check, move it to the helper
-- Getting attributes by variant_attributes codes at variants rendering 
-### Removed
-- Check for not sent products in sending updates
+- When syncing products, only configurable products will be fetched. This process will save time and make syncing more efficient.
+- InstantSearch+ will now fetch products’ prices individually and not from Magento index. This will override previous configuration and will make products’ pricing more accurate. Calculation of final and minimal prices will be on the fly.
+- Syncing configurable products is now highly optimized in terms of memory and speed. 
 ### Added
-- Price monitoring, authenticated
-- Calculate final and minimal prices on the fly
+- InstantSearch+ will now manage and monitor price syncing process in order to minimize syncing issues with Magetno.
 
 ## [3.4.4] - 2018-04-26 12:41:00
 ### Fixed
