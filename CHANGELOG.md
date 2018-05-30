@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [3.5.1] - 2018-05-30 16:32:00
+### Fixed
+- Stop deletion of not sell-able/ out of stock items after product update.
+- Updating configurable, bundle and grouped parents when deleting a product variant.
+
 ## [3.5.0] - 2018-05-28 11:06:00
 ### Changed
 - When syncing products, only configurable products will be fetched. This process will save time and make syncing more efficient.

@@ -201,20 +201,9 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                 ->getIsInStock();
         }
 
-        if (Mage::getStoreConfig('cataloginventory/options/show_out_of_stock', 0) == '0') {
-            if ($isStock == '0') {
-                $this->batchesHelper
-                    ->writeProductDeletion($sku, $productId, 0, $product);
-                return;
-            }
-        }
-
         $dt = Mage::getSingleton('core/date')->gmtTimestamp();
 
-        $simple_product_parents = ($product->getTypeID() == 'simple') ?
-            Mage::getModel('catalog/product_type_configurable')
-                ->getParentIdsByChild($product->getId())
-            : array();
+        $simple_product_parents = $this->batchesHelper->get_parent_products_ids($product);
         if ($storeId == 0 && method_exists($product, 'getStoreIds')) {
             $product_stores = $product->getStoreIds();
             if (count($product_stores) == 0) {
@@ -285,10 +274,7 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
             $productCollection->addAttributeToFilter('entity_id', array('in' => $productIds));
 
             foreach ($productCollection as $product) {
-                $simple_product_parents = ($product->getTypeID() == 'simple') ?
-                    Mage::getModel('catalog/product_type_configurable')
-                        ->getParentIdsByChild($product->getID())
-                    : array();
+                $simple_product_parents = $this->batchesHelper->get_parent_products_ids($product);
 
                 if (method_exists($product, 'getStoreIds')) {
                     $product_stores = $product->getStoreIds();
@@ -318,9 +304,10 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         $product = $observer->getProduct();
         $storeId = $product->getStoreId();
         $productId = $product->getId();
+        $simple_product_parents = $this->batchesHelper->get_parent_products_ids($product);
         $sku = $product->getSku();
         $this->batchesHelper
-            ->writeProductDeletion($sku, $productId, $storeId, $product);
+            ->writeProductDeletion($sku, $productId, $storeId, $product, $simple_product_parents);
     }
 
     public function adminSessionUserLoginSuccess()
@@ -493,7 +480,13 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                 if ($stockData->getTypeId() == 'simple') {
                     if ($isInStock == '0') {
                         $this->batchesHelper
-                            ->writeProductDeletion(null, intval($prod['product_id']), 0, null);
+                            ->writeProductUpdate(
+                                array($store_id),
+                                intval($prod['product_id']),
+                                $dt,
+                                null,
+                                $this->batchesHelper->get_parent_products_ids(intval($prod['product_id']))
+                            );
                     }
                 } else {
                     /*
@@ -513,7 +506,7 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                         intval($prod['product_id']),
                         $dt,
                         $product->getSku(),
-                        array()
+                        $this->batchesHelper->get_parent_products_ids(intval($prod['product_id']))
                     );
                 }
             }

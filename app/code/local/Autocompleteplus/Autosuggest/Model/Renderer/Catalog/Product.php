@@ -1036,7 +1036,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                 $this->getProduct()->getId(),
                 $specialFromDateGmt,
                 $this->getProduct()->getSku(),
-                $this->getSimpleProductParent()
+                $this->_batchesHelper->get_parent_products_ids($this->getProduct())
             );
         } else if ($specialToDate != null) {
             $localDate = new DateTime($specialToDate, new DateTimeZone(Mage::getStoreConfig('general/locale/timezone')));
@@ -1052,7 +1052,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                     $this->getProduct()->getId(),
                     $specialToDateGmt,
                     $this->getProduct()->getSku(),
-                    $this->getSimpleProductParent()
+                    $this->_batchesHelper->get_parent_products_ids($this->getProduct())
                 );
             }
         }
