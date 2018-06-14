@@ -151,6 +151,20 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         return $response;
     }
 
+    public function catalog_product_save_light($observer) {
+        $productId = $observer->getProductId();
+        $dt = Mage::getSingleton('core/date')->gmtTimestamp();
+        $product_stores = $this->getProductStoresById($productId);
+        $parent_ids = $this->batchesHelper->get_parent_products_ids($productId);
+        $this->batchesHelper->writeProductUpdate(
+            $product_stores,
+            $productId,
+            $dt,
+            null,
+            $parent_ids
+        );
+    }
+
     /**
      * Method catalog_product_save_after executes BEFORE
      * product save
@@ -652,5 +666,30 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         }
 
         return $items;
+    }
+
+    protected function getProductStoresById($product_id) {
+        $resource = Mage::getSingleton('core/resource');
+        $readConnection = $resource->getConnection('core_read');
+        $catalog_product_website_table_name = $resource->getTableName('catalog_product_website');
+
+        $params = array();
+        $query = "select *";
+        $query .= " from";
+        $query .= sprintf(" `%s`", $catalog_product_website_table_name);
+        $query .= " where";
+        $query .= sprintf(" `%s`.`product_id` = :product_id", $catalog_product_website_table_name);
+
+        $product_id_param = new Varien_Db_Statement_Parameter($product_id);
+        $product_id_param->setDataType(PDO::PARAM_INT);
+        $params['product_id'] = $product_id_param;
+        $results = $readConnection->fetchAll($query, $params);
+        $storeIds = array();
+        foreach ($results as $row) {
+            $websiteStores = Mage::app()->getWebsite($row['website_id'])->getStoreIds();
+            $storeIds = array_merge($storeIds, $websiteStores);
+        }
+
+        return $storeIds;
     }
 }

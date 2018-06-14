@@ -852,6 +852,15 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             $calculatedFinalPrice = $display_price;
         }
 
+        if ($this->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE
+            && $priceRange['price_min'] < $calculatedFinalPrice
+            && $priceRange['price_min'] != 0) {
+            $priceRange['price_min'] = $calculatedFinalPrice;
+            if ($priceRange['price_min'] > $priceRange['price_max']) {
+                $priceRange['price_max'] = $priceRange['price_min'];
+            }
+        }
+
         $xmlAttributes = array(
             'price_min' => ($priceRange['price_min']),
             'price_max' => ($priceRange['price_max']),
