@@ -789,7 +789,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             ->getFinalPrice(1, $this->getProduct());
 
         if ($this->getProduct()->isConfigurable()) {
-            $priceRange = $this->getPriceRange();
+            $priceRange = $this->getPriceRange($calculatedFinalPrice);
         } elseif ($this->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_SIMPLE) {
             $priceRange = array('price_min' => 0, 'price_max' => 0);
         } elseif ($this->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE) {
