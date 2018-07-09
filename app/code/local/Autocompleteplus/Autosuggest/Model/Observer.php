@@ -154,10 +154,8 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
     public function catalog_product_save_light($observer) {
         $productId = $observer->getProductId();
         $dt = Mage::getSingleton('core/date')->gmtTimestamp();
-        $product_stores = $this->getProductStoresById($productId);
         $parent_ids = $this->batchesHelper->get_parent_products_ids($productId);
         $this->batchesHelper->writeProductUpdate(
-            $product_stores,
             $productId,
             $dt,
             null,
@@ -175,64 +173,36 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
     {
         $product = $observer->getProduct();
         $origData = $observer->getProduct()->getOrigData();
-        $storeId = $product->getStoreId();
         $productId = $product->getId();
-        $added = null;
-        if (is_array($product->getOrigData()) && is_array($product->getData())) {
-            $added     = array_diff_key($product->getData(), $product->getOrigData());
-        }
+        $product_stores = $product->getStoreIds();
         $sku = $product->getSku();
+
         if (is_array($origData) &&
             array_key_exists('sku', $origData)) {
             $oldSku = $origData['sku'];
             if ($sku != $oldSku) {
                 $this->batchesHelper
-                    ->writeProductDeletion($oldSku, $productId, 0, $product);
+                    ->writeProductDeletion($oldSku, $productId, null, $product_stores);
             }
         }
 
         //recording disabled item as deleted
         if ($product->getStatus() == '2') {
             $this->batchesHelper
-                ->writeProductDeletion($sku, $productId, 0, $product);
+                ->writeProductDeletion($sku, $productId, null, $product_stores);
             return;
-        }
-
-        /**
-         * recording out of stock item as deleted
-         * if shoper does not show out of stock items in catalog
-         */
-        if (
-            is_array($added)
-            && array_key_exists('stock_data', $added)
-            && is_array($added['stock_data'])
-            && array_key_exists('is_in_stock', $added['stock_data'])
-        ) {
-            $isStock = $added['stock_data']['is_in_stock'];
-        } else {
-            $isStock = Mage::getModel('cataloginventory/stock_item')
-                ->loadByProduct($product)
-                ->getIsInStock();
         }
 
         $dt = Mage::getSingleton('core/date')->gmtTimestamp();
 
         $simple_product_parents = $this->batchesHelper->get_parent_products_ids($product);
-        if ($storeId == 0 && method_exists($product, 'getStoreIds')) {
-            $product_stores = $product->getStoreIds();
-            if (count($product_stores) == 0) {
-                $product_stores = array($storeId);
-            }
-        } else {
-            $product_stores = array($storeId);
-        }
 
         $this->batchesHelper->writeProductUpdate(
-            $product_stores,
             $productId,
             $dt,
             $sku,
-            $simple_product_parents
+            $simple_product_parents,
+            $product_stores
         );
     }
 
@@ -300,7 +270,6 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                 }
 
                 $this->batchesHelper->writeProductUpdate(
-                    $product_stores,
                     $product->getID(),
                     $dt,
                     $product->getSku(),
@@ -316,12 +285,36 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
     public function catalog_product_delete_before($observer)
     {
         $product = $observer->getProduct();
-        $storeId = $product->getStoreId();
         $productId = $product->getId();
         $simple_product_parents = $this->batchesHelper->get_parent_products_ids($product);
         $sku = $product->getSku();
         $this->batchesHelper
-            ->writeProductDeletion($sku, $productId, $storeId, $product, $simple_product_parents);
+            ->writeProductDeletion($sku, $productId, $simple_product_parents);
+    }
+
+    public function catalog_controller_product_mass_status($observer)
+    {
+        $productsIds = $observer->getEvent()->getProductIds();
+        $status = Mage::app()->getRequest()->getParam('status');
+        $attributes = Mage::app()->getRequest()->getParam('attributes');
+        $dt = Mage::getSingleton('core/date')->gmtTimestamp();
+        foreach ($productsIds as $prod_id) {
+            $parent_ids = $this->batchesHelper->get_parent_products_ids($prod_id);
+            if (($status && $status == '2')
+                || ($attributes && array_key_exists('status', $attributes)
+                    && $attributes['status'] == '2')) {
+                $this->batchesHelper
+                    ->writeProductDeletion('dummy_sku', $prod_id, $parent_ids, null);
+            } else {
+                $this->batchesHelper->writeProductUpdate(
+                    $prod_id,
+                    $dt,
+                    'dummy_sku',
+                    $parent_ids
+                );
+            }
+
+        }
     }
 
     public function adminSessionUserLoginSuccess()
@@ -495,7 +488,6 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                     if ($isInStock == '0') {
                         $this->batchesHelper
                             ->writeProductUpdate(
-                                array($store_id),
                                 intval($prod['product_id']),
                                 $dt,
                                 null,
@@ -508,15 +500,7 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                      * since we do not know if it became out of stock
                     */
                     $product = Mage::getModel('catalog/product')->load($prod['product_id']);
-                    $product_stores = array(1);
-                    if (method_exists($product, 'getStoreIds')) {
-                        $product_stores = $product->getStoreIds();
-                        if (count($product_stores) == 0) {
-                            $product_stores = array(1);
-                        }
-                    }
                     $this->batchesHelper->writeProductUpdate(
-                        $product_stores,
                         intval($prod['product_id']),
                         $dt,
                         $product->getSku(),
@@ -666,30 +650,5 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         }
 
         return $items;
-    }
-
-    protected function getProductStoresById($product_id) {
-        $resource = Mage::getSingleton('core/resource');
-        $readConnection = $resource->getConnection('core_read');
-        $catalog_product_website_table_name = $resource->getTableName('catalog_product_website');
-
-        $params = array();
-        $query = "select *";
-        $query .= " from";
-        $query .= sprintf(" `%s`", $catalog_product_website_table_name);
-        $query .= " where";
-        $query .= sprintf(" `%s`.`product_id` = :product_id", $catalog_product_website_table_name);
-
-        $product_id_param = new Varien_Db_Statement_Parameter($product_id);
-        $product_id_param->setDataType(PDO::PARAM_INT);
-        $params['product_id'] = $product_id_param;
-        $results = $readConnection->fetchAll($query, $params);
-        $storeIds = array();
-        foreach ($results as $row) {
-            $websiteStores = Mage::app()->getWebsite($row['website_id'])->getStoreIds();
-            $storeIds = array_merge($storeIds, $websiteStores);
-        }
-
-        return $storeIds;
     }
 }

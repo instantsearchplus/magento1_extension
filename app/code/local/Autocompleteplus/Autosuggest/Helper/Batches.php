@@ -40,8 +40,12 @@
  */
 class Autocompleteplus_Autosuggest_Helper_Batches
 {
-    public function writeProductDeletion($sku, $productId, $storeId, $product = null, $simple_product_parents = null)
-    {
+    public function writeProductDeletion(
+        $sku,
+        $productId,
+        $simple_product_parents = null,
+        $product_stores = null
+    ) {
         /**
          * Filter out cases of item duplication where product id is null at the start
          */
@@ -51,14 +55,8 @@ class Autocompleteplus_Autosuggest_Helper_Batches
         $dt = Mage::getSingleton('core/date')->gmtTimestamp();
         try {
             try {
-                try {
-                    if (!$product) {
-                        $product = Mage::getModel('catalog/product')->load($productId);
-                    }
-                    $product_stores = ($storeId == 0 && method_exists($product, 'getStoreIds')) ? $product->getStoreIds() : array($storeId);
-                } catch (Exception $e) {
-                    Mage::logException($e);
-                    $product_stores = array($storeId);
+                if (!$product_stores) {
+                    $product_stores = $this->getProductStoresById($productId);
                 }
                 if ($sku == null) {
                     $sku = 'dummy_sku';
@@ -107,9 +105,12 @@ class Autocompleteplus_Autosuggest_Helper_Batches
      * @param $sku
      * @param $simple_product_parents
      */
-    public function writeProductUpdate($product_stores, $productId, $dt, $sku, $simple_product_parents)
+    public function writeProductUpdate($productId, $dt, $sku, $simple_product_parents, $product_stores = null)
     {
         try {
+            if (!$product_stores) {
+                $product_stores = $this->getProductStoresById($productId);
+            }
             foreach ($product_stores as $product_store) {
                 $updates = Mage::getModel('autocompleteplus_autosuggest/batches')->getCollection()
                     ->addFieldToFilter('product_id', $productId)
@@ -201,5 +202,30 @@ class Autocompleteplus_Autosuggest_Helper_Batches
             ->getParentIdsByChild($product_id, Mage_Catalog_Model_Product_Link::LINK_TYPE_GROUPED);
         $bundle_ids = Mage::getResourceSingleton('bundle/selection')->getParentIdsByChild($product_id);
         return array_merge($simple_product_parents, $grouped_parents, $bundle_ids);
+    }
+
+    private function getProductStoresById($product_id) {
+        $resource = Mage::getSingleton('core/resource');
+        $readConnection = $resource->getConnection('core_read');
+        $catalog_product_website_table_name = $resource->getTableName('catalog_product_website');
+
+        $params = array();
+        $query = "select *";
+        $query .= " from";
+        $query .= sprintf(" `%s`", $catalog_product_website_table_name);
+        $query .= " where";
+        $query .= sprintf(" `%s`.`product_id` = :product_id", $catalog_product_website_table_name);
+
+        $product_id_param = new Varien_Db_Statement_Parameter($product_id);
+        $product_id_param->setDataType(PDO::PARAM_INT);
+        $params['product_id'] = $product_id_param;
+        $results = $readConnection->fetchAll($query, $params);
+        $storeIds = array();
+        foreach ($results as $row) {
+            $websiteStores = Mage::app()->getWebsite($row['website_id'])->getStoreIds();
+            $storeIds = array_merge($storeIds, $websiteStores);
+        }
+
+        return $storeIds;
     }
 }

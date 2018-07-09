@@ -1041,7 +1041,6 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
         }
         if ($specialFromDateGmt && $specialFromDateGmt > $nowDateGmt) {
             $this->_batchesHelper->writeProductUpdate(
-                array($this->getStoreId()),
                 $this->getProduct()->getId(),
                 $specialFromDateGmt,
                 $this->getProduct()->getSku(),
@@ -1057,7 +1056,6 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             $specialToDateGmt = $localDate->getTimestamp();
             if ($specialToDateGmt > $nowDateGmt) {
                 $this->_batchesHelper->writeProductUpdate(
-                    array($this->getStoreId()),
                     $this->getProduct()->getId(),
                     $specialToDateGmt,
                     $this->getProduct()->getSku(),
