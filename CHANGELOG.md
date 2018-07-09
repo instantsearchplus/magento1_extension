@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [3.5.4] - 2018-07-09 15:55:00
 ### Added
-- Product mass status/attributes update.
+- Product mass status/attributes update support.
 - Refactor batches updates recorder
 
 ## [3.5.3] - 2018-06-20 15:55:00
