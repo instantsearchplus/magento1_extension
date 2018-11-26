@@ -60,6 +60,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
     protected $_attributesSetsCache;
     protected $_customersGroups;
     protected $_batchesHelper;
+    protected $_catalog_to_date;
     const ISPKEY = 'ISPKEY_';
 
     /**
@@ -123,6 +124,32 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
     public function getProduct()
     {
         return $this->_product;
+    }
+
+    /**
+     * SetCatalogRuleToDate
+     *
+     * @param Mage_Catalog_Model_Product $product comment
+     *
+     * @return $this
+     */
+    public function setCatalogRuleToDate($to_date)
+    {
+        $this->_catalog_to_date = $to_date;
+
+        return $this;
+    }
+
+    /**
+     * GetCatalogRuleToDate
+     *
+     * @param Mage_Catalog_Model_Product $product comment
+     *
+     * @return mixed
+     */
+    public function getCatalogRuleToDate()
+    {
+        return $this->_catalog_to_date;
     }
 
     /**
@@ -770,6 +797,8 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
 
     public function renderXml()
     {
+        Mage::getSingleton('core/session')->setRunningProductId($this->getProduct()->getID());
+
         $categories_data = $this->getCategoryPathsByProduct();
 
         $saleable = 0;
@@ -811,6 +840,13 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             }
         } else {
             $calculatedFinalPrice = $priceRange['price_min'];
+        }
+
+        if ($this->getCatalogRuleToDate()) {
+            $ruleDt = new DateTime();
+            $ruleDt->setTimestamp($this->getCatalogRuleToDate());
+            $ruleDt->setTimezone(new DateTimeZone(Mage::getStoreConfig('general/locale/timezone')));
+            $this->scheduleDistantUpdate(null, $ruleDt->format('Y-m-d H:i:s'), $nowDateGmt);
         }
 
         if ($url == null || $url == '') {
@@ -861,6 +897,11 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             }
         }
 
+        if ($this->getDbvisibility()) {
+            $visibility = $this->getVisibilityFromDb($this->getProduct()->getId());
+        } else {
+            $visibility = $this->getProduct()->getVisibility();
+        }
         $xmlAttributes = array(
             'price_min' => ($priceRange['price_min']),
             'price_max' => ($priceRange['price_max']),
@@ -870,7 +911,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             'id' => ($this->getProduct()->getId()),
             'type' => ($this->getProduct()->getTypeId()),
             'currency' => ($this->getCurrency()),
-            'visibility' => ($this->getProduct()->getVisibility()),
+            'visibility' => $visibility,
             'price' => $calculatedFinalPrice,
             'url' => $url,
             'thumbs' => $thumb,
@@ -1063,5 +1104,34 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                 );
             }
         }
+    }
+
+    private function getVisibilityFromDb($product_id)
+    {
+        //Mage::getModel('core/config')->saveConfig('autocompleteplus_autosuggest/config/db_visibility', 1);
+        $resource = Mage::getSingleton('core/resource');
+        $readConnection = $resource->getConnection('core_read');
+
+        $eav_table_name = $resource->getTableName('eav_attribute');
+        $entity_int_table_name = $resource->getTableName('catalog_product_entity_int');
+//        $sql = "SELECT *  FROM `catalog_product_entity_int` WHERE `attribute_id` = 102 AND `entity_id` = 404";
+        $query = "select";
+        $query .= sprintf(" `%s`.`attribute_id` AS `attribute_id`,", $eav_table_name);
+        $query .= sprintf(" `%s`.`entity_id` AS `entity_id`,", $entity_int_table_name);
+        $query .= sprintf(" `%s`.`value` AS `value`", $entity_int_table_name);
+        $query .= " from";
+        $query .= sprintf(" `%s`", $eav_table_name);
+        $query .= sprintf(" join `%s` on `%s`.`attribute_id` = `%s`.`attribute_id`", $entity_int_table_name, $eav_table_name, $entity_int_table_name);
+        $query .= " where";
+        $query .= sprintf(" (`%s`.`attribute_code` = 'visibility')", $eav_table_name);
+
+        $query .= sprintf(" and (`%s`.`entity_id` = :product_id)", $entity_int_table_name);
+        $product_id_param = new Varien_Db_Statement_Parameter($product_id);
+        $product_id_param->setDataType(PDO::PARAM_INT);
+        $params['product_id'] = $product_id_param;
+
+        $result = $readConnection->fetchRow($query, $params);
+        return $result['value'];
+
     }
 }

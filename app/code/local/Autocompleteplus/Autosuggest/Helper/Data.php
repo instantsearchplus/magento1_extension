@@ -1088,4 +1088,27 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 
         return false;
     }
+
+    public static function before_shut_down()
+    {
+        $error = error_get_last();
+
+        if ($error == null) {
+            return;
+        }
+        $errno   = $error["type"];
+        $errfile = $error["file"];
+        $errline = $error["line"];
+        $errstr  = $error["message"];
+
+        $formatted_error = array(
+            'product_id'=> Mage::getSingleton('core/session')->getRunningProductId(),
+            'type'=> $errno,
+            'message'=> $errstr,
+            'file'=> $errfile,
+            'line'=> $errline
+        );
+        $formatted_error = json_encode($formatted_error);
+        print_r($formatted_error);
+    }
 }

@@ -246,7 +246,7 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
             if ($observer->getAdapter()->getEntityTypeID() != '4') {
                 return;
             }
-            $dt = Mage::getSingleton('core/date')->gmtTimestamp();
+
             $importedData = $observer->getAdapter()->getNewSku();
 
             $productIds = array();
@@ -256,25 +256,17 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
             $productCollection = Mage::getModel('catalog/product')
                 ->getCollection();
             $productCollection->addAttributeToFilter('entity_id', array('in' => $productIds));
-
+            $counter = 0;
             foreach ($productCollection as $product) {
                 $simple_product_parents = $this->batchesHelper->get_parent_products_ids($product);
 
-                if (method_exists($product, 'getStoreIds')) {
-                    $product_stores = $product->getStoreIds();
-                    if (count($product_stores) == 0) {
-                        $product_stores = array(1);
-                    }
-                } else {
-                    $product_stores = array(1);
-                }
-
                 $this->batchesHelper->writeProductUpdate(
                     $product->getID(),
-                    $dt,
+                    ((int)Mage::getSingleton('core/date')->gmtTimestamp() + $counter),
                     $product->getSku(),
                     $simple_product_parents
                 );
+                $counter++;
             }
 
         } catch (Exception $e) {
@@ -295,6 +287,9 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
     public function catalog_controller_product_mass_status($observer)
     {
         $productsIds = $observer->getEvent()->getProductIds();
+        if ($productsIds == null) {
+            $productsIds = $observer->getEvent()->getProducts();
+        }
         $status = Mage::app()->getRequest()->getParam('status');
         $attributes = Mage::app()->getRequest()->getParam('attributes');
         $dt = Mage::getSingleton('core/date')->gmtTimestamp();
@@ -651,4 +646,77 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
 
         return $items;
     }
+
+    public function catalogrule_rule_save_after($observer) {
+        $nowDateGmt = Mage::getSingleton('core/date')->gmtTimestamp();
+
+        $dt = null;
+
+        $specialFromDate = $observer->getRule()->getFromDate();
+        $specialToDate = $observer->getRule()->getToDate();
+
+        if ($specialFromDate != null) {
+            $localDate = new DateTime($specialFromDate, new DateTimeZone(Mage::getStoreConfig('general/locale/timezone')));
+            $specialFromDateGmt = $localDate->getTimestamp();
+            if ($specialFromDateGmt && $specialFromDateGmt > $nowDateGmt) {
+                $dt = $specialFromDateGmt;
+            }
+        }
+
+        if ($dt == null && $specialToDate != null) {
+            $localDate = new DateTime($specialToDate, new DateTimeZone(Mage::getStoreConfig('general/locale/timezone')));
+            $hour = $localDate->format('H');
+            $mins = $localDate->format('i');
+            if ($hour == '00' && $mins == '00') {
+                $localDate->modify('+86700 seconds'); //make "to" limit inclusive and another 5 minutes for safety
+            }
+            $specialToDateGmt = $localDate->getTimestamp();
+            if ($specialToDateGmt > $nowDateGmt) {
+                $dt = $specialToDateGmt;
+            } else {
+                return;
+            }
+        }
+        if ($dt == null) {
+            $dt = $nowDateGmt;
+        }
+        $affected_product_ids = Mage::getModel('Autocompleteplus_Autosuggest_Model_Rule')
+            ->load($observer->getRule()->getId())
+            ->getMatchingProductIds();
+
+        foreach ($affected_product_ids as $productId=>$data) {
+            $simple_product_parents = $this->batchesHelper
+                ->get_parent_products_ids(intval($productId));
+
+            $this->batchesHelper->writeProductUpdate(
+                $productId,
+                $dt,
+                null,
+                $simple_product_parents
+            );
+        }
+
+    }
+
+
+    public function catalogrule_rule_delete_before($observer) {
+        $dt = Mage::getSingleton('core/date')->gmtTimestamp();
+        $affected_product_ids = Mage::getModel('Autocompleteplus_Autosuggest_Model_Rule')
+            ->load($observer->getRule()->getId())
+            ->getMatchingProductIds();
+
+        foreach ($affected_product_ids as $productId=>$data) {
+            $simple_product_parents = $this->batchesHelper
+                ->get_parent_products_ids(intval($productId));
+
+            $this->batchesHelper->writeProductUpdate(
+                $productId,
+                $dt,
+                null,
+                $simple_product_parents
+            );
+        }
+
+    }
+
 }

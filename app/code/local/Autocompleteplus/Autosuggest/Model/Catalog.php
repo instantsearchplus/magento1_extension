@@ -124,6 +124,47 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         return $products;
     }
 
+    public function getCatalogRulesProducts() {
+        $affected_product_all = unserialize(Mage::app()->getCacheInstance()->load('affected_product_al'));
+        if (!$affected_product_all) {
+            $now = Mage::getModel('core/date')->date('Y-m-d');
+            $rulesCollection = Mage::getResourceModel('catalogrule/rule_collection');
+            $rulesCollection->getSelect()
+                ->where('to_date > ?', $now)
+                ->where('is_active = ?', true);
+
+            $affected_product_all = array();
+            foreach ($rulesCollection as $rule) {
+                $affected_product_ids = Mage::getModel('Autocompleteplus_Autosuggest_Model_Rule')
+                    ->load($rule->getId())
+                    ->getMatchingProductIds();
+
+                $localDate = new DateTime(
+                    $rule->getToDate(),
+                    new DateTimeZone(Mage::getStoreConfig('general/locale/timezone'))
+                );
+                $specialToDateGmt = $localDate->getTimestamp();
+                foreach ($affected_product_ids as $product_id=>$data) {
+                    if (array_key_exists($product_id, $affected_product_all)) {
+                        if ($affected_product_all[$product_id] > $specialToDateGmt) {
+                            $affected_product_all[$product_id] = $specialToDateGmt;
+                        }
+                    } else {
+                        $affected_product_all[$product_id] = $specialToDateGmt;
+                    }
+                }
+            }
+            Mage::app()->getCacheInstance()
+                ->save(
+                    serialize($affected_product_all),
+                    'affected_product_al',
+                    array("autocomplete_cache"),
+                    3600
+                );
+        }
+        return $affected_product_all;
+    }
+
     public function renderCatalogXml(
         $startInd = 0,
         $count = 10000,
@@ -172,6 +213,13 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
                 ->setOrderData($ordersData);
         }
 
+        $db_visibility = Mage::getStoreConfig('autocompleteplus_autosuggest/config/db_visibility');
+        if ($db_visibility && $db_visibility == 1) {
+            $this->getProductRenderer()->setDbvisibility(true);
+        }
+
+        $affected_product_all = $this->getCatalogRulesProducts();
+
         foreach ($productCollection as $product) {
             $this->getProductRenderer()
                 ->setAction('insert')
@@ -180,7 +228,14 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
                 ->setOrders($this->getOrders())
                 ->setMonthInterval($this->getMonthInterval())
                 ->setXmlElement($xmlGenerator)
-                ->setAttributes($this->getAttributes())
+                ->setAttributes($this->getAttributes());
+
+            if (array_key_exists($product->getId(), $affected_product_all)) {
+                $this->getProductRenderer()
+                    ->setCatalogRuleToDate($affected_product_all[$product->getId()]);
+            }
+
+            $this->getProductRenderer()
                 ->renderXml();
         }
 
@@ -296,6 +351,8 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
 
         $this->currency = Mage::app()->getStore($storeId)->getCurrentCurrencyCode();
 
+        $affected_product_all = $this->getCatalogRulesProducts();
+
         $productCollection = $this->getProductCollection();
 
         $productCollection->addStoreFilter($storeId);
@@ -306,6 +363,11 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
 
         $productCollection->addAttributeToSelect($attributesToSelect)
             ->addAttributeToFilter('entity_id', array('in' => $productIds));
+
+        $db_visibility = Mage::getStoreConfig('autocompleteplus_autosuggest/config/db_visibility');
+        if ($db_visibility && $db_visibility == 1) {
+            $this->getProductRenderer()->setDbvisibility(true);
+        }
 
         foreach ($productCollection as $product) {
             $updatedate = $updatesBulk[$product->getId()]['update_date'];
@@ -318,7 +380,14 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
                 ->setMonthInterval($this->getMonthInterval())
                 ->setXmlElement($xmlGenerator)
                 ->setAttributes($this->getAttributes())
-                ->setUpdateDate($updatedate)
+                ->setUpdateDate($updatedate);
+
+            if (array_key_exists($product->getId(), $affected_product_all)) {
+                $this->getProductRenderer()
+                    ->setCatalogRuleToDate($affected_product_all[$product->getId()]);
+            }
+
+            $this->getProductRenderer()
                 ->renderXml();
         }
         return $xmlGenerator->generateXml();
@@ -351,6 +420,11 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         $productCollection->setCurPage(1);
 
         Mage::getModel('review/review')->appendSummary($productCollection);
+
+        $db_visibility = Mage::getStoreConfig('autocompleteplus_autosuggest/config/db_visibility');
+        if ($db_visibility && $db_visibility == 1) {
+            $this->getProductRenderer()->setDbvisibility(true);
+        }
 
         foreach ($productCollection as $product) {
             $this->getProductRenderer()
@@ -402,6 +476,11 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         }
 
         Mage::getModel('review/review')->appendSummary($productCollection);
+
+        $db_visibility = Mage::getStoreConfig('autocompleteplus_autosuggest/config/db_visibility');
+        if ($db_visibility && $db_visibility == 1) {
+            $this->getProductRenderer()->setDbvisibility(true);
+        }
 
         foreach ($productCollection as $product) {
             $this->getProductRenderer()
@@ -496,9 +575,11 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
 
         $this->setStoreId($storeId);
         $updates->setOrder('update_date', 'ASC');
-
-        $updates->setPageSize($count);
-        $updates->setCurPage($page);
+        $offset = 0;
+        if ($page > 1) {
+            $offset = ($page - 1) * $count;
+        }
+        $updates->getSelect()->limit($count, $offset);
         return $updates;
     }
 }

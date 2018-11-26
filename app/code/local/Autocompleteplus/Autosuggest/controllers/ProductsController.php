@@ -18,7 +18,7 @@
  * @license   Open Software License (OSL 3.0)*
  * @link      http://opensource.org/licenses/osl-3.0.php
  */
-
+register_shutdown_function(array("Autocompleteplus_Autosuggest_Helper_Data", "before_shut_down"));
 /**
  * Autocompleteplus_Autosuggest_ProductsController
  *

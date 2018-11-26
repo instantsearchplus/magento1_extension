@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Autocompleteplus_Autosuggest>
-            <version>3.5.4</version>
+            <version>3.5.5</version>
             <url>http://autocompleteplus.com/</url>
             <modulename>Autocompleteplus_Autosuggest</modulename>
         </Autocompleteplus_Autosuggest>
@@ -38,6 +38,22 @@
             </catalogsearch_resource>
         </models>
         <events>
+            <catalogrule_rule_save_after>
+                <observers>
+                    <autocompleteplus_autosuggest>
+                        <class>autocompleteplus_autosuggest/observer</class>
+                        <method>catalogrule_rule_save_after</method>
+                    </autocompleteplus_autosuggest>
+                </observers>
+            </catalogrule_rule_save_after>
+            <catalogrule_rule_delete_before>
+                <observers>
+                    <autocompleteplus_autosuggest>
+                        <class>autocompleteplus_autosuggest/observer</class>
+                        <method>catalogrule_rule_delete_before</method>
+                    </autocompleteplus_autosuggest>
+                </observers>
+            </catalogrule_rule_delete_before>
             <controller_action_postdispatch_checkout_cart_index>
                 <observers>
                     <autocompleteplus_autosuggest>
@@ -142,6 +158,24 @@
                     </autocompleteplus_autosuggest>
                 </observers>
             </catalog_product_attribute_update_before>
+            <catalog_product_website_update_before>
+                <observers>
+                    <autocompleteplus_autosuggest>
+                        <type>singleton</type>
+                        <class>autocompleteplus_autosuggest/observer</class>
+                        <method>catalog_controller_product_mass_status</method>
+                    </autocompleteplus_autosuggest>
+                </observers>
+            </catalog_product_website_update_before>
+            <catalog_product_stock_item_mass_change>
+                <observers>
+                    <autocompleteplus_autosuggest>
+                        <type>singleton</type>
+                        <class>autocompleteplus_autosuggest/observer</class>
+                        <method>catalog_controller_product_mass_status</method>
+                    </autocompleteplus_autosuggest>
+                </observers>
+            </catalog_product_stock_item_mass_change>
         </events>
         <resources>
             <autosuggest_setup>

@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [3.5.5] - 2018-11-26 11:33:00
+### Added
+- Handler *before_shut_down*
+- Catalog Rules support
+- Custom Product Visibility support
+- Product website assignment from grid support
+- Product stock change from grid support
+### Fixed
+- Change sendupdated pagination to offset/count from page number, to avoid infinite loop
+- Make update_date unique on mass import from feed
+
 ## [3.5.4] - 2018-07-09 15:55:00
 ### Added
 - Product mass status/attributes update support.
