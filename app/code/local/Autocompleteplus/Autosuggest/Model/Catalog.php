@@ -128,9 +128,11 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         $affected_product_all = unserialize(Mage::app()->getCacheInstance()->load('affected_product_al'));
         if (!$affected_product_all) {
             $now = Mage::getModel('core/date')->date('Y-m-d');
+            $nextUpdateDate = Mage::getModel('core/date')->date('Y-m-d', strtotime('+2 days'));
             $rulesCollection = Mage::getResourceModel('catalogrule/rule_collection');
             $rulesCollection->getSelect()
                 ->where('to_date > ?', $now)
+                ->where('to_date < ?', $nextUpdateDate)
                 ->where('is_active = ?', true);
 
             $affected_product_all = array();

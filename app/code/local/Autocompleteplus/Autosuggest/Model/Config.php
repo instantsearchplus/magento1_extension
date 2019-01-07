@@ -14,6 +14,7 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
     const XML_SMART_NAV_NATIVE_CONFIG = 'autocompleteplus/config/smart_nav_native';
     const XML_FORM_URL_CONFIG = 'autocompleteplus/config/miniform_change';
     const XML_API_ENDPOINT_CONFIG = 'default/autocompleteplus/config/api_endpoint';
+    const XML_API_FULLTEXT_ENDPOINT_CONFIG = 'default/autocompleteplus/config/fulltext_endpoint';
     const XML_STORE_EMAIL_CONFIG = 'autocompleteplus/config/store_email';
     const XML_AUTHORIZATION_KEY_CONFIG = 'autocompleteplus_autosuggest/config/authorization_key';
     const XML_UUID_CONFIG = 'autocompleteplus_autosuggest/config/uuid';
@@ -155,6 +156,26 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
     public function getAuthorizationKey()
     {
         return Mage::getStoreConfig(self::XML_AUTHORIZATION_KEY_CONFIG);
+    }
+
+    /**
+     * Set Server URL.
+     *
+     * @param $key
+     */
+    public function setFulltextSearchEndpoint($endpoint)
+    {
+        $this->_getMageConfig()->saveConfig(self::XML_API_FULLTEXT_ENDPOINT_CONFIG, $endpoint);
+    }
+
+    /**
+     * Get Server URL.
+     *
+     * @return mixed
+     */
+    public function getFulltextSearchEndpoint()
+    {
+        return Mage::getStoreConfig(self::XML_API_FULLTEXT_ENDPOINT_CONFIG);
     }
 
     /**

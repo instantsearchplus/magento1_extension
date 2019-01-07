@@ -55,6 +55,10 @@ class Autocompleteplus_Autosuggest_ProductsbyidController extends Autocompletepl
 
         Mage::app()->setCurrentStore($storeId);
 
+        $process = Mage::helper('catalog/product_flat')->getProcess();
+        $status = $process->getStatus();
+        $process->setStatus(Mage_Index_Model_Process::STATUS_RUNNING);
+
         if (!$id) {
             $returnArr = array(
                 'status' => self::STATUS_FAILURE,
@@ -71,6 +75,8 @@ class Autocompleteplus_Autosuggest_ProductsbyidController extends Autocompletepl
         $ids = explode(',', $id);
         $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
         $xml = $catalogModel->renderCatalogByIds($ids, $storeId, $force);
+
+        $process->setStatus($status);
 
         $response->clearHeaders();
         $response->setHeader('Content-type', 'text/xml');

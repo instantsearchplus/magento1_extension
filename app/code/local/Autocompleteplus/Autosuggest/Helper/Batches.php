@@ -56,7 +56,7 @@ class Autocompleteplus_Autosuggest_Helper_Batches
         try {
             try {
                 if (!$product_stores) {
-                    $product_stores = $this->getProductStoresById($productId);
+                    $product_stores = $this->getProductStoresById($productId, $simple_product_parents);
                 }
                 if ($sku == null) {
                     $sku = 'dummy_sku';
@@ -109,7 +109,7 @@ class Autocompleteplus_Autosuggest_Helper_Batches
     {
         try {
             if (!$product_stores) {
-                $product_stores = $this->getProductStoresById($productId);
+                $product_stores = $this->getProductStoresById($productId, $simple_product_parents);
             }
             foreach ($product_stores as $product_store) {
                 $updates = Mage::getModel('autocompleteplus_autosuggest/batches')->getCollection()
@@ -204,7 +204,7 @@ class Autocompleteplus_Autosuggest_Helper_Batches
         return array_merge($simple_product_parents, $grouped_parents, $bundle_ids);
     }
 
-    private function getProductStoresById($product_id) {
+    private function getProductStoresById($product_id, $simple_product_parents) {
         $resource = Mage::getSingleton('core/resource');
         $readConnection = $resource->getConnection('core_read');
         $catalog_product_website_table_name = $resource->getTableName('catalog_product_website');
@@ -214,11 +214,24 @@ class Autocompleteplus_Autosuggest_Helper_Batches
         $query .= " from";
         $query .= sprintf(" `%s`", $catalog_product_website_table_name);
         $query .= " where";
-        $query .= sprintf(" `%s`.`product_id` = :product_id", $catalog_product_website_table_name);
+        $query .= sprintf(" (`%s`.`product_id` in (:product_id)", $catalog_product_website_table_name);
 
         $product_id_param = new Varien_Db_Statement_Parameter($product_id);
         $product_id_param->setDataType(PDO::PARAM_INT);
         $params['product_id'] = $product_id_param;
+
+        $counter = 1;
+        if ($simple_product_parents != null) {
+            foreach ($simple_product_parents as $parent_id) {
+                $query .= sprintf(" or `%s`.`product_id` in (:product_id_%s)", $catalog_product_website_table_name, $counter);
+                $product_id_param = new Varien_Db_Statement_Parameter($parent_id);
+                $product_id_param->setDataType(PDO::PARAM_INT);
+                $params[sprintf('product_id_%s', $counter)] = $product_id_param;
+                $counter++;
+            }
+        }
+
+        $query .= ")";
         $results = $readConnection->fetchAll($query, $params);
         $storeIds = array();
         foreach ($results as $row) {

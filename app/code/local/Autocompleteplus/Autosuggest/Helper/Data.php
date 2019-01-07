@@ -753,28 +753,7 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
     public function getServerEndPoint()
     {
         try {
-            $read = Mage::getSingleton('core/resource')->getConnection('core_read');
-
-            $write = Mage::getSingleton('core/resource')
-                ->getConnection('core_write');
-
-            $_tableprefix = (string) Mage::getConfig()->getTablePrefix();
-            $tblExist = $write->showTableStatus(
-                $_tableprefix.'autocompleteplus_config'
-            );
-
-            if (!$tblExist) {
-                return '';
-            }
-
-            $sql = 'SELECT * FROM `'.
-                $_tableprefix.'autocompleteplus_config` WHERE `id` =1';
-            $licenseData = $read->fetchAll($sql);
-            if (array_key_exists('server_type', $licenseData[0])) {
-                $key = $licenseData[0]['server_type'];
-            } else {
-                $key = '';
-            }
+            $key = $this->getConfig()->getFulltextSearchEndpoint();
         } catch (Exception $e) {
             $key = '';
         }
@@ -792,31 +771,7 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
     public function setServerEndPoint($end_point)
     {
         try {
-            $_tableprefix = (string) Mage::getConfig()->getTablePrefix();
-            $read = Mage::getSingleton('core/resource')->getConnection('core_read');
-
-            $write = Mage::getSingleton('core/resource')
-                ->getConnection('core_write');
-
-            $tblExist = $write->showTableStatus(
-                $_tableprefix.'autocompleteplus_config'
-            );
-
-            if (!$tblExist) {
-                return;
-            }
-
-            $sqlFetch = 'SELECT * FROM '.$_tableprefix.
-                'autocompleteplus_config WHERE id = 1';
-            $updates = $write->fetchAll($sqlFetch);
-
-            if ($updates && count($updates) != 0) {
-                $sql = 'UPDATE '.$_tableprefix.
-                    'autocompleteplus_config SET server_type=? WHERE id = 1';
-                $write->query($sql, array($end_point));
-            } else {
-                Mage::log('cant update server_type', null, 'autocompleteplus.log');
-            }
+            $this->getConfig()->setFulltextSearchEndpoint($end_point);
         } catch (Exception $e) {
             Mage::log($e->getMessage(), null, 'autocompleteplus.log');
         }
