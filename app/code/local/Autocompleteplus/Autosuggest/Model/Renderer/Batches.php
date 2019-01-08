@@ -26,4 +26,17 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Batches extends Autocompletepl
         $this->getXmlElement()->createChild('sku', false, $batch['sku'], $productElement);
         $this->getXmlElement()->createChild('id', false, $batch['product_id'], $productElement);
     }
+
+    public function makeIgnoreRow($batch)
+    {
+        $productElement = $this->getXmlElement()->createChild('product', array(
+            'updatedate' => $batch['update_date'],
+            'action' => 'ignore',
+            'id' => $batch['product_id'],
+            'storeid' => $batch['store_id'],
+        ));
+
+        $this->getXmlElement()->createChild('sku', false, $batch['sku'], $productElement);
+        $this->getXmlElement()->createChild('id', false, $batch['product_id'], $productElement);
+    }
 }

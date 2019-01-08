@@ -370,7 +370,7 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         if ($db_visibility && $db_visibility == 1) {
             $this->getProductRenderer()->setDbvisibility(true);
         }
-
+        $visibleProductIds = array();
         foreach ($productCollection as $product) {
             $updatedate = $updatesBulk[$product->getId()]['update_date'];
             $this->getProductRenderer()
@@ -391,6 +391,14 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
 
             $this->getProductRenderer()
                 ->renderXml();
+            $visibleProductIds[] = $product->getId();
+        }
+        $notVisisbleProducts = array_diff($productIds, $visibleProductIds);
+        foreach ($notVisisbleProducts as $productId) {
+            $batch = $updatesBulk[$productId];
+            $this->getBatchRenderer()
+                ->setXmlElement($xmlGenerator)
+                ->makeIgnoreRow($batch);
         }
         return $xmlGenerator->generateXml();
     }
