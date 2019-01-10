@@ -1048,7 +1048,7 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
     {
         $error = error_get_last();
 
-        if ($error == null) {
+        if ($error == null || $error['type'] !== E_ERROR) {
             return;
         }
         $errno   = $error["type"];
