@@ -712,6 +712,30 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                     );
             }
 
+        } elseif (count($this->getProduct()->getData('group_price')) > 0) {
+            $tieredPricesElem = $this->getXmlElement()
+                ->createChild(
+                    'tiered_prices',
+                    false,
+                    false,
+                    $productXmlElem
+                );
+
+            foreach ($this->getProduct()->getData('group_price') as $trP) {
+                $this->getXmlElement()
+                    ->createChild(
+                        'tiered_price',
+                        array(
+                            'cust_group' => array_key_exists($trP['cust_group'], $this->_customersGroups) ?
+                                $this->_customersGroups[$trP['cust_group']] : $trP['cust_group'],
+                            'cust_group_id' => $trP['cust_group'],
+                            'price' => $trP['price'],
+                            'min_qty' => 1
+                        ),
+                        false,
+                        $tieredPricesElem
+                    );
+            }
         }
     }
 

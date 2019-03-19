@@ -51,13 +51,16 @@ class Autocompleteplus_Autosuggest_ProductsbyidController extends Autocompletepl
         $response = $this->getResponse();
         $storeId = $request->getParam('store', 1);
         $id = $request->getParam('id');
-        $force = $request->getParam('force');
+        $force = $request->getParam('force', false);
 
         Mage::app()->setCurrentStore($storeId);
 
-        $process = Mage::helper('catalog/product_flat')->getProcess();
-        $status = $process->getStatus();
-        $process->setStatus(Mage_Index_Model_Process::STATUS_RUNNING);
+        if ($force) {
+            $process = Mage::helper('catalog/product_flat')->getProcess();
+            $status = $process->getStatus();
+            $process->setStatus(Mage_Index_Model_Process::STATUS_RUNNING);
+        }
+
 
         if (!$id) {
             $returnArr = array(
@@ -76,7 +79,9 @@ class Autocompleteplus_Autosuggest_ProductsbyidController extends Autocompletepl
         $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
         $xml = $catalogModel->renderCatalogByIds($ids, $storeId, $force);
 
-        $process->setStatus($status);
+        if ($force) {
+            $process->setStatus($status);
+        }
 
         $response->clearHeaders();
         $response->setHeader('Content-type', 'text/xml');

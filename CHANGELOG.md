@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [3.5.9] - 2019-03-19 15:13:00
+### Added
+- Group prices support
+
 ## [3.5.8] - 2019-01-10 15:13:00
 ### Fixed
 - Print error message in before_shut_down handler only in the case the error is Fatal

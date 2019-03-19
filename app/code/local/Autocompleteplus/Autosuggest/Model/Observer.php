@@ -151,6 +151,24 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         return $response;
     }
 
+    public function urapidflow_product_import_after_fetch($observer) {
+        $vars = $observer->getVars();
+        $skus = $vars['skus'];
+        $profile = $vars['profile'];
+        $store_id = $profile->getStoreId();
+        foreach ($skus as $sku => $productId) {
+            $dt = Mage::getSingleton('core/date')->gmtTimestamp();
+            $parent_ids = $this->batchesHelper->get_parent_products_ids($productId);
+            $this->batchesHelper->writeProductUpdate(
+                $productId,
+                $dt,
+                null,
+                $parent_ids,
+                array($store_id)
+            );
+        }
+    }
+
     public function catalog_product_save_light($observer) {
         $productId = $observer->getProductId();
         $dt = Mage::getSingleton('core/date')->gmtTimestamp();
@@ -256,17 +274,15 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
             $productCollection = Mage::getModel('catalog/product')
                 ->getCollection();
             $productCollection->addAttributeToFilter('entity_id', array('in' => $productIds));
-            $counter = 0;
             foreach ($productCollection as $product) {
                 $simple_product_parents = $this->batchesHelper->get_parent_products_ids($product);
 
                 $this->batchesHelper->writeProductUpdate(
                     $product->getID(),
-                    ((int)Mage::getSingleton('core/date')->gmtTimestamp() + $counter),
+                    ((int)Mage::getSingleton('core/date')->gmtTimestamp() + rand(0, 10)),
                     $product->getSku(),
                     $simple_product_parents
                 );
-                $counter++;
             }
 
         } catch (Exception $e) {

@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Autocompleteplus_Autosuggest>
-            <version>3.5.8</version>
+            <version>3.5.9</version>
             <url>http://autocompleteplus.com/</url>
             <modulename>Autocompleteplus_Autosuggest</modulename>
         </Autocompleteplus_Autosuggest>
@@ -176,6 +176,15 @@
                     </autocompleteplus_autosuggest>
                 </observers>
             </catalog_product_stock_item_mass_change>
+            <urapidflow_product_import_after_fetch>
+                <observers>
+                    <mycustommodule>
+                        <type>singleton</type>
+                        <class>autocompleteplus_autosuggest/observer</class>
+                        <method>urapidflow_product_import_after_fetch</method>
+                    </mycustommodule>
+                </observers>
+            </urapidflow_product_import_after_fetch>
         </events>
         <resources>
             <autosuggest_setup>

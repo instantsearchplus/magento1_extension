@@ -703,4 +703,19 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         $response->setHeader('Content-type', 'application/json');
         $response->setBody(json_encode($result));
     }
+
+    public function getattributesAction()
+    {
+        $indexedAttributes = Mage::getResourceModel('catalog/product_flat_indexer')
+            ->getAttributes();
+
+        $resultData = array();
+        foreach ($indexedAttributes as $attr) {
+            $resultData[$attr->getAttributeCode()] = $attr->getData();
+        }
+        $response = $this->getResponse();
+        $response->clearHeaders();
+        $response->setHeader('Content-type', 'application/json');
+        $response->setBody(json_encode($resultData));
+    }
 }
