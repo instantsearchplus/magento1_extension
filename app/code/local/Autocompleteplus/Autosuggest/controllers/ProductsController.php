@@ -108,7 +108,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         $to = $request->getParam('to', false);
         $storeId = $request->getParam('store_id', false);
         $page = $request->getParam('page', 1);
-
+        $send_oos = $request->getParam('send_oos', false);
         if (!$storeId) {
             $returnArr = array(
                 'status' => self::STATUS_FAILURE,
@@ -124,13 +124,15 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
             return;
         }
 
+        $send_oos = boolval($send_oos);
+
         Mage::app()->setCurrentStore($storeId);
 
         $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
 
         $response->clearHeaders();
         $response->setHeader('Content-type', 'text/xml');
-        $xml = $catalogModel->renderUpdatesCatalogXml($count, $from, $to, $storeId, $page);
+        $xml = $catalogModel->renderUpdatesCatalogXml($count, $from, $to, $storeId, $page, $send_oos);
         $response->setBody($xml);
     }
 

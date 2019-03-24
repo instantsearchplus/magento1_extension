@@ -312,7 +312,7 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         );
     }
 
-    public function renderUpdatesCatalogXml($count, $from, $to, $storeId, $page)
+    public function renderUpdatesCatalogXml($count, $from, $to, $storeId, $page, $send_oos)
     {
         $filter = array('from' => $from);
         if ($to > 0) {
@@ -396,9 +396,19 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         $notVisisbleProducts = array_diff($productIds, $visibleProductIds);
         foreach ($notVisisbleProducts as $productId) {
             $batch = $updatesBulk[$productId];
-            $this->getBatchRenderer()
-                ->setXmlElement($xmlGenerator)
-                ->makeIgnoreRow($batch);
+            $stockItem = Mage::getModel('cataloginventory/stock_item')
+                ->loadByProduct($productId);
+
+            if (!$send_oos && (!$stockItem || !boolval($stockItem->getIsInStock()))) {
+                $this->getBatchRenderer()
+                    ->setXmlElement($xmlGenerator)
+                    ->makeRemoveRow($batch);
+            } else {
+                $this->getBatchRenderer()
+                    ->setXmlElement($xmlGenerator)
+                    ->makeIgnoreRow($batch);
+            }
+
         }
         return $xmlGenerator->generateXml();
     }
