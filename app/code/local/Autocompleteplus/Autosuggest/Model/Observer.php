@@ -169,6 +169,13 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         }
     }
 
+    public function catalog_ampgrid_field_save_after($observer) {
+        $product_id = Mage::app()->getRequest()->getParam('product_id', null);
+        if ($product_id) {
+            Mage::dispatchEvent('isp_catalog_product_save_light', array('product_id' => $product_id));
+        }
+    }
+
     public function catalog_stock_save_after($observer) {
         $stockItem = $observer->getItem();
         if (!$stockItem) {

@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Autocompleteplus_Autosuggest>
-            <version>3.5.11</version>
+            <version>3.5.12</version>
             <url>http://autocompleteplus.com/</url>
             <modulename>Autocompleteplus_Autosuggest</modulename>
         </Autocompleteplus_Autosuggest>
@@ -104,6 +104,14 @@
                     </autocompleteplus_autosuggest>
                 </observers>
             </cataloginventory_stock_item_save_after>
+            <controller_action_postdispatch_adminhtml_ampgrid_field_save>
+                <observers>
+                    <autocompleteplus_autosuggest>
+                        <class>autocompleteplus_autosuggest/observer</class>
+                        <method>catalog_ampgrid_field_save_after</method>
+                    </autocompleteplus_autosuggest>
+                </observers>
+            </controller_action_postdispatch_adminhtml_ampgrid_field_save>
             <isp_catalog_product_save_before>
                 <observers>
                     <autocompleteplus_autosuggest>
