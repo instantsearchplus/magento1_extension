@@ -169,6 +169,26 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         }
     }
 
+    public function catalog_stock_save_after($observer) {
+        $stockItem = $observer->getItem();
+        if (!$stockItem) {
+            return;
+        }
+
+        $productId = $stockItem->getProductId();
+        if (!$productId) {
+            return;
+        }
+        $dt = Mage::getSingleton('core/date')->gmtTimestamp();
+        $parent_ids = $this->batchesHelper->get_parent_products_ids($productId);
+        $this->batchesHelper->writeProductUpdate(
+            $productId,
+            $dt,
+            null,
+            $parent_ids
+        );
+    }
+
     public function catalog_product_save_light($observer) {
         $productId = $observer->getProductId();
         $dt = Mage::getSingleton('core/date')->gmtTimestamp();

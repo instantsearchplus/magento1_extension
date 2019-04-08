@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Autocompleteplus_Autosuggest>
-            <version>3.5.10</version>
+            <version>3.5.11</version>
             <url>http://autocompleteplus.com/</url>
             <modulename>Autocompleteplus_Autosuggest</modulename>
         </Autocompleteplus_Autosuggest>
@@ -95,6 +95,15 @@
                     </autocompleteplus_autosuggest>
                 </observers>
             </catalog_product_save_before>
+            <cataloginventory_stock_item_save_after>
+                <observers>
+                    <autocompleteplus_autosuggest>
+                        <type>singleton</type>
+                        <class>autocompleteplus_autosuggest/observer</class>
+                        <method>catalog_stock_save_after</method>
+                    </autocompleteplus_autosuggest>
+                </observers>
+            </cataloginventory_stock_item_save_after>
             <isp_catalog_product_save_before>
                 <observers>
                     <autocompleteplus_autosuggest>

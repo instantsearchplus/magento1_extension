@@ -207,7 +207,9 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
                 )
             );
 
-        Mage::getModel('review/review')->appendSummary($productCollection);
+        if (Mage::getResourceModel('review/review_summary_collection')) {
+            Mage::getModel('review/review')->appendSummary($productCollection);
+        }
 
         if ($this->getOrders()) {
             $ordersData = $this->getOrdersPerProduct();
@@ -365,6 +367,10 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
 
         $productCollection->addAttributeToSelect($attributesToSelect)
             ->addAttributeToFilter('entity_id', array('in' => $productIds));
+
+        if (Mage::getResourceModel('review/review_summary_collection')) {
+            Mage::getModel('review/review')->appendSummary($productCollection);
+        }
 
         $db_visibility = Mage::getStoreConfig('autocompleteplus_autosuggest/config/db_visibility');
         if ($db_visibility && $db_visibility == 1) {
