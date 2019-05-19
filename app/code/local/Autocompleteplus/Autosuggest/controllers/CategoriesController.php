@@ -20,7 +20,7 @@ class Autocompleteplus_Autosuggest_CategoriesController extends Mage_Core_Contro
         $request = $this->getRequest();
         $storeId = $request->getParam('store');
         Mage::app()->setCurrentStore($storeId);
-        
+
         $categories = $this->loadTree();
 
         $response = $this->getResponse();
@@ -46,7 +46,6 @@ class Autocompleteplus_Autosuggest_CategoriesController extends Mage_Core_Contro
 
         $result = array(
             'category_id' => $node->getId(),
-            'image' => sprintf('%scatalog/category/%s', $mediaUrl, $node->getImage()),
             'thumbnail' => $thumbnail,
             'description' => strip_tags($node->getDescription()),
             'parent_id' => $node->getParentId(),
@@ -55,6 +54,13 @@ class Autocompleteplus_Autosuggest_CategoriesController extends Mage_Core_Contro
             'is_active' => $node->getIsActive(),
             'children' => array(),
         );
+
+        $image_url = '';
+        if ($node->getImage()) {
+            $image_url = sprintf('%scatalog/category/%s', $mediaUrl, $node->getImage());
+        }
+
+        $result['image'] = $image_url;
 
         foreach ($node->getChildren() as $child) {
             $result['children'][] = $this->nodeToArray($child, $mediaUrl, $baseUrl, $store);
