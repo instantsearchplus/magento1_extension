@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [3.5.14] - 2019-06-10 17:39:00
+### Added
+- Product's store ids
+
 ## [3.5.13] - 2019-05-18 17:39:00
 ### Fixed
 - Handling empty category image url

@@ -1047,6 +1047,11 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             $this->getProduct()->getMetaTitle(), $productElement);
         $this->getXmlElement()->createChild('meta_description', false,
             $this->getProduct()->getMetaDescription(), $productElement);
+
+        if ($this->getProduct()->getStoreIds()) {
+            $this->getXmlElement()->createChild('assigned_to_store_ids', false,
+                implode(',', $this->getProduct()->getStoreIds()), $productElement);
+        }
     }
 
     protected function getBundlePriceRange($product) {
