@@ -29,4 +29,10 @@ class Autocompleteplus_Autosuggest_Model_Resource_Batches_Collection extends Mag
 
         return $this;
     }
+
+    public function addGroupByProductIdFilter()
+    {
+        $this->getSelect()->group('product_id');
+        return $this;
+    }
 }

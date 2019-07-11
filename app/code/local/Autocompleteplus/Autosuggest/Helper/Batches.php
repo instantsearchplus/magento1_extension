@@ -108,7 +108,7 @@ class Autocompleteplus_Autosuggest_Helper_Batches
     public function writeProductUpdate($productId, $dt, $sku, $simple_product_parents, $product_stores = null)
     {
         try {
-            if (!$product_stores) {
+            if (!$product_stores || (is_array($product_stores) && count($product_stores) == 1 && $product_stores[0] == 0)) {
                 $product_stores = $this->getProductStoresById($productId, $simple_product_parents);
             }
             foreach ($product_stores as $product_store) {

@@ -597,7 +597,8 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         $updates = Mage::getModel('autocompleteplus_autosuggest/batches')
             ->getCollection()
             ->addFieldToFilter('update_date', $filter)
-            ->addFieldToFilter('store_id', $storeId);
+            ->addFieldToFilter('store_id', $storeId)
+            ->addGroupByProductIdFilter();
 
         $this->setStoreId($storeId);
         $updates->setOrder('update_date', 'ASC');
