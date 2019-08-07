@@ -474,7 +474,7 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
      *
      * @return string
      */
-    public function renderCatalogByIds($ids, $storeId = 0, $force=false)
+    public function renderCatalogByIds($ids, $skus, $storeId = 0, $force=false)
     {
         $xmlGenerator = $this->getXmlGenerator();
         $xmlGenerator->setRootAttributes(
@@ -492,7 +492,10 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
 
         $attributesToSelect = $this->_getAttributesToSelect();
 
-        $productCollection->addAttributeToFilter('entity_id', array('in' => $ids));
+        if ($ids)
+            $productCollection->addAttributeToFilter('entity_id', array('in' => $ids));
+        else
+            $productCollection->addAttributeToFilter('sku', array('in' => $skus));
 
         $productCollection->addAttributeToSelect($attributesToSelect);
 

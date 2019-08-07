@@ -391,7 +391,34 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         $helper = Mage::helper('autocompleteplus_autosuggest');
         $response->clearHeaders();
         $response->setHeader('Content-type', 'application/json');
+
         $response->setBody($helper->getMultiStoreDataJson());
+    }
+
+    public function getstoreinfoAction()
+    {
+        $response = $this->getResponse();
+        $request = $this->getRequest();
+
+        $helper = Mage::helper('autocompleteplus_autosuggest');
+        $response->clearHeaders();
+        $response->setHeader('Content-type', 'application/json');
+
+        $authkey = $request->getParam('authentication_key');
+        $uuid = $request->getParam('uuid');
+
+        if (!$helper->validate_auth($uuid, $authkey)) {
+            $resp = json_encode(
+                array('status' => 'error: '.'Authentication failed')
+            );
+            $response->setBody($resp);
+
+            return;
+        }
+
+        $out_put = $helper->getStoreInformation();
+
+        $response->setBody(json_encode($out_put));
     }
 
     /**
@@ -715,6 +742,45 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         foreach ($indexedAttributes as $attr) {
             $resultData[$attr->getAttributeCode()] = $attr->getData();
         }
+        $response = $this->getResponse();
+        $response->clearHeaders();
+        $response->setHeader('Content-type', 'application/json');
+        $response->setBody(json_encode($resultData));
+    }
+
+    public function getattributeByCodeAction()
+    {
+        $request = $this->getRequest();
+        $resultData = array();
+        $attribute_code = $request->getParam('attribute_code', false);
+        $attribute_id = $request->getParam('attribute_id', false);
+
+        $attributeFull = null;
+        if ($attribute_code) {
+            $attribute_code = strtolower($attribute_code);
+
+            $attributeFull = Mage::getModel('eav/config')
+                ->getAttribute(
+                    'catalog_product',
+                    $attribute_code
+                );
+        } else if ($attribute_id) {
+            $attributeModel = Mage::getModel('eav/entity_attribute')->load($attribute_id);
+            $attributeFull = Mage::getModel('eav/config')
+                ->getAttribute(
+                    'catalog_product',
+                    $attributeModel->getAttributeCode()
+                );
+        }
+
+        if ($attributeFull) {
+            $resultData = $attributeFull->getData();
+            $attributeOptions = $attributeFull->getSource()->getAllOptions(false);
+            $resultData['store_label'] = $attributeFull->getStoreLabel();
+            $resultData['values'] = $attributeOptions;
+        }
+
+
         $response = $this->getResponse();
         $response->clearHeaders();
         $response->setHeader('Content-type', 'application/json');

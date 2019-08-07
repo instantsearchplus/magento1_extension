@@ -403,18 +403,21 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         }
 
         $storesArr = array();
+        $country_code = $this->getConfigDataByFullPath('general/store_information/merchant_country');
         foreach ($websites as $website) {
             $code = $website->getCode();
             $stores = $website->getStores();
             foreach ($stores as $store) {
                 $storesArr[$store->getStoreId()] = $store->getData();
+                if ($country_code)
+                    $storesArr[$store->getStoreId()]['country_code'] = $country_code;
             }
         }
-
         if (count($storesArr) == 1) {
             try {
+                $store_data = array_pop($storesArr);
                 $dataArr = array(
-                    'stores' => array_pop($storesArr),
+                    'stores' => $store_data,
                     'version' => $version,
                 );
             } catch (Exception $e) {
@@ -445,6 +448,20 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         }
 
         return $multistoreJson;
+    }
+
+    public function getStoreInformation() {
+        $country_code = $this->getConfigDataByFullPath('general/store_information/merchant_country');
+        $address = $this->getConfigDataByFullPath('general/store_information/address');
+        $store_info = array();
+
+        if ($country_code)
+            $store_info['country_code'] = $country_code;
+
+        if ($address)
+            $store_info['address'] = rawurlencode($address);
+
+        return $store_info;
     }
 
     /**

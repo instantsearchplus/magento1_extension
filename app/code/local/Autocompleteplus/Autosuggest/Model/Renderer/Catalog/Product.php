@@ -859,14 +859,14 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             $specialToDate = $this->getProduct()->getSpecialToDate();
             $specialPrice = $this->getProduct()->getSpecialPrice();
             $regularPrice = $this->getProduct()->getPrice();
-            if (!is_null($specialPrice) && $specialPrice != false) {
+            if (!is_null($specialPrice) && $specialPrice != false && $this->getAction() != 'getbyid') {
                 $this->scheduleDistantUpdate($specialFromDate, $specialToDate, $nowDateGmt);
             }
         } else {
             $calculatedFinalPrice = $priceRange['price_min'];
         }
 
-        if ($this->getCatalogRuleToDate()) {
+        if ($this->getCatalogRuleToDate() && $this->getAction() != 'getbyid') {
             $ruleDt = new DateTime();
             $ruleDt->setTimestamp($this->getCatalogRuleToDate());
             $ruleDt->setTimezone(new DateTimeZone(Mage::getStoreConfig('general/locale/timezone')));

@@ -50,7 +50,8 @@ class Autocompleteplus_Autosuggest_ProductsbyidController extends Autocompletepl
         $request = $this->getRequest();
         $response = $this->getResponse();
         $storeId = $request->getParam('store', 1);
-        $id = $request->getParam('id');
+        $id = $request->getParam('id', false);
+        $sku = $request->getParam('sku', false);
         $force = $request->getParam('force', false);
 
         Mage::app()->setCurrentStore($storeId);
@@ -62,11 +63,11 @@ class Autocompleteplus_Autosuggest_ProductsbyidController extends Autocompletepl
         }
 
 
-        if (!$id) {
+        if (!$id && !$sku) {
             $returnArr = array(
                 'status' => self::STATUS_FAILURE,
                 'error_code' => self::MISSING_PARAMETER,
-                'error_details' => $this->__('The "id" parameter is mandatory'),
+                'error_details' => $this->__('The "id" or "sku" parameter is mandatory'),
             );
             $response->setHeader('Content-type', 'application/json');
             $response->setHttpResponseCode(400);
@@ -74,10 +75,15 @@ class Autocompleteplus_Autosuggest_ProductsbyidController extends Autocompletepl
 
             return;
         }
-
-        $ids = explode(',', $id);
+        $ids = null;
+        if ($id)
+            $ids = explode(',', $id);
+        $skus = null;
+        $sku = urldecode($sku);
+        if ($sku)
+            $skus = explode(',', $sku);
         $catalogModel = Mage::getModel('autocompleteplus_autosuggest/catalog');
-        $xml = $catalogModel->renderCatalogByIds($ids, $storeId, $force);
+        $xml = $catalogModel->renderCatalogByIds($ids, $skus, $storeId, $force);
 
         if ($force) {
             $process->setStatus($status);

@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [3.5.16] - 2019-08-07 17:39:00
+### Fixed
+- Sending disabled products
+- Mass product update at catalog rule save
+- Update batches table at actual product sending only
+### Added
+- Get item by sku option
+- GetstoreInfo request
+
 ## [3.5.15] - 2019-07-11 17:39:00
 ### Fixed
 - Sending products updates

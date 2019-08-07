@@ -90,29 +90,6 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         return $catalog->asXML();
     }
 
-    public function catalog_product_save_after_depr($observer)
-    {
-        $helper = Mage::helper('autocompleteplus_autosuggest');
-        $product = $observer->getProduct();
-        $this->imageField = Mage::getStoreConfig('autocompleteplus/config/imagefield');
-        if (!$this->imageField) {
-            $this->imageField = 'thumbnail';
-        }
-        $this->standardImageFields = array('image', 'small_image', 'thumbnail');
-        $this->currency = Mage::app()->getStore()->getCurrentCurrencyCode();
-        $domain = Mage::getStoreConfig('web/unsecure/base_url');
-        $key = $this->getConfig()->getUUID();
-
-        $xml = $this->_generateProductXml($product);
-        $data = array(
-            'site' => $domain,
-            'key' => $key,
-            'catalog' => $xml,
-        );
-        $res = $this->_sendUpdate($data);
-        Mage::log($res, null, 'autocomplete.log');
-    }
-
     protected function _getPrice($product)
     {
         $price = 0;
@@ -221,6 +198,12 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         $productId = $product->getId();
         $product_stores = $product->getStoreIds();
         $sku = $product->getSku();
+
+        $area = Mage::app()->getStore()->isAdmin() ? 'adminhtml' : 'frontend';
+        foreach (array($area, 'global') as $branch) {
+            $path = $branch . '/events/cataloginventory_stock_item_save_after/observers/autocompleteplus_autosuggest/type';
+            Mage::app()->getConfig()->setNode($path, 'disabled');
+        }
 
         if (is_array($origData) &&
             array_key_exists('sku', $origData)) {
@@ -691,6 +674,24 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
     }
 
     public function catalogrule_rule_save_after($observer) {
+        $ruleWebsites = $observer->getRule()->getData('website_ids');
+        $webStores = array();
+        foreach (Mage::app()->getWebsites() as $website) {
+            if (!in_array((string)$website->getId(), $ruleWebsites)) {
+                continue;
+            }
+
+            if (!array_key_exists($website->getId(), $webStores)) {
+                $webStores[$website->getId()] = array();
+            }
+            foreach ($website->getGroups() as $group) {
+                $stores = $group->getStores();
+                foreach ($stores as $store) {
+                    $webStores[$website->getId()][] = $store->getId();
+                }
+            }
+        }
+
         $nowDateGmt = Mage::getSingleton('core/date')->gmtTimestamp();
 
         $dt = null;
@@ -727,20 +728,67 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
             ->load($observer->getRule()->getId())
             ->getMatchingProductIds();
 
-        foreach ($affected_product_ids as $productId=>$data) {
-            $simple_product_parents = $this->batchesHelper
-                ->get_parent_products_ids(intval($productId));
+        $product_by_website = array();
+        $rows = array();
+        $productIds = array();
+        $records = array();
 
-            $this->batchesHelper->writeProductUpdate(
-                $productId,
-                $dt,
-                null,
-                $simple_product_parents
-            );
+        foreach ($webStores as $website_id => $store_ids) {
+            $product_ids = $this->batchesHelper->getAllProductIdsByWebsiteId($website_id);
+            $product_by_website[$website_id] = $product_ids;
+
+            foreach ($affected_product_ids as $productId=>$data) {
+                $simple_product_parents = $this->batchesHelper
+                    ->get_parent_products_ids(intval($productId));
+
+                foreach ($store_ids as $store_id) {
+                    if (!in_array($productId, $product_ids)) {
+                        continue;
+                    }
+                    $record = sprintf('%s_%s', $productId, $store_id);
+                    if (!in_array($record, $records)) {
+                        $rows[] = array(
+                            'product_id' => $productId,
+                            'store_id' => $store_id,
+                            'update_date' => $dt,
+                            'action' => 'update'
+                        );
+                        $records[] = $record;
+                        $productIds[] = $productId;
+                    }
+
+                    foreach ($simple_product_parents as $parent_id) {
+                        if (!in_array($parent_id, $product_ids)) {
+                            continue;
+                        }
+                        $record = sprintf('%s_%s', $parent_id, $store_id);
+                        if (!in_array($record, $records)) {
+                            $rows[] = array(
+                                'product_id' => $parent_id,
+                                'store_id' => $store_id,
+                                'update_date' => $dt,
+                                'action' => 'update'
+                            );
+                            $productIds[] = $parent_id;
+                            $records[] = $record;
+                        }
+                    }
+
+                    if (count($rows) > 1000) {
+                        $this->batchesHelper->writeMassProductsUpdate($productIds, $rows);
+                        $rows = array();
+                        $productIds = array();
+                    }
+                }
+
+            }
+        }
+
+        if (count($rows) > 0) {
+            $this->batchesHelper->writeMassProductsUpdate($productIds, $rows);
         }
 
     }
-
 
     public function catalogrule_rule_delete_before($observer) {
         $dt = Mage::getSingleton('core/date')->gmtTimestamp();

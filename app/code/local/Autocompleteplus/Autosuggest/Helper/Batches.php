@@ -147,6 +147,27 @@ class Autocompleteplus_Autosuggest_Helper_Batches
     }
 
     /**
+     * @param $store
+     * @param $customer_group
+     * @param $count
+     * @param $startInd
+     * @return array
+     * @throws Varien_Exception
+     */
+    public function writeMassProductsUpdate($product_ids, $rows)
+    {
+        $resource = Mage::getSingleton('core/resource');
+        $writeConnection = $resource->getConnection('core_write');
+        $batches_table_name = $resource->getTableName('autocompleteplus_batches');
+
+        $where = sprintf(" `product_id` in (%s)", join(',', $product_ids));
+
+        $writeConnection->delete($batches_table_name, $where);
+
+        $writeConnection->insertMultiple($batches_table_name, $rows);
+    }
+
+    /**
      * @param $simple_product_parents
      * @param $product_store
      * @param $dt
@@ -204,7 +225,33 @@ class Autocompleteplus_Autosuggest_Helper_Batches
         return array_merge($simple_product_parents, $grouped_parents, $bundle_ids);
     }
 
-    private function getProductStoresById($product_id, $simple_product_parents) {
+    public function getAllProductIdsByWebsiteId($website_id) {
+        $resource = Mage::getSingleton('core/resource');
+        $readConnection = $resource->getConnection('core_read');
+        $catalog_product_website_table_name = $resource->getTableName('catalog_product_website');
+
+        $params = array();
+        $query = "select product_id";
+        $query .= " from";
+        $query .= sprintf(" `%s`", $catalog_product_website_table_name);
+        $query .= " where";
+        $query .= sprintf(" (`%s`.`website_id` in (:website_id)", $catalog_product_website_table_name);
+
+        $website_id_param = new Varien_Db_Statement_Parameter($website_id);
+        $website_id_param->setDataType(PDO::PARAM_INT);
+        $params['website_id'] = $website_id_param;
+
+        $query .= ")";
+        $results = $readConnection->fetchAll($query, $params);
+        $productIds = array();
+        foreach ($results as $row) {
+            $productIds[] = $row['product_id'];
+        }
+
+        return $productIds;
+    }
+
+    public function getProductStoresById($product_id, $simple_product_parents) {
         $resource = Mage::getSingleton('core/resource');
         $readConnection = $resource->getConnection('core_read');
         $catalog_product_website_table_name = $resource->getTableName('catalog_product_website');
