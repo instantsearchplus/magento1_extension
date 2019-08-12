@@ -606,11 +606,11 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                             'is_seallable' => $is_variant_sellable,
                             'price' => $variant_price
                         );
-
+                        $variantImage = null;
                         if ($child_product->getImage()
                             && $child_product->getImage() != ''
                             && $child_product->getImage() != 'no_selection') {
-                            $variantElementAttributes['variantimage'] = utf8_encode(
+                            $variantImage = utf8_encode(
                                 htmlspecialchars(
                                     (Mage::getModel('catalog/product_media_config')
                                         ->getMediaUrl($child_product->getImage()))
@@ -618,6 +618,17 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                             );
                         }
 
+                        if (!$variantImage) {
+                            $variantImage = utf8_encode(
+                                htmlspecialchars(
+                                    (Mage::helper('catalog/image')->init($child_product, 'thumbnail'))
+                                )
+                            );
+                        }
+
+                        if ($variantImage) {
+                            $variantElementAttributes['variantimage'] = $variantImage;
+                        }
                         $productVariation = $this->getXmlElement()
                             ->createChild(
                                 'variant',

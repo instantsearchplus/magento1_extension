@@ -403,14 +403,11 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         }
 
         $storesArr = array();
-        $country_code = $this->getConfigDataByFullPath('general/store_information/merchant_country');
         foreach ($websites as $website) {
             $code = $website->getCode();
             $stores = $website->getStores();
             foreach ($stores as $store) {
                 $storesArr[$store->getStoreId()] = $store->getData();
-                if ($country_code)
-                    $storesArr[$store->getStoreId()]['country_code'] = $country_code;
             }
         }
         if (count($storesArr) == 1) {
