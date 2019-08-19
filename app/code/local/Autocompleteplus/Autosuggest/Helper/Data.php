@@ -902,7 +902,7 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
      */
     public function getSessionId()
     {
-        return md5(
+        return hash('sha256',
             Mage::app()->getCookie()->get('frontend').$this->_getEncryptionKey()
         );
     }

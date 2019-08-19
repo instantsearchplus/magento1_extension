@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [3.5.18] - 2019-08-19 17:39:00
+### Added
+- Magento coding standards
+
 ## [3.5.17] - 2019-08-12 17:39:00
 ### Added
 - Fallback to thumbnail if base image and small image do not exists

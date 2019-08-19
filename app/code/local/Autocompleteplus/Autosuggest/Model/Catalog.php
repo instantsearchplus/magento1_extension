@@ -125,7 +125,8 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
     }
 
     public function getCatalogRulesProducts() {
-        $affected_product_all = unserialize(Mage::app()->getCacheInstance()->load('affected_product_al'));
+        $cached_affected_products = Mage::app()->getCacheInstance()->load('affected_product_al');
+        $affected_product_all = json_decode(base64_decode($cached_affected_products));
         if (!$affected_product_all) {
             $now = Mage::getModel('core/date')->date('Y-m-d');
             $nextUpdateDate = Mage::getModel('core/date')->date('Y-m-d', strtotime('+2 days'));
@@ -158,7 +159,7 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             }
             Mage::app()->getCacheInstance()
                 ->save(
-                    serialize($affected_product_all),
+                    base64_encode(json_encode($affected_product_all)),
                     'affected_product_al',
                     array("autocomplete_cache"),
                     3600
