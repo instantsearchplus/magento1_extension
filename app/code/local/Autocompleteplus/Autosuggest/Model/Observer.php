@@ -16,6 +16,7 @@
  */
 class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstract
 {
+    const AUTOCOMPLETEPLUS_SECURE_URI = 'https://acp-magento.appspot.com/';
     const AUTOCOMPLETEPLUS_WEBHOOK_URI = 'https://acp-magento.appspot.com/ma_webhook';
     const API_UPDATE_URI = 'http://magento.autocompleteplus.com/update';
     const WEBHOOK_CURL_TIMEOUT_LENGTH = 2;
@@ -808,6 +809,21 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
             );
         }
 
+    }
+
+    public function after_reindex_process_catalog_product_price($observer) {
+        try {
+            $helper = Mage::helper('autocompleteplus_autosuggest');
+            $config = Mage::getModel('autocompleteplus_autosuggest/config');
+            $url = static::AUTOCOMPLETEPLUS_SECURE_URI .
+                'reindex_after_update_catalog?isp_platform=magento&r=002&uuid=' .
+                $config->getUUID() . '&auth_key=' . $config->getAuthorizationKey();
+            $resp = $helper->sendCurl($url);
+            Mage::log('Schedulled full fetch ' . $url, null, 'autocomplete.log', true);
+            Mage::log(print_r($resp, true), null, 'autocomplete.log', true);
+        } catch (Exception $e) {
+            Mage::log('Failed schedulling fetch after reindexing with error: ' . $e->getMessage(), null, 'autocomplete.log', true);
+        }
     }
 
 }

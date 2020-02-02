@@ -99,6 +99,9 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
     public function getOrdersPerProduct()
     {
         $productIds = implode(',', $this->getAllProductIds());
+        if (!$productIds || count($productIds) == 0) {
+            return array();
+        }
         $salesOrderItemCollection = Mage::getResourceModel(
             'sales/order_item_collection'
         );

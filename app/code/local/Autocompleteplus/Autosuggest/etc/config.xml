@@ -195,13 +195,22 @@
             </catalog_product_stock_item_mass_change>
             <urapidflow_product_import_after_fetch>
                 <observers>
-                    <mycustommodule>
+                    <autocompleteplus_autosuggest>
                         <type>singleton</type>
                         <class>autocompleteplus_autosuggest/observer</class>
                         <method>urapidflow_product_import_after_fetch</method>
-                    </mycustommodule>
+                    </autocompleteplus_autosuggest>
                 </observers>
             </urapidflow_product_import_after_fetch>
+            <after_reindex_process_catalog_product_price>
+                <observers>
+                    <autocompleteplus_autosuggest>
+                        <type>singleton</type>
+                        <class>autocompleteplus_autosuggest/observer</class>
+                        <method>after_reindex_process_catalog_product_price</method>
+                    </autocompleteplus_autosuggest>
+                </observers>
+            </after_reindex_process_catalog_product_price>
         </events>
         <resources>
             <autosuggest_setup>

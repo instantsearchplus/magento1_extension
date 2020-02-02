@@ -3,19 +3,6 @@ $store_id = Mage::app()->getStore()->getStoreId();
 $config = Mage::getModel('autocompleteplus_autosuggest/config');
 $uuid = $config->getUUID();
 $query = htmlentities(Mage::app()->getRequest()->getParam('q'), ENT_QUOTES);
-$match_value = '';
-
-try{
-    $formkey_html = $this->getBlockHtml('formkey');
-    $pattern = '/.*form_key.*value=\"([^\"]+)\"/s';
-    if (preg_match($pattern, $formkey_html, $match)) {
-        if ($match) {
-                $match_value = $match[1];
-        }
-    }
-} catch (Exception $e) {
-    Mage::logException($e);
-}
 
     ?>
         <!-- <div id="isp_search_result_page"></div> -->
@@ -25,7 +12,7 @@ try{
                 uuid: "<?php echo $this->escapeHtml($config->getUUID()); ?>",
                 store_id: <?php echo $this->escapeHtml($store_id); ?>,
                 query: "<?php echo $this->escapeHtml($query); ?>",
-                formkey: "<?php echo $this->escapeHtml($match_value); ?>"
+                formkey: "<?php echo Mage::getSingleton('core/session')->getFormKey(); ?>"
             };
         </script>
     <?php
@@ -44,7 +31,7 @@ try{
 
         Mage::app()->getCacheInstance()
             ->save(
-                $html, 
+                $html,
                 'autocomplete_template_serp',
                 array("autocomplete_cache"),
                 60

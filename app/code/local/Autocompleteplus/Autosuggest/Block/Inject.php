@@ -219,4 +219,22 @@ class Autocompleteplus_Autosuggest_Block_Inject extends Mage_Checkout_Block_Cart
 
         return self::AUTOCOMPLETE_JS_URL.'?'.http_build_query($parameters, '', '&');
     }
+
+    public function getCurrentCurrencyRate() {
+        $currency_code = Mage::app()->getStore()->getCurrentCurrencyCode();
+        $baseCurrencyCode = Mage::app()->getStore()->getBaseCurrencyCode();
+
+        if ($currency_code == $baseCurrencyCode) {
+            return '';
+        }
+
+        $currency_rate = Mage::app()->getStore()->getCurrentCurrencyRate();
+        $currency_symbol = Mage::app()->getLocale()->currency($currency_code)->getSymbol();
+
+        return 'var isp_currency_data = ' . json_encode(array(
+                'currency_code'=> $currency_code,
+                'currency_rate'=> $currency_rate,
+                'currency_symbol'=> $currency_symbol
+            ));
+    }
 }
