@@ -228,6 +228,11 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
 
         $affected_product_all = $this->getCatalogRulesProducts();
 
+        $skip_discounted_items = Mage::getStoreConfig('catalog/search/display_discounted_products');
+        if ($skip_discounted_items != null && $skip_discounted_items == '0') {
+            $this->getProductRenderer()->setSkipDiscountedProducts(true);
+        }
+
         foreach ($productCollection as $product) {
             $this->getProductRenderer()
                 ->setAction('insert')
@@ -380,6 +385,12 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         if ($db_visibility && $db_visibility == 1) {
             $this->getProductRenderer()->setDbvisibility(true);
         }
+
+        $skip_discounted_items = Mage::getStoreConfig('catalog/search/display_discounted_products');
+        if ($skip_discounted_items != null && $skip_discounted_items == '0') {
+            $this->getProductRenderer()->setSkipDiscountedProducts(true);
+        }
+
         $visibleProductIds = array();
         foreach ($productCollection as $product) {
             $updatedate = $updatesBulk[$product->getId()]['update_date'];
@@ -456,6 +467,11 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             $this->getProductRenderer()->setDbvisibility(true);
         }
 
+        $skip_discounted_items = Mage::getStoreConfig('catalog/search/display_discounted_products');
+        if ($skip_discounted_items != null && $skip_discounted_items == '0') {
+            $this->getProductRenderer()->setSkipDiscountedProducts(true);
+        }
+
         foreach ($productCollection as $product) {
             $this->getProductRenderer()
                 ->setAction('getfromid')
@@ -513,6 +529,11 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
         $db_visibility = Mage::getStoreConfig('autocompleteplus_autosuggest/config/db_visibility');
         if ($db_visibility && $db_visibility == 1) {
             $this->getProductRenderer()->setDbvisibility(true);
+        }
+
+        $skip_discounted_items = Mage::getStoreConfig('catalog/search/display_discounted_products');
+        if ($skip_discounted_items != null && $skip_discounted_items == '0') {
+            $this->getProductRenderer()->setSkipDiscountedProducts(true);
         }
 
         foreach ($productCollection as $product) {

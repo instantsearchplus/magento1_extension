@@ -61,6 +61,8 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
     protected $_customersGroups;
     protected $_batchesHelper;
     protected $_catalog_to_date;
+    protected $_skip_discounted_products;
+
     const ISPKEY = 'ISPKEY_';
 
     /**
@@ -90,6 +92,11 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
         $this->_xmlElement = $xmlGenerator;
 
         return $this;
+    }
+
+
+    public function setSkipDiscountedProducts($val) {
+        $this->_skip_discounted_products = $val;
     }
 
     /**
@@ -527,7 +534,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
      *
      * @return void
      */
-    public function renderProductVariantXml($productXmlElem)
+    public function renderProductVariantXml($productXmlElem, $chilren_ids)
     {
         if ($this->canUseAttributes()) {
             if ($this->getProduct()->isConfigurable()
@@ -561,6 +568,21 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                 if (count($variants) > 0) {
                     $variantElem = $this->getXmlElement()
                         ->createChild('variants', false, false, $productXmlElem);
+
+                    $discounted_items = array();
+                    if ($this->_skip_discounted_products) {
+                        $child_items = Mage::getModel('catalog/product')->getCollection()
+                            ->addAttributeToSelect(array_merge($variants,
+                                array('price', 'special_price')))
+                            ->addAttributeToFilter('entity_id', array('in' => $chilren_ids));
+                        foreach ($child_items as $ch_it) {
+                            if (floatval($ch_it->getSpecialPrice()) > 0) {
+                                $discounted_items[] = $ch_it->getId();
+                            }
+                        }
+                    }
+
+
                     foreach ($this->getConfigurableChildren() as $child_product) {
                         if (!in_array(
                             $this->getProduct()->getStoreId(),
@@ -581,6 +603,10 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                             $child_product->isSaleable()
                             ) ? 1 : 0;
                         } else {
+                            $is_variant_sellable = '';
+                        }
+
+                        if ($this->_skip_discounted_products && in_array($child_product->getId(), $discounted_items)) {
                             $is_variant_sellable = '';
                         }
 
@@ -1013,9 +1039,10 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
         }
 
         if ($this->getProduct()->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE) {
+            $children_ids = $this->getConfigurableChildrenIds();
             $this->getXmlElement()->createChild('simpleproducts', false,
-                implode(',', $this->getConfigurableChildrenIds()), $productElement);
-            $this->renderProductVariantXml($productElement);
+                implode(',', $children_ids), $productElement);
+            $this->renderProductVariantXml($productElement, $children_ids);
         }
 
         if ($this->canUseAttributes()) {
