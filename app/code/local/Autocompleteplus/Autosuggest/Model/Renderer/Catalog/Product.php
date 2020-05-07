@@ -576,7 +576,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                                 array('price', 'special_price')))
                             ->addAttributeToFilter('entity_id', array('in' => $chilren_ids));
                         foreach ($child_items as $ch_it) {
-                            if (floatval($ch_it->getSpecialPrice()) > 0) {
+                            if (floatval($ch_it->getSpecialPrice()) > 0 && ($ch_it->getSpecialPrice() < $ch_it->getPrice())) {
                                 $discounted_items[] = $ch_it->getId();
                             }
                         }
@@ -985,6 +985,9 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
         );
         if ($calculatedFinalPrice < $regularPrice) {
             $xmlAttributes['price_compare_at_price'] = $regularPrice;
+            if ($this->_skip_discounted_products) {
+                $xmlAttributes['selleable'] = 0;
+            }
         }
 
         $productElement = $this->getXmlElement()->createChild('product', $xmlAttributes);
