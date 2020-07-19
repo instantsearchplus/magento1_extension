@@ -21,6 +21,7 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
     const XML_SITE_URL_CONFIG = 'autocompleteplus_autosuggest/config/site_url';
     const XML_IS_REACHABLE_CONFIG = 'autocompleteplus_autosuggest/config/is_reachable';
     const XML_ERROR_MESSAGE_CONFIG = 'autocompleteplus_autosuggest/config/error_message';
+    const XML_EMAIL_RECOMMENDATIONS_CONFIG = 'autocompleteplus/config/email_recs';
 
     /**
      * Fetch Magento Config Model.
@@ -453,5 +454,29 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
         }
 
         return true;
+    }
+
+    /**
+     * Set Email Recommendations Status
+     *
+     * @param string $scope
+     * @param int    $scopeId
+     * @param int  $val
+     */
+    public function setEmailRecsStatus($scope = 'stores', $scopeId = 0, $val)
+    {
+        $this->_getMageConfig()->saveConfig(self::XML_EMAIL_RECOMMENDATIONS_CONFIG, $val, $scope, $scopeId);
+    }
+
+    /**
+     * Get Email Recommendations Status.
+     *
+     * @param $scopeId
+     *
+     * @return mixed
+     */
+    public function getEmailRecsStatus($scopeId)
+    {
+        return Mage::getStoreConfig(self::XML_EMAIL_RECOMMENDATIONS_CONFIG, $scopeId);
     }
 }

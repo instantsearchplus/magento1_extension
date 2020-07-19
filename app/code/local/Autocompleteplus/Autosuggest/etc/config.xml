@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Autocompleteplus_Autosuggest>
-            <version>3.5.21</version>
+            <version>3.5.23</version>
             <url>http://autocompleteplus.com/</url>
             <modulename>Autocompleteplus_Autosuggest</modulename>
         </Autocompleteplus_Autosuggest>
@@ -36,6 +36,11 @@
                     <fulltext_collection>Autocompleteplus_Autosuggest_Model_Resource_Fulltext_Collection</fulltext_collection>
                 </rewrite>
             </catalogsearch_resource>
+            <core>
+                <rewrite>
+                    <email_template>Autocompleteplus_Autosuggest_Model_Email_Template</email_template>
+                </rewrite>
+            </core>
         </models>
         <events>
             <catalogrule_rule_save_after>
@@ -330,6 +335,7 @@
             <config>
                 <attributes>1</attributes>
                 <layered>0</layered>
+                <email_recs>0</email_recs>
                 <api_endpoint><![CDATA[https://magento.instantsearchplus.com]]></api_endpoint>
             </config>
         </autocompleteplus>

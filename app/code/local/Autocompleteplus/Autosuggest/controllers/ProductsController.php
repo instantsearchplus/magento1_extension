@@ -48,6 +48,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
     const URL_UUID_UPDATE = 'http://magento.instantsearchplus.com/update_uuid';
     const XML_CONFIG_STORE_EMAIL = 'autocompleteplus/config/store_email';
 
+    
     /**
      * Get ext config
      *
@@ -272,6 +273,10 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
             'autocompleteplus/config/imagefield'
         );
 
+        $emailRecsEnabled = Mage::getStoreConfig(
+            'autocompleteplus/config/email_recs'
+        );
+
         if (defined('COMPILER_INCLUDE_PATH')) {
             $compilerEnabled = true;
         } else {
@@ -316,7 +321,8 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
             'smart_nav_native' => $smart_nav_native,
             'external_image' => $external_image,
             'timezone' => $timezone,
-            'show_out_of_stock' => $show_out_of_stock
+            'show_out_of_stock' => $show_out_of_stock,
+            'email_recommendations' => $emailRecsEnabled
         );
 
         $response->clearHeaders();
