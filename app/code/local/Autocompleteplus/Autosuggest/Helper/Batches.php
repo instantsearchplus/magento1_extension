@@ -40,6 +40,8 @@
  */
 class Autocompleteplus_Autosuggest_Helper_Batches
 {
+    const AUTOSUGGEST_BATCH_TABLE_NAME = 'autocompleteplus_batches';
+
     public function writeProductDeletion(
         $sku,
         $productId,
@@ -62,29 +64,14 @@ class Autocompleteplus_Autosuggest_Helper_Batches
                     $sku = 'dummy_sku';
                 }
                 foreach ($product_stores as $product_store) {
-                    $batches = Mage::getModel('autocompleteplus_autosuggest/batches')->getCollection()
-                        ->addFieldToFilter('product_id', $productId)
-                        ->addFieldToFilter('store_id', $product_store);
-
-                    $batches->getSelect()
-                        ->order('update_date', 'DESC')
-                        ->limit(1);
-
-                    if ($batches->getSize() > 0) {
-                        $batch = $batches->getFirstItem();
-                        $batch->setUpdateDate($dt)
-                            ->setAction('remove')
-                            ->save();
-                    } else {
-                        $newBatch = Mage::getModel('autocompleteplus_autosuggest/batches');
-                        $newBatch->setProductId($productId)
-                            ->setStoreId($product_store)
-                            ->setUpdateDate($dt)
-                            ->setAction('remove')
-                            ->setSku($sku)
-                            ->save();
-                    }
-
+                    $data = [
+                        'product_id'=> $productId,
+                        'store_id'=> $product_store,
+                        'update_date'=> $dt,
+                        'action'=> 'remove',
+                        'sku'=> $sku
+                    ];
+                    $this->upsertData($data);
                     // trigger update for simple product's configurable parent
                     if (!empty($simple_product_parents)) {   // simple product has configurable parent
                         $this->update_parents($simple_product_parents, $product_store, $dt);
@@ -107,34 +94,23 @@ class Autocompleteplus_Autosuggest_Helper_Batches
      */
     public function writeProductUpdate($productId, $dt, $sku, $simple_product_parents, $product_stores = null)
     {
+        if (!$productId) {
+            return;
+        }
         try {
             if (!$product_stores || (is_array($product_stores) && count($product_stores) == 1 && $product_stores[0] == 0)) {
                 $product_stores = $this->getProductStoresById($productId, $simple_product_parents);
             }
+
             foreach ($product_stores as $product_store) {
-                $updates = Mage::getModel('autocompleteplus_autosuggest/batches')->getCollection()
-                    ->addFieldToFilter('product_id', $productId)
-                    ->addFieldToFilter('store_id', $product_store);
-
-                $updates->getSelect()
-                    ->order('update_date', 'DESC')
-                    ->limit(1);
-
-                if ($updates && $updates->getSize() > 0) {
-                    $row = $updates->getFirstItem();
-
-                    $row->setUpdateDate($dt)
-                        ->setAction('update');
-                    $row->save();
-                } else {
-                    $batch = Mage::getModel('autocompleteplus_autosuggest/batches');
-                    $batch->setProductId($productId)
-                        ->setStoreId($product_store)
-                        ->setUpdateDate($dt)
-                        ->setAction('update')
-                        ->setSku($sku);
-                    $batch->save();
-                }
+                $data = [
+                    'product_id'=> $productId,
+                    'store_id'=> $product_store,
+                    'update_date'=> $dt,
+                    'action'=> 'update',
+                    'sku'=> $sku
+                ];
+                $this->upsertData($data);
 
                 // trigger update for simple product's configurable parent
                 if (!empty($simple_product_parents)) {   // simple product has configurable parent
@@ -147,18 +123,16 @@ class Autocompleteplus_Autosuggest_Helper_Batches
     }
 
     /**
-     * @param $store
-     * @param $customer_group
-     * @param $count
-     * @param $startInd
-     * @return array
+     * @param $rows
+     * @param $product_ids
+     * @return void
      * @throws Varien_Exception
      */
     public function writeMassProductsUpdate($product_ids, $rows)
     {
         $resource = Mage::getSingleton('core/resource');
         $writeConnection = $resource->getConnection('core_write');
-        $batches_table_name = $resource->getTableName('autocompleteplus_batches');
+        $batches_table_name = $resource->getTableName(self::AUTOSUGGEST_BATCH_TABLE_NAME);
 
         $where = sprintf(" `product_id` in (%s)", join(',', $product_ids));
 
@@ -171,34 +145,20 @@ class Autocompleteplus_Autosuggest_Helper_Batches
      * @param $simple_product_parents
      * @param $product_store
      * @param $dt
-     * @return array
+     * @return void
      * @throws Varien_Exception
      */
     private function update_parents($simple_product_parents, $product_store, $dt)
     {
         foreach ($simple_product_parents as $configurable_product) {
-            $batches = Mage::getModel('autocompleteplus_autosuggest/batches')->getCollection()
-                ->addFieldToFilter('product_id', $configurable_product)
-                ->addFieldToFilter('store_id', $product_store);
-
-            $batches->getSelect()
-                ->order('update_date', 'DESC')
-                ->limit(1);
-
-            if ($batches->getSize() > 0) {
-                $batch = $batches->getFirstItem();
-                $batch->setUpdateDate($dt)
-                    ->setAction('update')
-                    ->save();
-            } else {
-                $newBatch = Mage::getModel('autocompleteplus_autosuggest/batches');
-                $newBatch->setProductId($configurable_product)
-                    ->setStoreId($product_store)
-                    ->setUpdateDate($dt)
-                    ->setAction('update')
-                    ->setSku('ISP_NO_SKU')
-                    ->save();
-            }
+            $data = [
+                'product_id'=> $configurable_product,
+                'store_id'=> $product_store,
+                'update_date'=> $dt,
+                'action'=> 'update',
+                'sku'=> 'ISP_NO_SKU'
+            ];
+            $this->upsertData($data);
         }
     }
 
@@ -287,5 +247,25 @@ class Autocompleteplus_Autosuggest_Helper_Batches
         }
 
         return $storeIds;
+    }
+
+    /**
+     * @param $table_name
+     * @param $data
+     */
+    public function upsertData($data, $table_name=null)
+    {
+        $resource = Mage::getSingleton('core/resource');
+        $writeConnection = $resource->getConnection('core_write');
+
+        if (!$table_name) {
+            $table_name = self::AUTOSUGGEST_BATCH_TABLE_NAME;
+        }
+        $table_name = $resource->getTableName($table_name);
+        try {
+            $writeConnection->insertOnDuplicate($table_name, $data);
+        } catch (Exception $e) {
+            Mage::logException($e);
+        }
     }
 }

@@ -243,22 +243,27 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
     public function catalog_product_save_after_real($observer)
     {
         $product = $observer->getProduct();
-
+        $product_stores = $product->getStoreIds();
         $productId = $product->getId();
-
         $sku = $product->getSku();
+        $dt = Mage::getSingleton('core/date')->gmtTimestamp();
+        $simple_product_parents = $this->batchesHelper->get_parent_products_ids($product);
 
         try {
-            $updates = Mage::getModel('autocompleteplus_autosuggest/batches')->getCollection()
-                ->addFieldToFilter('product_id', array('null' => true))
-                ->addFieldToFilter('sku', $sku)
-            ;
-
-            foreach ($updates as $update) {
-                $update->setProductId($productId);
-
-                $update->save();
+            //recording disabled item as deleted
+            if ($product->getStatus() == '2') {
+                $this->batchesHelper
+                    ->writeProductDeletion($sku, $productId, null, $product_stores);
+                return;
             }
+
+            $this->batchesHelper->writeProductUpdate(
+                $productId,
+                $dt,
+                $sku,
+                $simple_product_parents,
+                $product_stores
+            );
         } catch (Exception $e) {
             Mage::logException($e);
         }

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [3.5.25] - 2020-07-19 17:39:00
+### Added
+- Products upsert support
+### Fixed
+- Disabled products removal
+
 ## [3.5.23] - 2020-07-19 17:39:00
 ### Added
 - Product ISP+ recommendations in sales email

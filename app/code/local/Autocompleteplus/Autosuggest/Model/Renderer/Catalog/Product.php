@@ -788,7 +788,6 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
     {
         if ($this->canUseAttributes()) {
             $action = $attr->getAttributeCode();
-
             $attrValue = $this->getProduct()->getData($action);
 
             if (!array_key_exists($action, $this->_attributesValuesCache)) {
@@ -815,7 +814,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                                     $this->getProduct()->getAttributeText($action),
                                     $action
                                 );
-
+                                $attrValueText = $attrValueText ? $attrValueText : $this->getProduct()->getAttributeText($action);
                                 $this->_attributesValuesCache[$action][$attrValidKey] = $attrValueText;
                                 $attrValue = $attrValueText;
                             } else {
@@ -1061,6 +1060,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             }
 
             foreach ($this->getAttributes() as $attr) {
+
                 if (in_array($attr->getAttributeCode(), $this->_attributesSetsCache[$attributeSetId])) {
                     $this->renderProductAttributeXml($attr, $productElement);
                 }

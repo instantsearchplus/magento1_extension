@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Autocompleteplus_Autosuggest>
-            <version>3.5.23</version>
+            <version>3.5.25</version>
             <url>http://autocompleteplus.com/</url>
             <modulename>Autocompleteplus_Autosuggest</modulename>
         </Autocompleteplus_Autosuggest>
