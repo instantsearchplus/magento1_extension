@@ -288,6 +288,33 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         return $str;
     }
 
+    public function getSerpCustomValues($uuid, $storeId) {
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://dashboard.instantsearchplus.com/api/serving/magento_update_fields',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 6.1; rv:21.0) Gecko/20100101 Firefox/21.0',
+        ));
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+                'Store-ID: ' . $storeId,
+                'UUID: ' . $uuid,
+                'Content-Type: application/json',
+                'Content-Length: 0')
+        );
+
+        $response = curl_exec($curl);
+
+        curl_close($curl);
+        return $response;
+    }
+
     /**
      * Prepare grouped product price
      *
@@ -789,6 +816,36 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
         } catch (Exception $e) {
             Mage::log($e->getMessage(), null, 'autocompleteplus.log');
         }
+    }
+
+    /**
+     * GetUUID
+     *
+     * @return mixed
+     */
+    public function getDropdownV2($scopeId)
+    {
+        return $this->getConfig()->getDropdownV2($scopeId);
+    }
+
+    /**
+     * GetUUID
+     *
+     * @return mixed
+     */
+    public function getSerpV2($scopeId)
+    {
+        return $this->getConfig()->getSerpV2($scopeId);
+    }
+
+    /**
+     * GetUUID
+     *
+     * @return mixed
+     */
+    public function getSmnV2($scopeId)
+    {
+        return $this->getConfig()->getSmnV2($scopeId);
     }
 
     /**

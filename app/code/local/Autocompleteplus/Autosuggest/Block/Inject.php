@@ -217,7 +217,14 @@ class Autocompleteplus_Autosuggest_Block_Inject extends Mage_Checkout_Block_Cart
                 ->getCustomerGroupId();
         }
 
-        return self::AUTOCOMPLETE_JS_URL.'?'.http_build_query($parameters, '', '&');
+        $usingDrV2 = $this->_helper->getDropdownV2($this->getStoreId());
+        if (!$usingDrV2) {
+            $baseScript = self::AUTOCOMPLETE_JS_URL;
+        } else {
+            $baseScript = 'https://fastsimon.akamaized.net/fast-simon-autocomplete-init.umd.js';
+        }
+
+        return $baseScript . '?'.http_build_query($parameters, '', '&');
     }
 
     public function getCurrentCurrencyRate() {

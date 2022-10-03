@@ -540,6 +540,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
             if ($this->getProduct()->isConfigurable()
                 && count($this->getConfigurableAttributes()) > 0
             ) {
+                $_helper = $this->_getOutputHelper();
                 $variants = array();
                 $configurable_simple_skus = array();
                 foreach ($this->getConfigurableAttributes()
@@ -570,18 +571,24 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                         ->createChild('variants', false, false, $productXmlElem);
 
                     $discounted_items = array();
-                    if ($this->_skip_discounted_products) {
+                    if ($this->_skip_discounted_products || $this->getProduct()->getData('amconf_simple_price')) {
                         $child_items = Mage::getModel('catalog/product')->getCollection()
                             ->addAttributeToSelect(array_merge($variants,
                                 array('price', 'special_price')))
                             ->addAttributeToFilter('entity_id', array('in' => $chilren_ids));
                         foreach ($child_items as $ch_it) {
                             if (floatval($ch_it->getSpecialPrice()) > 0 && ($ch_it->getSpecialPrice() < $ch_it->getPrice())) {
-                                $discounted_items[] = $ch_it->getId();
+                                if ($this->_skip_discounted_products) {
+                                    $discounted_items[] = $ch_it->getId();
+                                }
+                                if ($this->getProduct()->getData('amconf_simple_price')) {
+                                    if (floatval($ch_it->getSpecialPrice()) < $this->getProduct()->getFinalPrice()) {
+                                        $simple_products_price[$ch_it->getId()] = $ch_it->getSpecialPrice();
+                                    }
+                                }
                             }
                         }
                     }
-
 
                     foreach ($this->getConfigurableChildren() as $child_product) {
                         if (!in_array(
@@ -630,7 +637,8 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                             'visibility' => $is_variant_visible,
                             'is_in_stock' => $is_variant_in_stock,
                             'is_seallable' => $is_variant_sellable,
-                            'price' => $variant_price
+                            'price' => $variant_price,
+                            'sku' => $child_product->getSku()
                         );
                         $variantImage = null;
                         if ($child_product->getImage()
@@ -683,8 +691,14 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                                 // skip variant attribute without a name
                                 continue;
                             }
-
+                            $attribute_code = $attribute->getAttributeCode();
                             $variant_name = isset($attribute['store_label'])? $attribute['store_label'] : $attribute['frontend_label'];
+                            $attrValueText = $_helper->productAttribute(
+                                $child_product,
+                                $child_product->getAttributeText($attribute_code),
+                                $attribute_code
+                            );
+                            $attrValueText = $attrValueText ? $attrValueText : $child_product->getAttributeText($attribute_code);
                             $this->getXmlElement()->createChild(
                                 'variant_attribute',
                                 array(
@@ -697,7 +711,7 @@ class Autocompleteplus_Autosuggest_Model_Renderer_Catalog_Product extends
                                     ),
                                 ), utf8_encode(
                                 htmlspecialchars(
-                                    $attribute->getFrontend()->getValue($child_product)
+                                    $attrValueText
                                 )
                             ), $productVariation
                             );

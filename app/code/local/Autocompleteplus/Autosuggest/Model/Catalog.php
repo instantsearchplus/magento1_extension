@@ -582,7 +582,8 @@ class Autocompleteplus_Autosuggest_Model_Catalog extends Mage_Core_Model_Abstrac
             'sku',
             'tier_price',
             'price_type',
-            'display_price'
+            'display_price',
+            'amconf_simple_price'
         );
 
         if ($externalImage != null && $externalImage != '') {

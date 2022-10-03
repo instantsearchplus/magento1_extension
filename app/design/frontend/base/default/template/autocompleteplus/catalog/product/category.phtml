@@ -36,8 +36,7 @@ $query = htmlentities(Mage::app()->getRequest()->getParam('q'), ENT_QUOTES);
 <?php if($this->isContentMode()): ?>
     <?php echo $this->getCmsBlockHtml() ?>
 <?php endif; ?>
-        <!-- <div id="isp_search_result_page"></div> -->
-
+<?php if(!$config->getSmnV2($store_id)): ?>
         <script>
             var __isp_fulltext_search_obj = {
                 uuid: "<?php echo $this->escapeHtml($config->getUUID()); ?>",
@@ -48,4 +47,28 @@ $query = htmlentities(Mage::app()->getRequest()->getParam('q'), ENT_QUOTES);
         </script>
 <div id="isp_search_result_page"></div>
 <script src="https://magento.instantsearchplus.com/js/search_result_loading_page.js?isp_platform=magento&UUID=<?php echo $this->escapeHtml($config->getUUID()); ?>&store_id=<?php echo $this->escapeHtml($store_id); ?>"></script>
+<?php else: ?>
+<?php
+    try {
+        $cv = $config->getCustomValues($store_id);
+        $cv_j = json_decode($cv);
+    } catch (Exception $e) {
+        $cv_j = (object) array(
+            'config'=>'',
+            'serp_css'=>''
+        );
+    }
+?>
+    <div id="fast-config" style="display: none"><?php echo $cv_j->config; ?></div>
+    <style id="fast-serp-css"><?php echo $cv_j->serp_css; ?></style>
+    <script class="fast-simon-script">
+        var STORE_UUID = "<?php echo $uuid; ?>";
+        var STORE_ID = Number("<?php echo $store_id; ?>");
+        var FAST_SEARCH_HANDLE = "instantsearchplus/result";
+    </script>
+    <script>const CATEGORY_ID = "<?php echo $_category->getId(); ?>" </script>
+    <div id="fast-simon-serp-app" style="display:block;color: initial;background: initial"></div>
+    <script src="https://fastsimon-grid.akamaized.net/init.min.js?v=<?php echo strtotime('now'); ?>"></script>
+
+<?php endif; ?>
 

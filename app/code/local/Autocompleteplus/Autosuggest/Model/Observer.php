@@ -243,27 +243,22 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
     public function catalog_product_save_after_real($observer)
     {
         $product = $observer->getProduct();
-        $product_stores = $product->getStoreIds();
+
         $productId = $product->getId();
+
         $sku = $product->getSku();
-        $dt = Mage::getSingleton('core/date')->gmtTimestamp();
-        $simple_product_parents = $this->batchesHelper->get_parent_products_ids($product);
 
         try {
-            //recording disabled item as deleted
-            if ($product->getStatus() == '2') {
-                $this->batchesHelper
-                    ->writeProductDeletion($sku, $productId, null, $product_stores);
-                return;
-            }
+            $updates = Mage::getModel('autocompleteplus_autosuggest/batches')->getCollection()
+                ->addFieldToFilter('product_id', array('null' => true))
+                ->addFieldToFilter('sku', $sku)
+            ;
 
-            $this->batchesHelper->writeProductUpdate(
-                $productId,
-                $dt,
-                $sku,
-                $simple_product_parents,
-                $product_stores
-            );
+            foreach ($updates as $update) {
+                $update->setProductId($productId);
+
+                $update->save();
+            }
         } catch (Exception $e) {
             Mage::logException($e);
         }
@@ -666,13 +661,30 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
                 $quantity = $item->getQty();
             }
             if (is_object($item->getProduct())) {    // Fatal error fix: Call to a member function getId() on a non-object
-                $items[] = array(
+                $itemData = array(
                     'product_id' => $item->getProduct()->getId(),
                     'price' => $item->getProduct()->getFinalPrice(),
                     'quantity' => $quantity,
                     'currency' => Mage::app()->getStore()->getCurrentCurrencyCode(),
                     'attribution' => $item->getAddedFromSearch(),
                 );
+                if (is_array($item->getProduct()->getCustomOptions())) {
+                    try {
+                        $options = $item->getProduct()->getCustomOptions();
+                        if (array_key_exists('simple_product', $options)) {
+                            $simpleProductId = $options['simple_product']->getData('product_id');
+                            $simpleProduct = Mage::getSingleton('catalog/product')->load($simpleProductId);
+                            $colorAttribute = $simpleProduct->getResource()->getAttribute('color');
+                            if ($colorAttribute) {
+                                $colorName = $colorAttribute->getFrontend()->getValue($simpleProduct);
+                                $itemData['color'] = $colorName;
+                            }
+                        }
+                    } catch (Exception $e) {
+                    }
+                }
+
+                $items[] = $itemData;
             }
         }
 

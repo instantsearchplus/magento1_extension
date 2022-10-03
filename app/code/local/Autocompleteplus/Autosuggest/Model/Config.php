@@ -22,6 +22,10 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
     const XML_IS_REACHABLE_CONFIG = 'autocompleteplus_autosuggest/config/is_reachable';
     const XML_ERROR_MESSAGE_CONFIG = 'autocompleteplus_autosuggest/config/error_message';
     const XML_EMAIL_RECOMMENDATIONS_CONFIG = 'autocompleteplus/config/email_recs';
+    const XML_PATH_DROPDOWN_V2 = 'autocompleteplus/dropdown/v2';
+    const XML_PATH_SERP_V2 = 'autocompleteplus/serp/v2';
+    const XML_PATH_SMN_V2 = 'autocompleteplus/smn/v2';
+    const XML_PATH_CUSTOM_VALUES = 'autocompleteplus/serp/custom_values';
 
     /**
      * Fetch Magento Config Model.
@@ -139,6 +143,45 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
 
     }
 
+    public function setDropdownV2($val, $scopeId = 0, $scope = 'stores')
+    {
+        if ($val == 'true' || $val == '1') {
+            $this->_getMageConfig()->deleteConfig(self::XML_PATH_DROPDOWN_V2, 'default', $scopeId);
+            $this->_getMageConfig()->saveConfig(self::XML_PATH_DROPDOWN_V2, self::XML_SEARCH_LAYERED_ENABLED, $scope, $scopeId);
+        } else {
+            $this->_getMageConfig()->deleteConfig(self::XML_PATH_DROPDOWN_V2, 'default', $scopeId);
+            $this->_getMageConfig()->saveConfig(self::XML_PATH_DROPDOWN_V2, self::XML_SEARCH_LAYERED_DISABLED, $scope, $scopeId);
+        }
+    }
+
+    public function setSerpV2($val, $scopeId = 0, $scope = 'stores')
+    {
+        if ($val == 'true' || $val == '1') {
+            $this->_getMageConfig()->deleteConfig(self::XML_PATH_SERP_V2, 'default', $scopeId);
+            $this->_getMageConfig()->saveConfig(self::XML_PATH_SERP_V2, self::XML_SEARCH_LAYERED_ENABLED, $scope, $scopeId);
+        } else {
+            $this->_getMageConfig()->deleteConfig(self::XML_PATH_SERP_V2, 'default', $scopeId);
+            $this->_getMageConfig()->saveConfig(self::XML_PATH_SERP_V2, self::XML_SEARCH_LAYERED_DISABLED, $scope, $scopeId);
+        }
+    }
+
+    public function setSmnV2($val, $scopeId = 0, $scope = 'stores')
+    {
+        if ($val == 'true' || $val == '1') {
+            $this->_getMageConfig()->deleteConfig(self::XML_PATH_SMN_V2, 'default', $scopeId);
+            $this->_getMageConfig()->saveConfig(self::XML_PATH_SMN_V2, self::XML_SEARCH_LAYERED_ENABLED, $scope, $scopeId);
+        } else {
+            $this->_getMageConfig()->deleteConfig(self::XML_PATH_SMN_V2, 'default', $scopeId);
+            $this->_getMageConfig()->saveConfig(self::XML_PATH_SMN_V2, self::XML_SEARCH_LAYERED_DISABLED, $scope, $scopeId);
+        }
+    }
+
+    public function setCustomValues($val, $scopeId = 0, $scope = 'stores')
+    {
+        $this->_getMageConfig()->deleteConfig(self::XML_PATH_CUSTOM_VALUES, 'default', $scopeId);
+        $this->_getMageConfig()->saveConfig(self::XML_PATH_CUSTOM_VALUES, $val, $scope, $scopeId);
+    }
+
     /**
      * Set Authorization Key.
      *
@@ -198,6 +241,47 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
     {
         return Mage::getStoreConfig(self::XML_UUID_CONFIG);
     }
+
+    /**
+     * Get DropdownV2.
+     *
+     * @return mixed
+     */
+    public function getDropdownV2($scopeId)
+    {
+        return Mage::getStoreConfig(self::XML_PATH_DROPDOWN_V2, $scopeId);
+    }
+
+    /**
+     * Get SerpV2.
+     *
+     * @return mixed
+     */
+    public function getSerpV2($scopeId)
+    {
+        return Mage::getStoreConfig(self::XML_PATH_SERP_V2, $scopeId);
+    }
+
+    /**
+     * Get SmnV2.
+     *
+     * @return mixed
+     */
+    public function getSmnV2($scopeId)
+    {
+        return Mage::getStoreConfig(self::XML_PATH_SMN_V2, $scopeId);
+    }
+
+    /**
+     * Get CustomValues.
+     *
+     * @return mixed
+     */
+    public function getCustomValues($scopeId)
+    {
+        return Mage::getStoreConfig(self::XML_PATH_CUSTOM_VALUES, $scopeId);
+    }
+
 
     /**
      * Get UUID and Authorization key.

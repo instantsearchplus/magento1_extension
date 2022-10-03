@@ -30,6 +30,9 @@
         </reference>
     </autocompleteplus_result_index>
     <instantsearchplus_result_index>
+        <reference name="root">
+            <action method="setTemplate"><template>page/1column.phtml</template></action>
+        </reference>
         <update handle="autocompleteplus"/>
         <remove name="search.result"/>
         <remove name="left"/>

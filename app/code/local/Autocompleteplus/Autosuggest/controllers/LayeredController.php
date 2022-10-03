@@ -229,4 +229,155 @@ class Autocompleteplus_Autosuggest_LayeredController extends Mage_Core_Controlle
 
         $response->setBody(json_encode($resp));
     }
+
+    public function setdropdownv2Action() {
+        $response = $this->getResponse();
+        $request = $this->getRequest();
+        $authkey = $request->getParam('authentication_key');
+        $uuid = $request->getParam('uuid');
+        $scopeId = $request->getParam('store_id', 1);
+        $drV2 = $request->getParam('v2_enabled', 'false');
+
+        if (!Mage::helper('autocompleteplus_autosuggest')->validate_auth($uuid, $authkey)) {
+            $resp = json_encode(
+                array('status' => 'error: '.'Authentication failed')
+            );
+            $response->setBody($resp);
+
+            return;
+        }
+
+        try {
+            $this->_getConfig()->setDropdownV2($drV2, $scopeId);
+            Mage::app()->getCacheInstance()->cleanType('config');
+        } catch (Exception $e) {
+            $resp = json_encode(array('status' => 'error: '.$e->getMessage()));
+            $response->setBody($resp);
+            Mage::logException($e);
+            return;
+        }
+
+        $resp = array('new_state' => $drV2,
+            'status' => 'ok',
+        );
+        $response->setBody(json_encode($resp));
+    }
+
+    public function setserpv2Action() {
+        $response = $this->getResponse();
+        $request = $this->getRequest();
+        $authkey = $request->getParam('authentication_key');
+        $uuid = $request->getParam('uuid');
+        $scopeId = $request->getParam('store_id', 1);
+        $drV2 = $request->getParam('v2_enabled', 'false');
+
+        if (!Mage::helper('autocompleteplus_autosuggest')->validate_auth($uuid, $authkey)) {
+            $resp = json_encode(
+                array('status' => 'error: '.'Authentication failed')
+            );
+            $response->setBody($resp);
+
+            return;
+        }
+
+        try {
+            $this->_getConfig()->setSerpV2($drV2, $scopeId);
+            if ($drV2 == 'true' || $drV2 == '1') {
+                $helper = Mage::helper('autocompleteplus_autosuggest');
+                $res = $helper->getSerpCustomValues($uuid, $scopeId);
+                if ($res) {
+                    $this->_getConfig()->setCustomValues($res, $scopeId);
+                }
+            }
+            Mage::app()->getCacheInstance()->cleanType('config');
+        } catch (Exception $e) {
+            $resp = json_encode(array('status' => 'error: '.$e->getMessage()));
+            $response->setBody($resp);
+            Mage::logException($e);
+            return;
+        }
+
+        $resp = array('new_state' => $drV2,
+            'status' => 'ok',
+        );
+        $response->setBody(json_encode($resp));
+    }
+
+    public function setSmnV2Action() {
+        $response = $this->getResponse();
+        $request = $this->getRequest();
+        $authkey = $request->getParam('authentication_key');
+        $uuid = $request->getParam('uuid');
+        $scopeId = $request->getParam('store_id', 1);
+        $drV2 = $request->getParam('v2_enabled', 'false');
+
+        if (!Mage::helper('autocompleteplus_autosuggest')->validate_auth($uuid, $authkey)) {
+            $resp = json_encode(
+                array('status' => 'error: '.'Authentication failed')
+            );
+            $response->setBody($resp);
+
+            return;
+        }
+
+        try {
+            $this->_getConfig()->setSmnV2($drV2, $scopeId);
+            if ($drV2 == 'true' || $drV2 == '1') {
+                $helper = Mage::helper('autocompleteplus_autosuggest');
+                $res = $helper->getSerpCustomValues($uuid, $scopeId);
+                if ($res) {
+                    $this->_getConfig()->setCustomValues($res, $scopeId);
+                }
+            }
+            Mage::app()->getCacheInstance()->cleanType('config');
+        } catch (Exception $e) {
+            $resp = json_encode(array('status' => 'error: '.$e->getMessage()));
+            $response->setBody($resp);
+            Mage::logException($e);
+            return;
+        }
+
+        $resp = array('new_state' => $drV2,
+            'status' => 'ok',
+        );
+        $response->setBody(json_encode($resp));
+    }
+
+    public function setSerpCustomValuesAction() {
+        $response = $this->getResponse();
+        $request = $this->getRequest();
+        $authkey = $request->getParam('authentication_key');
+        $uuid = $request->getParam('uuid');
+        $scopeId = $request->getParam('store_id', 1);
+
+        if (!Mage::helper('autocompleteplus_autosuggest')->validate_auth($uuid, $authkey)) {
+            $resp = json_encode(
+                array('status' => 'error: '.'Authentication failed')
+            );
+            $response->setBody($resp);
+            return;
+        }
+
+        $command = 'https://dashboard.instantsearchplus.com/api/serving/magento_update_fields';
+        $helper = Mage::helper('autocompleteplus_autosuggest');
+        $res = false;
+        try {
+            $res = $helper->getSerpCustomValues($uuid, $scopeId);
+            if ($res) {
+                $this->_getConfig()->setCustomValues($res, $scopeId);
+                Mage::app()->getCacheInstance()->cleanType('config');
+            }
+
+        } catch (Exception $e) {
+            $resp = json_encode(array('status' => 'error: '.$e->getMessage()));
+            $response->setBody($resp);
+            Mage::logException($e);
+            return;
+        }
+
+        $resp = array('new_state' => $res,
+            'status' => 'ok',
+        );
+        $response->setBody(json_encode($resp));
+    }
 }
