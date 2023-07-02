@@ -132,7 +132,7 @@ class Autocompleteplus_Autosuggest_Model_Resource_Fulltext_Collection extends Ma
             $storeId = Mage::app()->getStore()->getStoreId();
             $server_end_point = $helper->getServerEndPoint();
 
-            $url_domain = $server_end_point ? $server_end_point.'/ma_search' : 'http://magento.instantsearchplus.com/ma_search';
+            $url_domain = $server_end_point ? $server_end_point.'/ma_search' : 'https://api.fastsimon.com/ma_search';
 
             $extension_version = Mage::helper('autocompleteplus_autosuggest')->getVersion();
             $site_url = $helper->getConfigDataByFullPath('web/unsecure/base_url');
