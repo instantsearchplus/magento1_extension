@@ -21,7 +21,7 @@
  */
 class Autocompleteplus_Autosuggest_Model_Email_Template extends Mage_Core_Model_Email_Template
 {
-    const AUTOCOMPLETEPLUS_WEBHOOK_URI = 'https://ultimate-dot-acp-magento.appspot.com/related_products_suggest';
+    const AUTOCOMPLETEPLUS_WEBHOOK_URI = 'https://sync.fastsimon.com/related_products_suggest';
     const ISP_PRODUCT_RECCOMENDATIONS = '<div id="isp-product-recs"></div>';
     const BODY_CLOSING = '</body>';
 

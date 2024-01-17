@@ -2,7 +2,7 @@
 
 class Autocompleteplus_Autosuggest_Adminhtml_RedirectController extends Mage_Adminhtml_Controller_Action
 {
-    const ISP_SITE_URL = 'https://magento.instantsearchplus.com/';
+    const ISP_SITE_URL = 'https://dashboard.instantsearchplus.com/';
     const REDIRECT_STATUS_CODE = 302;
 
     protected function _getConfig()

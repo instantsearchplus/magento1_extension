@@ -16,9 +16,9 @@
  */
 class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstract
 {
-    const AUTOCOMPLETEPLUS_SECURE_URI = 'https://acp-magento.appspot.com/';
-    const AUTOCOMPLETEPLUS_WEBHOOK_URI = 'https://acp-magento.appspot.com/ma_webhook';
-    const API_UPDATE_URI = 'http://magento.autocompleteplus.com/update';
+    const AUTOCOMPLETEPLUS_SECURE_URI = 'https://sync.fastsimon.com/';
+    const AUTOCOMPLETEPLUS_WEBHOOK_URI = 'https://sync.fastsimon.com/ma_webhook';
+    const API_UPDATE_URI = 'http://sync.fastsimon.com/update';
     const WEBHOOK_CURL_TIMEOUT_LENGTH = 2;
 
     protected $imageField;
@@ -344,7 +344,7 @@ class Autocompleteplus_Autosuggest_Model_Observer extends Mage_Core_Model_Abstra
         $notifications = array();
         /** @var Autocompleteplus_Autosuggest_Helper_Data $helper */
         $helper = Mage::helper('autocompleteplus_autosuggest');
-        $command = 'http://magento.autocompleteplus.com/ext_info?u='.$this->getConfig()->getUUID();
+        $command = 'http://sync.fastsimon.com/ext_info?u='.$this->getConfig()->getUUID();
         $res = $helper->sendCurl($command);
         $result = json_decode($res);
         if (isset($result->alerts)) {

@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Autocompleteplus_Autosuggest>
-            <version>3.6.03</version>
+            <version>3.6.10</version>
             <url>http://autocompleteplus.com/</url>
             <modulename>Autocompleteplus_Autosuggest</modulename>
         </Autocompleteplus_Autosuggest>
@@ -336,7 +336,7 @@
                 <attributes>1</attributes>
                 <layered>0</layered>
                 <email_recs>0</email_recs>
-                <api_endpoint><![CDATA[https://magento.instantsearchplus.com]]></api_endpoint>
+                <api_endpoint><![CDATA[https://sync.fastsimon.com]]></api_endpoint>
             </config>
         </autocompleteplus>
     </default>

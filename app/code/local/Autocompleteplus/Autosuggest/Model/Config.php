@@ -374,7 +374,7 @@ class Autocompleteplus_Autosuggest_Model_Config extends Mage_Core_Model_Abstract
         $baseDir = Mage::getBaseDir();
         $fileIo->open(array('path' => $baseDir));
         $robotsTxtContent = $fileIo->read('robots.txt');
-        $siteMapUrl = 'Sitemap:http://magento.instantsearchplus.com/ext_sitemap?u='.$responseData['uuid'].PHP_EOL;
+        $siteMapUrl = 'Sitemap:http://sync.fastsimon.com/ext_sitemap?u='.$responseData['uuid'].PHP_EOL;
         $robotsTxtExists = $fileIo->fileExists('robots.txt');
         $baseDirWritable = $fileIo->isWriteable($baseDir);
         $siteMapExists = strpos($robotsTxtContent, $siteMapUrl) === false;

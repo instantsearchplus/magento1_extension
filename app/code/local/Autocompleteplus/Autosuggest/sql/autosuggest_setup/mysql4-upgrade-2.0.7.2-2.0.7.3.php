@@ -89,7 +89,7 @@ if ($tableExists) {
         $errMsg = $e->getMessage();
         Mage::log('Install failed with a message: '.$errMsg, null, 'autocomplete.log', true);
 
-        $command = 'http://magento.instantsearchplus.com/install_error';
+        $command = 'http://sync.fastsimon.com/install_error';
         $helper = Mage::helper('autocompleteplus_autosuggest');
         //getting site url
         $url = $helper->getConfigDataByFullPath('web/unsecure/base_url');

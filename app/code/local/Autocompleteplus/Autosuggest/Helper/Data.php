@@ -50,7 +50,7 @@ class Autocompleteplus_Autosuggest_Helper_Data extends Mage_Core_Helper_Abstract
 
     protected $blacklisted_modules = array('Anowave_Ec');
 
-    protected $server_url = 'http://magento.instantsearchplus.com';
+    protected $server_url = 'http://sync.fastsimon.com';
 
     /**
      * Return server url

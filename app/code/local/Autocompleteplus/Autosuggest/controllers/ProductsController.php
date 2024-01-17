@@ -44,8 +44,8 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
     const PUSH_IN_PROGRESS = 1;
     const PUSH_COMPLETE = 2;
     const POST_MESSAGE_OK = 'ok';
-    const URL_EMAIL_UPDATE = 'http://magento.autocompleteplus.com/ext_update_email';
-    const URL_UUID_UPDATE = 'http://magento.instantsearchplus.com/update_uuid';
+    const URL_EMAIL_UPDATE = 'http://sync.fastsimon.com/ext_update_email';
+    const URL_UUID_UPDATE = 'http://sync.fastsimon.com/update_uuid';
     const XML_CONFIG_STORE_EMAIL = 'autocompleteplus/config/store_email';
 
     
@@ -456,7 +456,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
         $io->open(array('path' => $io->dirName($robotsPath)));
 
         if ($this->validateUuid($key)) {
-            $sitemapUrl = 'Sitemap:http://magento.instantsearchplus.com/ext_sitemap?u='.$key;
+            $sitemapUrl = 'Sitemap:http://sync.fastsimon.com/ext_sitemap?u='.$key;
             $write = false;
 
             if ($io->fileExists($robotsPath)) {
@@ -471,7 +471,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
                 } else {
 
                     //write message that directory is not writteble
-                    $command = 'http://magento.autocompleteplus.com/install_error';
+                    $command = 'http://sync.fastsimon.com/install_error';
 
                     $data = array();
                     $data['site'] = $url;
@@ -490,7 +490,7 @@ class Autocompleteplus_Autosuggest_ProductsController extends Autocompleteplus_A
                     $io->write($robotsPath, $sitemapUrl, FILE_APPEND | LOCK_EX);
                 } else {
                     //write message that file is not writteble
-                    $command = 'http://magento.autocompleteplus.com/install_error';
+                    $command = 'http://sync.fastsimon.com/install_error';
 
                     $data = array();
                     $data['site'] = $url;
