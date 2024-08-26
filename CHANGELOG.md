@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [3.6.11] - 2024-08-26 18:00:00
+### Changed
+- Added support for HTTPS requests in API helper function
+
 ## [3.6.10] - 2024-01-17 18:00:00
 ### Changed
 - Updated Fast Simon API URLs
